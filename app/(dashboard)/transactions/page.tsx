@@ -1,7 +1,12 @@
-import React from "react";
+import TransactionTable from "@/components/transactions/TransactionTable";
 
 const TransactionsPage = () => {
-  return <div>TransactionsPage</div>;
+  return (
+    <div>
+      <h1>TransactionPage</h1>
+      <TransactionTable />
+    </div>
+  );
 };
 
 export default TransactionsPage;
