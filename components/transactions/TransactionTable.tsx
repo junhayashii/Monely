@@ -26,7 +26,7 @@ const data: Transactions[] = [
   },
   {
     id: "4",
-    name: "Movie Ticket",
+    name: "Movie",
     amount: 15.2,
     category: "Entertainment",
     date: "2024-01-11",
