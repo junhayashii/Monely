@@ -32,6 +32,7 @@ const TransactionModalController = () => {
       onOpenChange={() => router.push("/transactions")}
     >
       <TransactionForm
+        editId={isEdit ? editId! : undefined}
         initialData={
           isEdit
             ? {
@@ -42,14 +43,6 @@ const TransactionModalController = () => {
             : undefined
         }
         onCancel={() => router.push("/transactions")}
-        onSubmit={(values) => {
-          if (isEdit) {
-            // updateTransaction(editId!, values)
-          } else {
-            // createTransaction(values)
-          }
-          router.push("/transactions");
-        }}
       />
     </AddEditModal>
   );

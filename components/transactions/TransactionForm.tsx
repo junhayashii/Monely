@@ -3,60 +3,52 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-
-export type TransactionFormValues = {
-  title: string;
-  amount: number;
-  date: string;
-};
+import {
+  createTransaction,
+  updateTransaction,
+} from "@/app/(dashboard)/transactions/actions";
 
 type TransactionFormProps = {
-  initialData?: TransactionFormValues;
-  onSubmit: (values: TransactionFormValues) => void;
+  initialData?: {
+    title: string;
+    amount: number;
+    date: string;
+  };
+  editId?: string;
   onCancel: () => void;
 };
 
 const TransactionForm = ({
   initialData,
-  onSubmit,
+  editId,
   onCancel,
 }: TransactionFormProps) => {
-  const [title, setTitle] = useState(initialData?.title ?? "");
-  const [amount, setAmount] = useState(initialData?.amount ?? 0);
-  const [date, setDate] = useState(initialData?.date ?? "");
+  const action = editId
+    ? updateTransaction.bind(null, editId)
+    : createTransaction;
 
   return (
-    <form
-      className="space-y-4"
-      onSubmit={(e) => {
-        e.preventDefault();
-        onSubmit({ title, amount, date });
-      }}
-    >
+    <form action={action} className="space-y-4">
       <Input
+        name="title"
+        defaultValue={initialData?.title}
         placeholder="Title"
-        value={title}
-        onChange={(e) => setTitle(e.target.value)}
       />
 
       <Input
+        name="amount"
+        defaultValue={initialData?.amount}
         type="number"
         placeholder="Amount"
-        value={amount}
-        onChange={(e) => setAmount(Number(e.target.value))}
       />
 
-      <Input
-        type="date"
-        value={date}
-        onChange={(e) => setDate(e.target.value)}
-      />
+      <Input name="date" defaultValue={initialData?.date} type="date" />
 
       <div className="flex justify-end gap-2">
         <Button type="button" variant="ghost" onClick={onCancel}>
           Cancel
         </Button>
-        <Button type="submit">Save</Button>
+        <Button type="submit">{editId ? "Update" : "Create"}</Button>
       </div>
     </form>
   );
