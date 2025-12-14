@@ -16,12 +16,14 @@ type TransactionFormProps = {
   };
   editId?: string;
   onCancel: () => void;
+  onDelete?: () => void;
 };
 
 const TransactionForm = ({
   initialData,
   editId,
   onCancel,
+  onDelete,
 }: TransactionFormProps) => {
   const action = editId
     ? updateTransaction.bind(null, editId)
@@ -44,11 +46,21 @@ const TransactionForm = ({
 
       <Input name="date" defaultValue={initialData?.date} type="date" />
 
-      <div className="flex justify-end gap-2">
-        <Button type="button" variant="ghost" onClick={onCancel}>
-          Cancel
-        </Button>
-        <Button type="submit">{editId ? "Update" : "Create"}</Button>
+      <div className="flex items-center justify-between">
+        {/* Left Side */}
+        {editId && onDelete && (
+          <Button type="button" variant="destructive" onClick={onDelete}>
+            Delete
+          </Button>
+        )}
+
+        {/* Right Side */}
+        <div className="flex gap-2">
+          <Button type="button" variant="ghost" onClick={onCancel}>
+            Cancel
+          </Button>
+          <Button type="submit">{editId ? "Update" : "Create"}</Button>
+        </div>
       </div>
     </form>
   );

@@ -17,3 +17,7 @@ export async function updateTransaction(id: string, formData: FormData) {
   console.log("UPDATE", id, { title, amount, date });
   redirect("/transactions");
 }
+
+export async function deleteTransaction(id: string) {
+  console.log("DELETE", id);
+}
