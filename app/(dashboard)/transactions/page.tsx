@@ -1,6 +1,8 @@
 import AddTransactionButton from "@/components/transactions/AddTransactionButton";
 import TransactionTable from "@/components/transactions/TransactionTable";
-import { Button } from "@/components/ui/button";
+
+import { transactions } from "@/components/transactions/data";
+import TransactionModalController from "@/components/transactions/TransactionModalController";
 
 const TransactionsPage = () => {
   return (
@@ -13,10 +15,14 @@ const TransactionsPage = () => {
             See your transactions here
           </p>
         </div>
+        {/* Add Button */}
         <AddTransactionButton />
       </div>
       {/* Table */}
-      <TransactionTable />
+      <TransactionTable data={transactions} />
+
+      {/* Modal */}
+      <TransactionModalController />
     </div>
   );
 };
