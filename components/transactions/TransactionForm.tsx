@@ -7,34 +7,20 @@ import {
   updateTransaction,
 } from "@/app/(dashboard)/transactions/actions";
 
-import { useFormStatus } from "react-dom";
+import { useState, useTransition } from "react";
+import { toast } from "sonner"; // Sonnerをインポート
+// import { useRouter } from "next/navigation"; // ページ遷移が必要なら使う
 
 type TransactionFormProps = {
   initialData?: {
     title: string;
     amount: number;
-    date: string;
+    date: string; // date inputは "YYYY-MM-DD" 文字列を期待します
   };
   editId?: string;
   onCancel: () => void;
   onDelete?: () => void;
 };
-
-function SubmitButton({ isEdit }: { isEdit: boolean }) {
-  const { pending } = useFormStatus();
-
-  return (
-    <Button type="submit" disabled={pending}>
-      {pending
-        ? isEdit
-          ? "Saving..."
-          : "Creating..."
-        : isEdit
-        ? "Update"
-        : "Create"}
-    </Button>
-  );
-}
 
 const TransactionForm = ({
   initialData,
@@ -42,16 +28,61 @@ const TransactionForm = ({
   onCancel,
   onDelete,
 }: TransactionFormProps) => {
-  const action = editId
-    ? updateTransaction.bind(null, editId)
-    : createTransaction;
+  // useTransitionでローディング状態(isPending)を管理
+  const [isPending, startTransition] = useTransition();
+
+  // 削除ボタンのローディング用（もし必要なら分ける）
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  // const router = useRouter(); // ページ遷移する場合
+
+  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault(); // ブラウザの標準送信を無効化
+    const formData = new FormData(event.currentTarget);
+
+    startTransition(async () => {
+      // IDがあるかどうかでActionを切り替え
+      const result = editId
+        ? await updateTransaction(editId, formData)
+        : await createTransaction(formData);
+
+      if (result.success) {
+        toast.success(result.message);
+        onCancel(); // 成功したらフォーム（モーダル）を閉じる
+        // ページ遷移が必要なら: router.push("/transactions");
+      } else {
+        toast.error(result.message);
+      }
+    });
+  };
+
+  // 削除ボタンの処理もここでラップするとToastが出せます
+  const handleDelete = async () => {
+    if (!onDelete) return;
+
+    // もしonDeleteの中でServer Actionを呼んでいるなら、
+    // 親から関数を受け取るのではなく、ここでActionを呼ぶ設計の方が
+    // Toast管理は楽かもしれません。現状は親に任せる形にしておきます。
+    setIsDeleting(true);
+    try {
+      await onDelete();
+      // 親側でToastを出していないならここで出す
+      // toast.success("Deleted!");
+    } catch (e) {
+      toast.error("Failed to delete");
+    } finally {
+      setIsDeleting(false);
+    }
+  };
 
   return (
-    <form action={action} className="space-y-4">
+    <form onSubmit={handleSubmit} className="space-y-4">
       <Input
         name="title"
         defaultValue={initialData?.title}
         placeholder="Title"
+        required
+        disabled={isPending}
       />
 
       <Input
@@ -59,25 +90,51 @@ const TransactionForm = ({
         defaultValue={initialData?.amount}
         type="number"
         placeholder="Amount"
+        required
+        disabled={isPending}
       />
 
-      <Input name="date" defaultValue={initialData?.date} type="date" />
+      <Input
+        name="date"
+        defaultValue={initialData?.date}
+        type="date"
+        required
+        disabled={isPending}
+      />
 
       <div className="flex items-center justify-between">
-        {/* Left Side */}
+        {/* Left Side: Delete */}
         {editId && onDelete && (
-          <Button type="button" variant="destructive" onClick={onDelete}>
-            Delete
+          <Button
+            type="button"
+            variant="destructive"
+            onClick={handleDelete}
+            disabled={isPending || isDeleting}
+          >
+            {isDeleting ? "Deleting..." : "Delete"}
           </Button>
         )}
 
-        {/* Right Side */}
+        {/* Right Side: Cancel & Save */}
         <div className="flex gap-2">
-          <Button type="button" variant="ghost" onClick={onCancel}>
+          <Button
+            type="button"
+            variant="ghost"
+            onClick={onCancel}
+            disabled={isPending}
+          >
             Cancel
           </Button>
-          {/* <Button type="submit">{editId ? "Update" : "Create"}</Button> */}
-          <SubmitButton isEdit={!!editId} />
+
+          <Button type="submit" disabled={isPending}>
+            {isPending
+              ? editId
+                ? "Saving..."
+                : "Creating..."
+              : editId
+              ? "Update"
+              : "Create"}
+          </Button>
         </div>
       </div>
     </form>

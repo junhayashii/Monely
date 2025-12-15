@@ -6,6 +6,8 @@ import DeleteDialog from "../DeleteDialog";
 import { deleteTransaction } from "@/app/(dashboard)/transactions/actions";
 import { useSearchParams, useRouter } from "next/navigation";
 import { Transaction } from "@/lib/generated/prisma";
+import { useTransition } from "react";
+import { toast } from "sonner";
 
 type Props = {
   transactions: Transaction[];
@@ -14,6 +16,8 @@ type Props = {
 const TransactionModalController = ({ transactions }: Props) => {
   const searchParams = useSearchParams();
   const router = useRouter();
+
+  const [isDeleting, startDeleteTransition] = useTransition();
 
   const mode = searchParams.get("mode"); // add | edit | delete
   const editId = searchParams.get("id");
@@ -57,16 +61,33 @@ const TransactionModalController = ({ transactions }: Props) => {
 
   /* ---------- Delete ---------- */
   if (isDelete) {
+    const handleDeleteConfirm = () => {
+      if (!editId) return;
+
+      // 削除トランジションを開始
+      startDeleteTransition(async () => {
+        const result = await deleteTransaction(editId!);
+
+        if (result.success) {
+          toast.success(result.message);
+          // 成功したら一覧ページに戻る
+          router.push("/transactions");
+        } else {
+          toast.error(result.message);
+          // 失敗した場合はダイアログを閉じるか、開いたままにするか（今回は閉じる）
+          router.push(`?mode=edit&id=${editId}`);
+        }
+      });
+    };
+
     return (
       <DeleteDialog
         open
         title="Delete Transaction"
         description="Are you sure you want to delete this transaction?"
         onCancel={() => router.push(`?mode=edit&id=${editId}`)}
-        onConfirm={async () => {
-          await deleteTransaction(editId!);
-          router.push("/transactions");
-        }}
+        onConfirm={handleDeleteConfirm} // ★定義した関数を渡す
+        isConfirming={isDeleting} // ★ローディング状態を渡す
       />
     );
   }

@@ -15,6 +15,7 @@ interface DeleteDialogProps {
   description?: string;
   onCancel: () => void;
   onConfirm: () => void;
+  isConfirming: boolean;
 }
 
 const DeleteDialog: React.FC<DeleteDialogProps> = ({
@@ -23,6 +24,7 @@ const DeleteDialog: React.FC<DeleteDialogProps> = ({
   description,
   onCancel,
   onConfirm,
+  isConfirming,
 }) => {
   return (
     <AlertDialog open={open} onOpenChange={(val) => !val && onCancel()}>
@@ -35,13 +37,17 @@ const DeleteDialog: React.FC<DeleteDialogProps> = ({
         </AlertDialogHeader>
         <div className="flex justify-end gap-2 mt-4">
           <AlertDialogCancel asChild>
-            <Button variant="ghost" onClick={onCancel}>
+            <Button variant="ghost" onClick={onCancel} disabled={isConfirming}>
               Cancel
             </Button>
           </AlertDialogCancel>
           <AlertDialogAction asChild>
-            <Button variant="destructive" onClick={onConfirm}>
-              Delete
+            <Button
+              variant="destructive"
+              onClick={onConfirm}
+              disabled={isConfirming}
+            >
+              {isConfirming ? "Deleting..." : "Delete"}
             </Button>
           </AlertDialogAction>
         </div>
