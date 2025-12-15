@@ -1,10 +1,13 @@
 import AddTransactionButton from "@/components/transactions/AddTransactionButton";
 import TransactionTable from "@/components/transactions/TransactionTable";
-
-import { transactions } from "@/components/transactions/data";
 import TransactionModalController from "@/components/transactions/TransactionModalController";
+import { prisma } from "@/lib/prisma";
 
-const TransactionsPage = () => {
+const TransactionsPage = async () => {
+  const transactions = await prisma.transaction.findMany({
+    orderBy: { createdAt: "desc" },
+  });
+
   return (
     <div>
       {/* Header */}
@@ -22,7 +25,7 @@ const TransactionsPage = () => {
       <TransactionTable data={transactions} />
 
       {/* Modal */}
-      <TransactionModalController />
+      <TransactionModalController transactions={transactions} />
     </div>
   );
 };

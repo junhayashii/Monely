@@ -1,23 +1,34 @@
+"use server";
+
 import { redirect } from "next/navigation";
+import { prisma } from "@/lib/prisma";
 
 export async function createTransaction(formData: FormData) {
-  const title = formData.get("title");
-  const amount = formData.get("amount");
-  const date = formData.get("date");
-
-  console.log("CREATE", { title, amount, date });
+  await prisma.transaction.create({
+    data: {
+      title: String(formData.get("title")),
+      amount: Number(formData.get("amount")),
+      date: new Date(String(formData.get("date"))),
+    },
+  });
   redirect("/transactions");
 }
 
 export async function updateTransaction(id: string, formData: FormData) {
-  const title = formData.get("title");
-  const amount = formData.get("amount");
-  const date = formData.get("date");
-
-  console.log("UPDATE", id, { title, amount, date });
+  await prisma.transaction.update({
+    where: { id },
+    data: {
+      title: String(formData.get("title")),
+      amount: Number(formData.get("amount")),
+      date: new Date(String(formData.get("date"))),
+    },
+  });
   redirect("/transactions");
 }
 
 export async function deleteTransaction(id: string) {
-  console.log("DELETE", id);
+  await prisma.transaction.delete({
+    where: { id },
+  });
+  redirect("/transactions");
 }

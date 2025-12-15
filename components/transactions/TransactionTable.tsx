@@ -1,15 +1,11 @@
 "use client";
 
 import DataTable from "../data-table/DataTable";
-import { Transactions } from "./types";
 import { columns } from "./Columns";
 import { useRouter } from "next/navigation";
+import { Transaction } from "@/lib/generated/prisma";
 
-type Props = {
-  data: Transactions[];
-};
-
-const TransactionTable = ({ data }: Props) => {
+const TransactionTable = ({ data }: { data: Transaction[] }) => {
   const router = useRouter();
 
   return (

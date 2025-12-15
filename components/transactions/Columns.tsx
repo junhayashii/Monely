@@ -1,15 +1,14 @@
 "use client";
 
-import React from "react";
 import { ColumnDef } from "@tanstack/react-table";
-import { Transactions } from "./types";
+import { Transaction } from "@/lib/generated/prisma";
 
-export const columns: ColumnDef<Transactions>[] = [
+export const columns: ColumnDef<Transaction>[] = [
   {
-    accessorKey: "name",
-    header: "Name",
+    accessorKey: "title",
+    header: "Title",
     cell: ({ row }) => {
-      const name = row.getValue("name") as string;
+      const name = row.getValue("title") as string;
       return <span className="font-medium">{name}</span>;
     },
   },
@@ -23,14 +22,6 @@ export const columns: ColumnDef<Transactions>[] = [
         currency: "USD",
       });
       return <span>{formatted}</span>;
-    },
-  },
-  {
-    accessorKey: "category",
-    header: "Category",
-    cell: ({ row }) => {
-      const category = row.getValue("category") as string;
-      return <span className="text-muted-foreground">{category}</span>;
     },
   },
   {
