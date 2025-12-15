@@ -1,12 +1,13 @@
 "use client";
 
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
   createTransaction,
   updateTransaction,
 } from "@/app/(dashboard)/transactions/actions";
+
+import { useFormStatus } from "react-dom";
 
 type TransactionFormProps = {
   initialData?: {
@@ -18,6 +19,22 @@ type TransactionFormProps = {
   onCancel: () => void;
   onDelete?: () => void;
 };
+
+function SubmitButton({ isEdit }: { isEdit: boolean }) {
+  const { pending } = useFormStatus();
+
+  return (
+    <Button type="submit" disabled={pending}>
+      {pending
+        ? isEdit
+          ? "Saving..."
+          : "Creating..."
+        : isEdit
+        ? "Update"
+        : "Create"}
+    </Button>
+  );
+}
 
 const TransactionForm = ({
   initialData,
@@ -59,7 +76,8 @@ const TransactionForm = ({
           <Button type="button" variant="ghost" onClick={onCancel}>
             Cancel
           </Button>
-          <Button type="submit">{editId ? "Update" : "Create"}</Button>
+          {/* <Button type="submit">{editId ? "Update" : "Create"}</Button> */}
+          <SubmitButton isEdit={!!editId} />
         </div>
       </div>
     </form>

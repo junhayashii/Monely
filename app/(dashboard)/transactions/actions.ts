@@ -2,6 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
+import { revalidatePath } from "next/cache";
 
 export async function createTransaction(formData: FormData) {
   await prisma.transaction.create({
@@ -11,6 +12,7 @@ export async function createTransaction(formData: FormData) {
       date: new Date(String(formData.get("date"))),
     },
   });
+  revalidatePath("/transactions");
   redirect("/transactions");
 }
 
@@ -23,6 +25,7 @@ export async function updateTransaction(id: string, formData: FormData) {
       date: new Date(String(formData.get("date"))),
     },
   });
+  revalidatePath("/transactions");
   redirect("/transactions");
 }
 
@@ -30,5 +33,6 @@ export async function deleteTransaction(id: string) {
   await prisma.transaction.delete({
     where: { id },
   });
+  revalidatePath("/transactions");
   redirect("/transactions");
 }

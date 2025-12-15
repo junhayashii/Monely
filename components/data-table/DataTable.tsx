@@ -71,7 +71,14 @@ function DataTable<TData, TValue>({
           ) : (
             <TableRow>
               <TableCell colSpan={columns.length} className="text-center">
-                No results.
+                {data.length === 0 && (
+                  <div className="text-center py-12 text-muted-foreground">
+                    <p className="text-lg font-medium">No transactions yet</p>
+                    <p className="text-sm">
+                      Add your first transaction to get started
+                    </p>
+                  </div>
+                )}
               </TableCell>
             </TableRow>
           )}
