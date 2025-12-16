@@ -76,7 +76,7 @@ const TransactionForm = ({
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit} className="space-y-4" noValidate>
       <Input
         name="title"
         defaultValue={initialData?.title}

@@ -2,6 +2,19 @@
 
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
+import { z } from "zod";
+
+// Zod スキーマの定義
+const TransactionSchema = z.object({
+  // タイトル: 必須、文字列、1文字以上、50文字以下
+  title: z.string().min(1, { message: "タイトルは必須です。" }).max(50),
+  // 金額: 必須、数値に変換、正の値であること
+  amount: z.coerce
+    .number({ message: "金額は数値で入力してください。" })
+    .positive({ message: "金額は正の値である必要があります。" }),
+  // 日付: 必須、日付型に変換
+  date: z.coerce.date({ message: "日付が不正です。" }),
+});
 
 // レスポンスの型を定義
 export type ActionResponse = {
@@ -9,16 +22,37 @@ export type ActionResponse = {
   message: string;
 };
 
+// Create Transactions
 export async function createTransaction(
   formData: FormData
 ): Promise<ActionResponse> {
+  const rawData = {
+    title: formData.get("title"),
+    amount: formData.get("amount"),
+    date: formData.get("date"),
+  };
+
+  // スキーマを使って検証を実行
+  const validatedFields = TransactionSchema.safeParse(rawData);
+
+  // 検証失敗
+  if (!validatedFields.success) {
+    const errorMessage = validatedFields.error.issues
+      .map((issue) => issue.message)
+      .join(" / ");
+
+    return {
+      success: false,
+      message: errorMessage || "入力データが不正です。",
+    };
+  }
+
+  // 検証成功: 安全なデータを取り出す
+  const { title, amount, date } = validatedFields.data;
+
   try {
     await prisma.transaction.create({
-      data: {
-        title: String(formData.get("title")),
-        amount: Number(formData.get("amount")),
-        date: new Date(String(formData.get("date"))),
-      },
+      data: { title, amount, date },
     });
 
     revalidatePath("/transactions");
@@ -32,32 +66,50 @@ export async function createTransaction(
   }
 }
 
+// Update Transaction
 export async function updateTransaction(
   id: string,
   formData: FormData
 ): Promise<ActionResponse> {
+  const rawData = {
+    title: formData.get("title"),
+    amount: formData.get("amount"),
+    date: formData.get("date"),
+  };
+
+  const validatedFields = TransactionSchema.safeParse(rawData);
+
+  if (!validatedFields.success) {
+    const errorMessage = validatedFields.error.issues
+      .map((issue) => issue.message)
+      .join(" / ");
+
+    return {
+      success: false,
+      message: errorMessage || "入力データが不正です。",
+    };
+  }
+
+  const { title, amount, date } = validatedFields.data;
+
   try {
     await prisma.transaction.update({
       where: { id },
-      data: {
-        title: String(formData.get("title")),
-        amount: Number(formData.get("amount")),
-        date: new Date(String(formData.get("date"))),
-      },
+      data: { title, amount, date },
     });
 
     revalidatePath("/transactions");
-
-    // ★ここでも return
     return { success: true, message: "Transaction updated!" };
   } catch (error) {
-    console.error(error);
-    // ★ここでも return
-    return { success: false, message: "Failed to update transaction." };
+    console.error("Database Error:", error);
+    return {
+      success: false,
+      message: "データベース操作中に予期せぬエラーが発生しました。",
+    };
   }
 }
 
-// deleteも同様に修正が必要です
+// Delete Transaction
 export async function deleteTransaction(id: string): Promise<ActionResponse> {
   try {
     await prisma.transaction.delete({
