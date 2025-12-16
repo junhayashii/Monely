@@ -14,6 +14,7 @@ const TransactionSchema = z.object({
     .positive({ message: "金額は正の値である必要があります。" }),
   // 日付: 必須、日付型に変換
   date: z.coerce.date({ message: "日付が不正です。" }),
+  categoryId: z.string().min(1, { message: "Category is required" }),
 });
 
 // レスポンスの型を定義
@@ -30,6 +31,7 @@ export async function createTransaction(
     title: formData.get("title"),
     amount: formData.get("amount"),
     date: formData.get("date"),
+    categoryId: formData.get("categoryId"),
   };
 
   // スキーマを使って検証を実行
@@ -48,11 +50,11 @@ export async function createTransaction(
   }
 
   // 検証成功: 安全なデータを取り出す
-  const { title, amount, date } = validatedFields.data;
+  const { title, amount, date, categoryId } = validatedFields.data;
 
   try {
     await prisma.transaction.create({
-      data: { title, amount, date },
+      data: { title, amount, date, categoryId },
     });
 
     revalidatePath("/transactions");

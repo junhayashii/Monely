@@ -26,6 +26,18 @@ export const columns: ColumnDef<Transaction>[] = [
     },
   },
   {
+    accessorKey: "category",
+    header: "Category",
+    cell: ({ row }) => {
+      const category = row.original as any;
+      return (
+        <span className="px-2 py-1 rounded-full text-xs font-medium bg-secondary">
+          {category.category?.name || "None"}
+        </span>
+      );
+    },
+  },
+  {
     accessorKey: "date",
     header: "Date",
     cell: ({ row }) => {

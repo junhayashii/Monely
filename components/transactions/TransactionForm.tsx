@@ -16,7 +16,9 @@ type TransactionFormProps = {
     title: string;
     amount: number;
     date: string; // date inputは "YYYY-MM-DD" 文字列を期待します
+    categoryId: string;
   };
+  categories: { id: string; name: string }[];
   editId?: string;
   onCancel: () => void;
   onDelete?: () => void;
@@ -25,6 +27,7 @@ type TransactionFormProps = {
 const TransactionForm = ({
   initialData,
   editId,
+  categories,
   onCancel,
   onDelete,
 }: TransactionFormProps) => {
@@ -101,6 +104,25 @@ const TransactionForm = ({
         required
         disabled={isPending}
       />
+
+      <div className="space-y-2">
+        <label className="text-sm font-medium">Category</label>
+        <select
+          name="categoryId"
+          required
+          className="w-full p-2 border rounded-md bg-background"
+          defaultValue={initialData?.categoryId || ""}
+        >
+          <option value="" disabled>
+            カテゴリを選択してください
+          </option>
+          {categories.map((category) => (
+            <option key={category.id} value={category.id}>
+              {category.name}
+            </option>
+          ))}
+        </select>
+      </div>
 
       <div className="flex items-center justify-between">
         {/* Left Side: Delete */}
