@@ -1,12 +1,12 @@
 "use client";
 
-import { useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Input } from "@/components/ui/input";
-import { format } from "date-fns";
 
 const MonthPicker = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const pathname = usePathname();
 
   const currentMonth = searchParams.get("month") || "";
 
@@ -17,7 +17,8 @@ const MonthPicker = () => {
     } else {
       params.delete("month");
     }
-    router.push(`/transactions?${params.toString()}`);
+    // router.push(`/transactions?${params.toString()}`);
+    router.push(`${pathname}?${params.toString()}`);
   };
   return (
     <div className="w-full sm:w-[200px]">

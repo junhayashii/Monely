@@ -4,7 +4,7 @@ import TransactionModalController from "@/components/transactions/TransactionMod
 import { prisma } from "@/lib/prisma";
 import Searchbar from "@/components/transactions/Searchbar";
 import { startOfMonth, endOfMonth, parseISO } from "date-fns";
-import MonthPicker from "@/components/transactions/MonthPicker";
+import MonthPicker from "@/components/MonthPicker";
 
 const TransactionsPage = async ({
   searchParams,

@@ -1,13 +1,22 @@
 import CategoryChart from "@/components/dashboard/CategoryChart";
 import DashboardCard from "@/components/dashboard/DashboardCard";
+import MonthPicker from "@/components/MonthPicker";
 import { prisma } from "@/lib/prisma";
-import { endOfMonth, startOfMonth } from "date-fns";
+import { endOfMonth, format, parse, startOfMonth } from "date-fns";
 import { TrendingDown, TrendingUp, Wallet } from "lucide-react";
+import { SearchParams } from "next/dist/server/request/search-params";
 
-async function DashboardPage() {
-  const now = new Date();
-  const monthStart = startOfMonth(now);
-  const monthEnd = endOfMonth(now);
+type Props = {
+  searchParams: Promise<{ month?: string }>;
+};
+
+async function DashboardPage({ searchParams }: Props) {
+  const resolvedParams = await searchParams;
+  const month = resolvedParams.month;
+  const monthParam = month || format(new Date(), "yyyy-MM");
+  const currentMonth = parse(monthParam, "yyyy-MM", new Date());
+  const monthStart = startOfMonth(currentMonth);
+  const monthEnd = endOfMonth(currentMonth);
 
   const transactions = await prisma.transaction.findMany({
     where: {
@@ -47,7 +56,15 @@ async function DashboardPage() {
 
   return (
     <div className="p-8 space-y-8">
-      <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold">Dashboard</h1>
+          <p className="text-sm text-muted-foreground">See your data here</p>
+        </div>
+        {/* Add Button */}
+        <MonthPicker />
+      </div>
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         {/* Balance Card */}
         <DashboardCard
