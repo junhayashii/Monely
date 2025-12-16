@@ -18,7 +18,7 @@ type TransactionFormProps = {
     date: string; // date inputは "YYYY-MM-DD" 文字列を期待します
     categoryId: string;
   };
-  categories: { id: string; name: string }[];
+  categories: { id: string; name: string; type: string }[];
   editId?: string;
   onCancel: () => void;
   onDelete?: () => void;
@@ -33,6 +33,17 @@ const TransactionForm = ({
 }: TransactionFormProps) => {
   // useTransitionでローディング状態(isPending)を管理
   const [isPending, startTransition] = useTransition();
+
+  const initialType =
+    categories.find((c) => c.id === initialData?.categoryId)?.type === "INCOME"
+      ? "INCOME"
+      : "EXPENSE";
+
+  const [selectedType, setSelectedType] = useState<string>("EXPENSE");
+
+  const filteredCategories = categories.filter(
+    (cat) => cat.type === selectedType
+  );
 
   // 削除ボタンのローディング用（もし必要なら分ける）
   const [isDeleting, setIsDeleting] = useState(false);
@@ -80,6 +91,31 @@ const TransactionForm = ({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4" noValidate>
+      <div className="flex w-full p-1 bg-muted rounded-lg">
+        <button
+          type="button"
+          onClick={() => setSelectedType("EXPENSE")}
+          className={`flex-1 py-1.5 text-sm font-medium rounded-md transition-all ${
+            selectedType === "EXPENSE"
+              ? "bg-background shadow-sm"
+              : "text-muted-foreground"
+          }`}
+        >
+          Expense
+        </button>
+        <button
+          type="button"
+          onClick={() => setSelectedType("INCOME")}
+          className={`flex-1 py-1.5 text-sm font-medium rounded-md transition-all ${
+            selectedType === "INCOME"
+              ? "bg-background shadow-sm"
+              : "text-muted-foreground"
+          }`}
+        >
+          Income
+        </button>
+      </div>
+
       <Input
         name="title"
         defaultValue={initialData?.title}
@@ -111,12 +147,13 @@ const TransactionForm = ({
           name="categoryId"
           required
           className="w-full p-2 border rounded-md bg-background"
+          key={selectedType}
           defaultValue={initialData?.categoryId || ""}
         >
           <option value="" disabled>
             カテゴリを選択してください
           </option>
-          {categories.map((category) => (
+          {filteredCategories.map((category) => (
             <option key={category.id} value={category.id}>
               {category.name}
             </option>

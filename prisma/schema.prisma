@@ -15,22 +15,26 @@ datasource db {
 }
 
 model Transaction {
-  id          String    @id @default(cuid())
-  title       String
-  amount      Float
-  date        DateTime  
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt @default(now())
+  id String @id @default(cuid())
+  title String
+  amount Float
+  date DateTime  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt @default(now())
+  categoryId String
+  category Category @relation(fields: [categoryId], references: [id])
+}
 
-  categoryId  String
-  category   Category @relation(fields: [categoryId], references: [id])
+enum CategoryType {
+  INCOME
+  EXPENSE
 }
 
 model Category {
   id String @id @default(cuid())
   name String @unique
+  type CategoryType @default(EXPENSE)
   budget Float?
   color String?
-
   transactions Transaction[]
 }
