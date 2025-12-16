@@ -2,6 +2,7 @@
 
 import { ColumnDef } from "@tanstack/react-table";
 import { Transaction } from "@/lib/generated/prisma";
+import { format, parseISO } from "date-fns";
 
 export const columns: ColumnDef<Transaction>[] = [
   {
@@ -28,16 +29,16 @@ export const columns: ColumnDef<Transaction>[] = [
     accessorKey: "date",
     header: "Date",
     cell: ({ row }) => {
-      const date = new Date(row.getValue("date") as string);
-      return (
-        <span>
-          {date.toLocaleDateString("en-US", {
-            year: "numeric",
-            month: "short",
-            day: "numeric",
-          })}
-        </span>
-      );
+      const dateValue = row.getValue("date");
+
+      const dateString =
+        dateValue instanceof Date
+          ? dateValue.toISOString().split("T")[0]
+          : (dateValue as string).split("T")[0];
+
+      const date = parseISO(dateString);
+
+      return <span>{format(date, "MMM d, yyyy")}</span>;
     },
   },
 ];
