@@ -17,6 +17,11 @@ export const sidebarItems = [
     icon: Calendar,
   },
   {
+    title: "Budgets",
+    url: "/budgets",
+    icon: Calendar,
+  },
+  {
     title: "Reports",
     url: "/reports",
     icon: Search,
