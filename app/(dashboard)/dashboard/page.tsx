@@ -1,3 +1,4 @@
+import BudgetProgress from "@/components/dashboard/BudgetProgress";
 import CategoryChart from "@/components/dashboard/CategoryChart";
 import DashboardCard from "@/components/dashboard/DashboardCard";
 import MonthPicker from "@/components/MonthPicker";
@@ -54,6 +55,24 @@ async function DashboardPage({ searchParams }: Props) {
     value,
   }));
 
+  const categories = await prisma.category.findMany();
+
+  const budgetData = categories
+    .filter((cat) => cat.type === "EXPENSE" && cat.budget && cat.budget > 0)
+    .map((cat) => {
+      const spent = categoryTotals[cat.name] || 0;
+      const budget = cat.budget || 0;
+      const progress = (spent / budget) * 100;
+
+      return {
+        name: cat.name,
+        spent,
+        budget,
+        progress: Math.min(progress, 100),
+        status: progress > 90 ? "text-rose-600" : "text-emerald-600",
+      };
+    });
+
   return (
     <div className="p-8 space-y-8">
       {/* Header */}
@@ -65,6 +84,8 @@ async function DashboardPage({ searchParams }: Props) {
         {/* Add Button */}
         <MonthPicker />
       </div>
+
+      {/* Metrics */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         {/* Balance Card */}
         <DashboardCard
@@ -92,8 +113,13 @@ async function DashboardPage({ searchParams }: Props) {
       </div>
 
       {/* グラフエリア */}
-      <div className="grid gap-4 md:grid-cols-7">
-        <CategoryChart data={chartData} />
+      <div className="grid gap-4 md:grid-cols-4">
+        <div className="md:col-span-2">
+          <CategoryChart data={chartData} />
+        </div>
+        <div className="md:col-span-2">
+          <BudgetProgress data={budgetData} />
+        </div>
       </div>
     </div>
   );
