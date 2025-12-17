@@ -1,11 +1,13 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { toast } from "sonner";
 import BudgetCard from "@/components/budgets/BudgetCard";
 import AddEditModal from "@/components/AddEditModal";
 import DeleteDialog from "@/components/DeleteDialog";
 import {
-  upsertCategory,
+  createCategory,
+  updateCategory,
   deleteCategory,
 } from "@/app/(dashboard)/budgets/actions";
 import { Button } from "@/components/ui/button";
@@ -58,28 +60,41 @@ function BudgetList({ categories, spentMap }: BudgetListProps) {
   };
 
   const handleSave = async () => {
-    await upsertCategory({
-      id: selectedCategory?.id,
-      name,
-      type: type as any,
-      budget,
-    });
-    setIsModalOpen(false);
-  };
+    // FormDataを組み立てる
+    const formData = new FormData();
+    formData.append("name", name);
+    formData.append("type", type);
+    formData.append("budget", budget.toString());
 
-  const handleDeleteClick = (category: any) => {
-    setCategoryToDelete(category);
-    setIsDeleteOpen(true);
+    startTransition(async () => {
+      let result;
+      if (selectedCategory) {
+        result = await updateCategory(selectedCategory.id, formData);
+      } else {
+        result = await createCategory(formData);
+      }
+
+      if (result.success) {
+        toast.success(result.message); // ★ 成功！
+        setIsModalOpen(false);
+      } else {
+        toast.error(result.message); // ★ 失敗を通知
+      }
+    });
   };
 
   const handleConfirmDelete = () => {
     startTransition(async () => {
-      await deleteCategory(categoryToDelete.id);
-      setIsDeleteOpen(false);
-      setIsModalOpen(false);
+      const result = await deleteCategory(categoryToDelete.id);
+      if (result.success) {
+        toast.success(result.message);
+        setIsDeleteOpen(false);
+        setIsModalOpen(false);
+      } else {
+        toast.error(result.message);
+      }
     });
   };
-
   return (
     <div className="space-y-8">
       <div className="flex justify-end">
