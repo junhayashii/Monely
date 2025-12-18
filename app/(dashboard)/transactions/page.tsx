@@ -33,10 +33,12 @@ const TransactionsPage = async ({
     orderBy: { date: "desc" },
     include: {
       category: true,
+      wallet: true,
     },
   });
 
   const categories = await prisma.category.findMany();
+  const wallets = await prisma.wallet.findMany();
 
   return (
     <div>
@@ -63,6 +65,7 @@ const TransactionsPage = async ({
       <TransactionModalController
         transactions={transactions}
         categories={categories}
+        wallets={wallets}
       />
     </div>
   );

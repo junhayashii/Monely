@@ -15,6 +15,7 @@ const TransactionSchema = z.object({
   // 日付: 必須、日付型に変換
   date: z.coerce.date({ message: "日付が不正です。" }),
   categoryId: z.string().min(1, { message: "Category is required" }),
+  walletId: z.string().min(1, { message: "Wallet is required" }),
 });
 
 // レスポンスの型を定義
@@ -32,6 +33,7 @@ export async function createTransaction(
     amount: formData.get("amount"),
     date: formData.get("date"),
     categoryId: formData.get("categoryId"),
+    walletId: formData.get("walletId"),
   };
 
   // スキーマを使って検証を実行
@@ -50,14 +52,37 @@ export async function createTransaction(
   }
 
   // 検証成功: 安全なデータを取り出す
-  const { title, amount, date, categoryId } = validatedFields.data;
+  const { title, amount, date, categoryId, walletId } = validatedFields.data;
 
   try {
-    await prisma.transaction.create({
-      data: { title, amount, date, categoryId },
+    // Prismaのトランザクションを開始
+    await prisma.$transaction(async (tx) => {
+      // 1. 取引を作成
+      await tx.transaction.create({
+        data: { title, amount, date, categoryId, walletId },
+      });
+
+      // 2. カテゴリを取得して「収入」か「支出」かを確認
+      const category = await tx.category.findUnique({
+        where: { id: categoryId },
+      });
+
+      // 3. 増減額を決定 (支出ならマイナス)
+      const amountChange = category?.type === "EXPENSE" ? -amount : amount;
+
+      // 4. Walletの残高を更新
+      await tx.wallet.update({
+        where: { id: walletId },
+        data: {
+          balance: {
+            increment: amountChange, // 数値を加算（マイナスの場合は減算になる）
+          },
+        },
+      });
     });
 
     revalidatePath("/transactions");
+    revalidatePath("/wallets");
 
     // ★重要: 成功時はここで必ず return する
     return { success: true, message: "Transaction created!" };
@@ -77,6 +102,8 @@ export async function updateTransaction(
     title: formData.get("title"),
     amount: formData.get("amount"),
     date: formData.get("date"),
+    categoryId: formData.get("categoryId"),
+    walletId: formData.get("walletId"),
   };
 
   const validatedFields = TransactionSchema.safeParse(rawData);
@@ -92,15 +119,47 @@ export async function updateTransaction(
     };
   }
 
-  const { title, amount, date } = validatedFields.data;
+  const { title, amount, date, categoryId, walletId } = validatedFields.data;
 
   try {
-    await prisma.transaction.update({
-      where: { id },
-      data: { title, amount, date },
+    await prisma.$transaction(async (tx) => {
+      // A. 【古い状態の取り消し】
+      const oldTx = await tx.transaction.findUnique({
+        where: { id },
+        include: { category: true },
+      });
+      if (!oldTx) throw new Error("Old transaction not found");
+
+      if (oldTx.walletId) {
+        const oldAmountRestore =
+          oldTx.category.type === "EXPENSE" ? oldTx.amount : -oldTx.amount;
+        await tx.wallet.update({
+          where: { id: oldTx.walletId || undefined },
+          data: { balance: { increment: oldAmountRestore } },
+        });
+      }
+
+      // B. 【新しい状態の適用】
+      const newCategory = await tx.category.findUnique({
+        where: { id: categoryId },
+      });
+      const newAmountChange =
+        newCategory?.type === "EXPENSE" ? -amount : amount;
+
+      await tx.wallet.update({
+        where: { id: walletId }, // 新しいWalletIDに対して
+        data: { balance: { increment: newAmountChange } },
+      });
+
+      // C. 【取引データの更新】
+      await tx.transaction.update({
+        where: { id },
+        data: { title, amount, date, categoryId, walletId },
+      });
     });
 
     revalidatePath("/transactions");
+    revalidatePath("/wallets");
     return { success: true, message: "Transaction updated!" };
   } catch (error) {
     console.error("Database Error:", error);
@@ -114,11 +173,33 @@ export async function updateTransaction(
 // Delete Transaction
 export async function deleteTransaction(id: string): Promise<ActionResponse> {
   try {
-    await prisma.transaction.delete({
-      where: { id },
+    await prisma.$transaction(async (tx) => {
+      // 1. 消す前に、その取引の金額、WalletID、カテゴリ情報を取得
+      const transaction = await tx.transaction.findUnique({
+        where: { id },
+        include: { category: true },
+      });
+
+      if (!transaction) throw new Error("Transaction not found");
+
+      // 2. 残高を元に戻す計算 (支出を消す = 残高増、収入を消す = 残高減)
+      const amountToRestore =
+        transaction.category.type === "EXPENSE"
+          ? transaction.amount
+          : -transaction.amount;
+
+      // 3. Walletの更新
+      await tx.wallet.update({
+        where: { id: transaction.walletId || undefined },
+        data: { balance: { increment: amountToRestore } },
+      });
+
+      // 4. 取引の削除
+      await tx.transaction.delete({ where: { id } });
     });
 
     revalidatePath("/transactions");
+    revalidatePath("/wallets");
     return { success: true, message: "Transaction deleted!" };
   } catch (error) {
     return { success: false, message: "Failed to delete transaction." };

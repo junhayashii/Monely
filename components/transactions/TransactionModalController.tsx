@@ -5,16 +5,21 @@ import TransactionForm from "./TransactionForm";
 import DeleteDialog from "../DeleteDialog";
 import { deleteTransaction } from "@/app/(dashboard)/transactions/actions";
 import { useSearchParams, useRouter } from "next/navigation";
-import { Transaction, Category } from "@/lib/generated/prisma";
+import { Transaction, Category, Wallet } from "@/lib/generated/prisma";
 import { useTransition } from "react";
 import { toast } from "sonner";
 
 type Props = {
   transactions: Transaction[];
   categories: Category[];
+  wallets: Wallet[];
 };
 
-const TransactionModalController = ({ transactions, categories }: Props) => {
+const TransactionModalController = ({
+  transactions,
+  categories,
+  wallets,
+}: Props) => {
   const searchParams = useSearchParams();
   const router = useRouter();
 
@@ -45,6 +50,7 @@ const TransactionModalController = ({ transactions, categories }: Props) => {
         <TransactionForm
           editId={isEdit ? editId! : undefined}
           categories={categories}
+          wallets={wallets}
           initialData={
             isEdit
               ? {
@@ -52,6 +58,7 @@ const TransactionModalController = ({ transactions, categories }: Props) => {
                   amount: transactionToEdit.amount,
                   date: transactionToEdit.date.toISOString().slice(0, 10),
                   categoryId: transactionToEdit.categoryId,
+                  walletId: transactionToEdit.walletId,
                 }
               : undefined
           }

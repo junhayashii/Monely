@@ -9,6 +9,14 @@ import {
 
 import { useState, useTransition } from "react";
 import { toast } from "sonner"; // Sonnerをインポート
+import { Label } from "../ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../ui/select";
 // import { useRouter } from "next/navigation"; // ページ遷移が必要なら使う
 
 type TransactionFormProps = {
@@ -17,8 +25,10 @@ type TransactionFormProps = {
     amount: number;
     date: string; // date inputは "YYYY-MM-DD" 文字列を期待します
     categoryId: string;
+    walletId?: string | null;
   };
   categories: { id: string; name: string; type: string }[];
+  wallets: { id: string; name: string; balance: number }[];
   editId?: string;
   onCancel: () => void;
   onDelete?: () => void;
@@ -28,11 +38,15 @@ const TransactionForm = ({
   initialData,
   editId,
   categories,
+  wallets,
   onCancel,
   onDelete,
 }: TransactionFormProps) => {
   // useTransitionでローディング状態(isPending)を管理
   const [isPending, startTransition] = useTransition();
+  const [walletId, setWalletId] = useState<string | null>(
+    initialData?.walletId || null
+  );
 
   const initialType =
     categories.find((c) => c.id === initialData?.categoryId)?.type === "INCOME"
@@ -53,6 +67,8 @@ const TransactionForm = ({
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault(); // ブラウザの標準送信を無効化
     const formData = new FormData(event.currentTarget);
+
+    console.log("walletId in formData:", formData.get("walletId"));
 
     startTransition(async () => {
       // IDがあるかどうかでActionを切り替え
@@ -159,6 +175,29 @@ const TransactionForm = ({
             </option>
           ))}
         </select>
+      </div>
+
+      <div className="space-y-2">
+        <Label>Wallet</Label>
+
+        {/* ★ ここが重要！ selectの外側ではなく、formの中であればどこでもOKですが、ここが一番分かりやすいです */}
+        <input type="hidden" name="walletId" value={walletId || ""} />
+
+        <Select
+          value={walletId || ""}
+          onValueChange={(value) => setWalletId(value)} // 確実にステートを更新
+        >
+          <SelectTrigger>
+            <SelectValue placeholder="Select a wallet" />
+          </SelectTrigger>
+          <SelectContent>
+            {wallets.map((w: any) => (
+              <SelectItem key={w.id} value={w.id}>
+                {w.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
 
       <div className="flex items-center justify-between">

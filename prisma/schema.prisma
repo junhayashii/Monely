@@ -23,6 +23,8 @@ model Transaction {
   updatedAt DateTime @updatedAt @default(now())
   categoryId String
   category Category @relation(fields: [categoryId], references: [id])
+  walletId String?
+  wallet Wallet? @relation(fields: [walletId], references: [id])
 }
 
 enum CategoryType {
@@ -37,4 +39,22 @@ model Category {
   budget Float?
   color String?
   transactions Transaction[]
+}
+
+enum WalletType {
+  CASH
+  BANK
+  CREDIT_CARD
+  E_MONEY
+}
+
+model Wallet {
+  id String @id @default(cuid())
+  name String
+  type WalletType @default(BANK)
+  balance Float @default(0)
+  color String?
+  transactions Transaction[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
