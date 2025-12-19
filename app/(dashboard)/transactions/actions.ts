@@ -1,7 +1,9 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
+import { createClient } from "@/lib/supabase";
 import { revalidatePath } from "next/cache";
+import { userAgent } from "next/server";
 import { z } from "zod";
 
 // Zod スキーマの定義
@@ -18,6 +20,15 @@ const TransactionSchema = z.object({
   walletId: z.string().min(1, { message: "Wallet is required" }),
 });
 
+async function getAuthenticatedUser() {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) throw new Error("Unauthorized");
+  return user;
+}
+
 // レスポンスの型を定義
 export type ActionResponse = {
   success: boolean;
@@ -28,6 +39,13 @@ export type ActionResponse = {
 export async function createTransaction(
   formData: FormData
 ): Promise<ActionResponse> {
+  let user;
+  try {
+    user = await getAuthenticatedUser();
+  } catch (e) {
+    return { success: false, message: "ログインが必要です。" };
+  }
+
   const rawData = {
     title: formData.get("title"),
     amount: formData.get("amount"),
@@ -59,7 +77,7 @@ export async function createTransaction(
     await prisma.$transaction(async (tx) => {
       // 1. 取引を作成
       await tx.transaction.create({
-        data: { title, amount, date, categoryId, walletId },
+        data: { title, amount, date, categoryId, walletId, userId: user.id },
       });
 
       // 2. カテゴリを取得して「収入」か「支出」かを確認
@@ -82,6 +100,7 @@ export async function createTransaction(
     });
 
     revalidatePath("/transactions");
+    revalidatePath("/dashboard");
     revalidatePath("/wallets");
 
     // ★重要: 成功時はここで必ず return する
@@ -98,6 +117,8 @@ export async function updateTransaction(
   id: string,
   formData: FormData
 ): Promise<ActionResponse> {
+  const user = await getAuthenticatedUser();
+
   const rawData = {
     title: formData.get("title"),
     amount: formData.get("amount"),
@@ -124,8 +145,8 @@ export async function updateTransaction(
   try {
     await prisma.$transaction(async (tx) => {
       // A. 【古い状態の取り消し】
-      const oldTx = await tx.transaction.findUnique({
-        where: { id },
+      const oldTx = await tx.transaction.findFirst({
+        where: { id, userId: user.id },
         include: { category: true },
       });
       if (!oldTx) throw new Error("Old transaction not found");
@@ -134,7 +155,7 @@ export async function updateTransaction(
         const oldAmountRestore =
           oldTx.category.type === "EXPENSE" ? oldTx.amount : -oldTx.amount;
         await tx.wallet.update({
-          where: { id: oldTx.walletId || undefined },
+          where: { id: oldTx.walletId, userId: user.id },
           data: { balance: { increment: oldAmountRestore } },
         });
       }
@@ -153,13 +174,14 @@ export async function updateTransaction(
 
       // C. 【取引データの更新】
       await tx.transaction.update({
-        where: { id },
+        where: { id, userId: user.id },
         data: { title, amount, date, categoryId, walletId },
       });
     });
 
     revalidatePath("/transactions");
     revalidatePath("/wallets");
+    revalidatePath("/dashboard");
     return { success: true, message: "Transaction updated!" };
   } catch (error) {
     console.error("Database Error:", error);
@@ -173,10 +195,12 @@ export async function updateTransaction(
 // Delete Transaction
 export async function deleteTransaction(id: string): Promise<ActionResponse> {
   try {
+    const user = await getAuthenticatedUser();
+
     await prisma.$transaction(async (tx) => {
       // 1. 消す前に、その取引の金額、WalletID、カテゴリ情報を取得
       const transaction = await tx.transaction.findUnique({
-        where: { id },
+        where: { id, userId: user.id },
         include: { category: true },
       });
 
@@ -190,12 +214,12 @@ export async function deleteTransaction(id: string): Promise<ActionResponse> {
 
       // 3. Walletの更新
       await tx.wallet.update({
-        where: { id: transaction.walletId || undefined },
+        where: { id: transaction.walletId || undefined, userId: user.id },
         data: { balance: { increment: amountToRestore } },
       });
 
       // 4. 取引の削除
-      await tx.transaction.delete({ where: { id } });
+      await tx.transaction.delete({ where: { id, userId: user.id } });
     });
 
     revalidatePath("/transactions");
