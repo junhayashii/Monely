@@ -22,6 +22,11 @@ export const sidebarItems = [
     icon: Calendar,
   },
   {
+    title: "Recurring Bills",
+    url: "/recurring",
+    icon: Calendar,
+  },
+  {
     title: "Goals",
     url: "/goals",
     icon: Calendar,

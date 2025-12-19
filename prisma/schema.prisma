@@ -39,6 +39,9 @@ model Category {
   budget Float?
   color String?
   transactions Transaction[]
+  // createdAt DateTime @default(now())
+  // updatedAt DateTime @updatedAt
+  recurringBills RecurringBill[]
 }
 
 enum WalletType {
@@ -57,6 +60,7 @@ model Wallet {
   transactions Transaction[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  recurringBills RecurringBill[]
 }
 
 model Goal {
@@ -70,3 +74,17 @@ model Goal {
   updatedAt DateTime @updatedAt
 }
 
+model RecurringBill {
+  id String @id @default(cuid())
+  name String
+  amount Float
+  frequency String
+  startDate DateTime
+  nextDate DateTime
+  categoryId String?
+  category Category? @relation(fields: [categoryId], references: [id])
+  walletId String
+  wallet Wallet @relation(fields: [walletId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
