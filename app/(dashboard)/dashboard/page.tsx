@@ -2,6 +2,7 @@ import BudgetProgress from "@/components/dashboard/BudgetProgress";
 import CategoryChart from "@/components/dashboard/CategoryChart";
 import DashboardCard from "@/components/dashboard/DashboardCard";
 import MonthPicker from "@/components/MonthPicker";
+import { Button } from "@/components/ui/button";
 import { prisma } from "@/lib/prisma";
 import { endOfMonth, format, parse, startOfMonth } from "date-fns";
 import { TrendingDown, TrendingUp, Wallet } from "lucide-react";
@@ -73,6 +74,21 @@ async function DashboardPage({ searchParams }: Props) {
       };
     });
 
+  const [goals, recentTransactions] = await Promise.all([
+    prisma.goal.findMany(),
+    prisma.transaction.findMany({
+      take: 5, // 最新5件
+      orderBy: { date: "desc" },
+      include: { category: true, wallet: true },
+    }),
+  ]);
+
+  // Savings全体の進捗計算
+  const totalSaved = goals.reduce((sum, g) => sum + g.currentAmount, 0);
+  const totalTarget = goals.reduce((sum, g) => sum + g.targetAmount, 0);
+  const savingsProgress =
+    totalTarget > 0 ? (totalSaved / totalTarget) * 100 : 0;
+
   return (
     <div className="p-8 space-y-8">
       {/* Header */}
@@ -110,6 +126,14 @@ async function DashboardPage({ searchParams }: Props) {
           icon={<TrendingDown className="h-4 w-4 text-rose-500" />}
           className="text-rose-600"
         />
+
+        <DashboardCard
+          title="Savings Progress"
+          amount={totalSaved} // 金額として現在の合計を表示
+          icon={<TrendingUp className="h-4 w-4 text-blue-500" />}
+          description={`${Math.round(savingsProgress)}% of total goals`}
+          className="text-blue-600"
+        />
       </div>
 
       {/* グラフエリア */}
@@ -119,6 +143,66 @@ async function DashboardPage({ searchParams }: Props) {
         </div>
         <div className="md:col-span-2">
           <BudgetProgress data={budgetData} />
+        </div>
+      </div>
+
+      {/* グラフエリアのさらに下に追加 */}
+      <div className="grid gap-4 md:grid-cols-4">
+        <div className="md:col-span-4">
+          <div className="rounded-xl border bg-card text-card-foreground shadow">
+            <div className="p-6 flex flex-row items-center justify-between">
+              <h3 className="font-semibold leading-none tracking-tight">
+                Recent Transactions
+              </h3>
+              <Button variant="ghost" size="sm" asChild>
+                <a href="/transactions">View All</a>
+              </Button>
+            </div>
+            <div className="p-6 pt-0">
+              <div className="space-y-4">
+                {recentTransactions.map((t) => (
+                  <div key={t.id} className="flex items-center justify-between">
+                    <div className="flex items-center space-x-4">
+                      <div
+                        className={`p-2 rounded-full ${
+                          t.category?.type === "INCOME"
+                            ? "bg-emerald-100"
+                            : "bg-rose-100"
+                        }`}
+                      >
+                        <Wallet
+                          className={`h-4 w-4 ${
+                            t.category?.type === "INCOME"
+                              ? "text-emerald-600"
+                              : "text-rose-600"
+                          }`}
+                        />
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium leading-none">
+                          {t.title}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {format(new Date(t.date), "MMM dd, yyyy")} •{" "}
+                          {t.wallet?.name}
+                        </p>
+                      </div>
+                    </div>
+                    <div
+                      className={`text-sm font-bold ${
+                        t.category?.type === "INCOME"
+                          ? "text-emerald-600"
+                          : "text-rose-600"
+                      }`}
+                    >
+                      {t.category?.type === "INCOME" ? "+" : "-"} R${" "}
+                      {t.amount.toLocaleString()}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
