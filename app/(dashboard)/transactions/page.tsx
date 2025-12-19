@@ -6,6 +6,9 @@ import Searchbar from "@/components/transactions/Searchbar";
 import { startOfMonth, endOfMonth, parseISO } from "date-fns";
 import MonthPicker from "@/components/MonthPicker";
 import TransactionFilters from "@/components/transactions/TransactionFilters";
+import TransactionPagination from "@/components/transactions/TransactionPagination";
+
+const PAGE_SIZE = 10;
 
 const TransactionsPage = async ({
   searchParams,
@@ -16,9 +19,13 @@ const TransactionsPage = async ({
     type?: "INCOME" | "EXPENSE";
     categoryId?: string;
     walletId?: string;
+    page?: string;
   }>;
 }) => {
-  const { q, month, type, categoryId, walletId } = await searchParams;
+  const { q, month, type, categoryId, walletId, page } = await searchParams;
+
+  const currentPage = Number(page) || 1;
+  const skip = (currentPage - 1) * PAGE_SIZE;
 
   const where: any = {
     title: {
@@ -53,15 +60,20 @@ const TransactionsPage = async ({
     where.walletId = walletId;
   }
 
-  const [transactions, categories, wallets] = await Promise.all([
+  const [transactions, totalCount, categories, wallets] = await Promise.all([
     prisma.transaction.findMany({
       where,
       orderBy: { date: "desc" },
       include: { category: true, wallet: true },
+      skip: skip,
+      take: PAGE_SIZE,
     }),
+    prisma.transaction.count({ where }),
     prisma.category.findMany({ orderBy: { name: "asc" } }),
     prisma.wallet.findMany({ orderBy: { name: "asc" } }),
   ]);
+
+  const totalPages = Math.ceil(totalCount / PAGE_SIZE);
 
   return (
     <div>
@@ -84,6 +96,13 @@ const TransactionsPage = async ({
 
       {/* Table */}
       <TransactionTable data={transactions} />
+
+      <div className="mt-4">
+        <TransactionPagination
+          totalPages={totalPages}
+          currentPage={currentPage}
+        />
+      </div>
 
       {/* Modal */}
       <TransactionModalController
