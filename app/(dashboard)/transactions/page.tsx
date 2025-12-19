@@ -5,13 +5,20 @@ import { prisma } from "@/lib/prisma";
 import Searchbar from "@/components/transactions/Searchbar";
 import { startOfMonth, endOfMonth, parseISO } from "date-fns";
 import MonthPicker from "@/components/MonthPicker";
+import TransactionFilters from "@/components/transactions/TransactionFilters";
 
 const TransactionsPage = async ({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string; month?: string }>;
+  searchParams: Promise<{
+    q?: string;
+    month?: string;
+    type?: "INCOME" | "EXPENSE";
+    categoryId?: string;
+    walletId?: string;
+  }>;
 }) => {
-  const { q, month } = await searchParams;
+  const { q, month, type, categoryId, walletId } = await searchParams;
 
   const where: any = {
     title: {
@@ -20,25 +27,41 @@ const TransactionsPage = async ({
     },
   };
 
+  // 月フィルタ
   if (month) {
-    const referenceDate = parseISO(month);
+    const referenceDate = parseISO(`${month}-01`);
     where.date = {
       gte: startOfMonth(referenceDate),
       lte: endOfMonth(referenceDate),
     };
   }
 
-  const transactions = await prisma.transaction.findMany({
-    where,
-    orderBy: { date: "desc" },
-    include: {
-      category: true,
-      wallet: true,
-    },
-  });
+  // Type (Income/Expense) フィルタ
+  if (type) {
+    where.category = {
+      type: type,
+    };
+  }
 
-  const categories = await prisma.category.findMany();
-  const wallets = await prisma.wallet.findMany();
+  // Category フィルタ
+  if (categoryId) {
+    where.categoryId = categoryId;
+  }
+
+  // Wallet フィルタ
+  if (walletId) {
+    where.walletId = walletId;
+  }
+
+  const [transactions, categories, wallets] = await Promise.all([
+    prisma.transaction.findMany({
+      where,
+      orderBy: { date: "desc" },
+      include: { category: true, wallet: true },
+    }),
+    prisma.category.findMany({ orderBy: { name: "asc" } }),
+    prisma.wallet.findMany({ orderBy: { name: "asc" } }),
+  ]);
 
   return (
     <div>
@@ -56,6 +79,7 @@ const TransactionsPage = async ({
       <div className="flex flex-col sm:flex-row gap-4">
         <Searchbar />
         <MonthPicker />
+        <TransactionFilters categories={categories} wallets={wallets} />
       </div>
 
       {/* Table */}
