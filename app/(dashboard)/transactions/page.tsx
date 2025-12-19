@@ -7,6 +7,7 @@ import { startOfMonth, endOfMonth, parseISO } from "date-fns";
 import MonthPicker from "@/components/MonthPicker";
 import TransactionFilters from "@/components/transactions/TransactionFilters";
 import TransactionPagination from "@/components/transactions/TransactionPagination";
+import { createClient } from "@/lib/supabase";
 
 const PAGE_SIZE = 10;
 
@@ -22,6 +23,16 @@ const TransactionsPage = async ({
     page?: string;
   }>;
 }) => {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    // ログインしていなければリダイレクトなど
+    return <div>Please log in.</div>;
+  }
+
   const { q, month, type, categoryId, walletId, page } = await searchParams;
 
   const currentPage = Number(page) || 1;
@@ -62,7 +73,7 @@ const TransactionsPage = async ({
 
   const [transactions, totalCount, categories, wallets] = await Promise.all([
     prisma.transaction.findMany({
-      where,
+      where: { userId: user.id },
       orderBy: { date: "desc" },
       include: { category: true, wallet: true },
       skip: skip,

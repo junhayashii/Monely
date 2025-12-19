@@ -1,5 +1,6 @@
 import BudgetList from "@/components/budgets/BudgetList";
 import { prisma } from "@/lib/prisma";
+import { createClient } from "@/lib/supabase";
 import { endOfMonth, format, startOfMonth } from "date-fns";
 
 async function BudgetsPage({
@@ -7,16 +8,28 @@ async function BudgetsPage({
 }: {
   searchParams: Promise<{ month?: string }>;
 }) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    // ログインしていなければリダイレクトなど
+    return <div>Please log in.</div>;
+  }
+
   const { month } = await searchParams;
   const monthParam = month || format(new Date(), "yyyy-MM");
   const targetDate = new Date(`${monthParam}-01`);
 
   const categories = await prisma.category.findMany({
+    where: { userId: user.id },
     orderBy: { type: "asc" },
   });
 
   const transactions = await prisma.transaction.findMany({
     where: {
+      userId: user.id,
       date: {
         gte: startOfMonth(targetDate),
         lte: endOfMonth(targetDate),

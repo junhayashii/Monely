@@ -1,8 +1,20 @@
 import WalletList from "@/components/wallets/WalletList";
 import { prisma } from "@/lib/prisma";
+import { createClient } from "@/lib/supabase";
 
 async function WalletsPage() {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    // ログインしていなければリダイレクトなど
+    return <div>Please log in.</div>;
+  }
+
   const wallets = await prisma.wallet.findMany({
+    where: { userId: user.id },
     orderBy: {
       createdAt: "asc",
     },
