@@ -75,7 +75,7 @@ const TransactionsPage = async ({
     prisma.transaction.findMany({
       where: { userId: user.id },
       orderBy: { date: "desc" },
-      include: { category: true, wallet: true },
+      include: { category: true, wallet: true, toWallet: true },
       skip: skip,
       take: PAGE_SIZE,
     }),

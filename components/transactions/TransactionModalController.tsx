@@ -57,8 +57,9 @@ const TransactionModalController = ({
                   title: transactionToEdit.title,
                   amount: transactionToEdit.amount,
                   date: transactionToEdit.date.toISOString().slice(0, 10),
-                  categoryId: transactionToEdit.categoryId,
-                  walletId: transactionToEdit.walletId,
+                  categoryId: transactionToEdit.categoryId ?? "",
+                  walletId: transactionToEdit.walletId ?? "",
+                  toWalletId: transactionToEdit.toWalletId,
                 }
               : undefined
           }

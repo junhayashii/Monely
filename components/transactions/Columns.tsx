@@ -3,6 +3,7 @@
 import { ColumnDef } from "@tanstack/react-table";
 import { Transaction } from "@/lib/generated/prisma";
 import { format, parseISO } from "date-fns";
+import { Badge } from "../ui/badge";
 
 export const columns: ColumnDef<Transaction>[] = [
   {
@@ -18,34 +19,70 @@ export const columns: ColumnDef<Transaction>[] = [
     header: "Amount",
     cell: ({ row }) => {
       const amount = row.getValue("amount") as number;
-      const formatted = amount.toLocaleString("en-US", {
+      // 日本円なら "JPY"、USDならそのままでOKです
+      const formatted = amount.toLocaleString("ja-JP", {
         style: "currency",
-        currency: "USD",
+        currency: "JPY",
       });
       return <span>{formatted}</span>;
     },
   },
   {
-    accessorKey: "category",
-    header: "Category",
+    accessorKey: "type", // 新しくタイプ列を作るか、Categoryを拡張
+    header: "Type/Category",
     cell: ({ row }) => {
-      const category = row.original as any;
+      const tx = row.original as any;
+      const isTransfer = !!tx.toWalletId;
+      const categoryName = tx.category?.name;
+      const type = tx.category?.type; // INCOME or EXPENSE
+
+      if (isTransfer) {
+        return (
+          <Badge
+            variant="outline"
+            className="bg-blue-50 text-blue-700 border-blue-200"
+          >
+            Transfer
+          </Badge>
+        );
+      }
+
       return (
-        <span className="px-2 py-1 rounded-full text-xs font-medium bg-secondary">
-          {category.category?.name || "None"}
-        </span>
+        <Badge
+          className={
+            type === "INCOME"
+              ? "bg-green-100 text-green-700"
+              : "bg-red-100 text-red-700"
+          }
+          variant="secondary"
+        >
+          {categoryName || "None"}
+        </Badge>
       );
     },
   },
   {
     accessorKey: "wallet",
-    header: "Wallet",
+    header: "Wallet / Flow",
     cell: ({ row }) => {
-      const wallet = row.original as any;
+      const tx = row.original as any;
+      const fromWallet = tx.wallet?.name || "None";
+      const toWallet = tx.toWallet?.name;
+
       return (
-        <span className="px-2 py-1 rounded-full text-xs font-medium bg-secondary">
-          {wallet.wallet?.name || "None"}
-        </span>
+        <div className="flex items-center gap-1 text-xs font-medium">
+          <span className="px-2 py-1 rounded-full bg-secondary">
+            {fromWallet}
+          </span>
+          {toWallet && (
+            <>
+              <span className="text-muted-foreground">➔</span>
+              <span className="px-2 py-1 rounded-full bg-blue-100 text-blue-700 font-bold">
+                {toWallet}
+              </span>
+            </>
+          )}
+        </div>
       );
     },
   },
@@ -54,14 +91,8 @@ export const columns: ColumnDef<Transaction>[] = [
     header: "Date",
     cell: ({ row }) => {
       const dateValue = row.getValue("date");
-
-      const dateString =
-        dateValue instanceof Date
-          ? dateValue.toISOString().split("T")[0]
-          : (dateValue as string).split("T")[0];
-
-      const date = parseISO(dateString);
-
+      const date =
+        dateValue instanceof Date ? dateValue : parseISO(dateValue as string);
       return <span>{format(date, "MMM d, yyyy")}</span>;
     },
   },

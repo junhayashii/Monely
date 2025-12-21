@@ -24,8 +24,9 @@ type TransactionFormProps = {
     title: string;
     amount: number;
     date: string; // date inputは "YYYY-MM-DD" 文字列を期待します
-    categoryId: string;
+    categoryId: string | null;
     walletId?: string | null;
+    toWalletId?: string | null;
   };
   categories: { id: string; name: string; type: string }[];
   wallets: { id: string; name: string; balance: number }[];
@@ -47,13 +48,17 @@ const TransactionForm = ({
   const [walletId, setWalletId] = useState<string | null>(
     initialData?.walletId || null
   );
+  const [toWalletId, setToWalletId] = useState<string | null>(
+    initialData?.toWalletId || null
+  );
 
-  const initialType =
-    categories.find((c) => c.id === initialData?.categoryId)?.type === "INCOME"
-      ? "INCOME"
-      : "EXPENSE";
+  const getInitialType = () => {
+    if (initialData?.toWalletId) return "TRANSFER";
+    const cat = categories.find((c) => c.id === initialData?.categoryId);
+    return cat?.type === "INCOME" ? "INCOME" : "EXPENSE";
+  };
 
-  const [selectedType, setSelectedType] = useState<string>("EXPENSE");
+  const [selectedType, setSelectedType] = useState<string>(getInitialType());
 
   const filteredCategories = categories.filter(
     (cat) => cat.type === selectedType
@@ -108,28 +113,20 @@ const TransactionForm = ({
   return (
     <form onSubmit={handleSubmit} className="space-y-4" noValidate>
       <div className="flex w-full p-1 bg-muted rounded-lg">
-        <button
-          type="button"
-          onClick={() => setSelectedType("EXPENSE")}
-          className={`flex-1 py-1.5 text-sm font-medium rounded-md transition-all ${
-            selectedType === "EXPENSE"
-              ? "bg-background shadow-sm"
-              : "text-muted-foreground"
-          }`}
-        >
-          Expense
-        </button>
-        <button
-          type="button"
-          onClick={() => setSelectedType("INCOME")}
-          className={`flex-1 py-1.5 text-sm font-medium rounded-md transition-all ${
-            selectedType === "INCOME"
-              ? "bg-background shadow-sm"
-              : "text-muted-foreground"
-          }`}
-        >
-          Income
-        </button>
+        {["EXPENSE", "INCOME", "TRANSFER"].map((type) => (
+          <button
+            key={type}
+            type="button"
+            onClick={() => setSelectedType(type)}
+            className={`flex-1 py-1.5 text-sm font-medium rounded-md transition-all ${
+              selectedType === type
+                ? "bg-background shadow-sm"
+                : "text-muted-foreground"
+            }`}
+          >
+            {type.charAt(0) + type.slice(1).toLowerCase()}
+          </button>
+        ))}
       </div>
 
       <Input
@@ -157,41 +154,42 @@ const TransactionForm = ({
         disabled={isPending}
       />
 
-      <div className="space-y-2">
-        <label className="text-sm font-medium">Category</label>
-        <select
-          name="categoryId"
-          required
-          className="w-full p-2 border rounded-md bg-background"
-          key={selectedType}
-          defaultValue={initialData?.categoryId || ""}
-        >
-          <option value="" disabled>
-            カテゴリを選択してください
-          </option>
-          {filteredCategories.map((category) => (
-            <option key={category.id} value={category.id}>
-              {category.name}
+      {/* 2. 条件付き表示：カテゴリ（振替以外で表示） */}
+      {selectedType !== "TRANSFER" && (
+        <div className="space-y-2">
+          <Label>Category</Label>
+          <select
+            name="categoryId"
+            required
+            className="w-full p-2 border rounded-md bg-background text-sm"
+            key={selectedType}
+            defaultValue={initialData?.categoryId || ""}
+          >
+            <option value="" disabled>
+              Select Category
             </option>
-          ))}
-        </select>
-      </div>
+            {filteredCategories.map((category) => (
+              <option key={category.id} value={category.id}>
+                {category.name}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
 
+      {/* 3. 出金元 Wallet（振替の時は "From Wallet" と表示） */}
       <div className="space-y-2">
-        <Label>Wallet</Label>
-
-        {/* ★ ここが重要！ selectの外側ではなく、formの中であればどこでもOKですが、ここが一番分かりやすいです */}
+        <Label>{selectedType === "TRANSFER" ? "From Wallet" : "Wallet"}</Label>
         <input type="hidden" name="walletId" value={walletId || ""} />
-
         <Select
           value={walletId || ""}
-          onValueChange={(value) => setWalletId(value)} // 確実にステートを更新
+          onValueChange={(value) => setWalletId(value)}
         >
           <SelectTrigger>
             <SelectValue placeholder="Select a wallet" />
           </SelectTrigger>
           <SelectContent>
-            {wallets.map((w: any) => (
+            {wallets.map((w) => (
               <SelectItem key={w.id} value={w.id}>
                 {w.name}
               </SelectItem>
@@ -200,21 +198,44 @@ const TransactionForm = ({
         </Select>
       </div>
 
-      <div className="flex items-center justify-between">
-        {/* Left Side: Delete */}
+      {/* 4. 振替先 Wallet（振替の時だけ表示） */}
+      {selectedType === "TRANSFER" && (
+        <div className="space-y-2">
+          <Label>To Wallet</Label>
+          <input type="hidden" name="toWalletId" value={toWalletId || ""} />
+          <Select
+            value={toWalletId || ""}
+            onValueChange={(value) => setToWalletId(value)}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Select destination wallet" />
+            </SelectTrigger>
+            <SelectContent>
+              {wallets
+                .filter((w) => w.id !== walletId) // 出金元と同じ財布は選べないようにする
+                .map((w) => (
+                  <SelectItem key={w.id} value={w.id}>
+                    {w.name}
+                  </SelectItem>
+                ))}
+            </SelectContent>
+          </Select>
+        </div>
+      )}
+
+      {/* アクションボタン */}
+      <div className="flex items-center justify-between pt-4">
         {editId && onDelete && (
           <Button
             type="button"
             variant="destructive"
-            onClick={handleDelete}
+            onClick={onDelete}
             disabled={isPending || isDeleting}
           >
             {isDeleting ? "Deleting..." : "Delete"}
           </Button>
         )}
-
-        {/* Right Side: Cancel & Save */}
-        <div className="flex gap-2">
+        <div className="flex gap-2 ml-auto">
           <Button
             type="button"
             variant="ghost"
@@ -223,15 +244,8 @@ const TransactionForm = ({
           >
             Cancel
           </Button>
-
           <Button type="submit" disabled={isPending}>
-            {isPending
-              ? editId
-                ? "Saving..."
-                : "Creating..."
-              : editId
-              ? "Update"
-              : "Create"}
+            {isPending ? "Processing..." : editId ? "Update" : "Create"}
           </Button>
         </div>
       </div>
