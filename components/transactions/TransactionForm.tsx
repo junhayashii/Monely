@@ -70,21 +70,25 @@ const TransactionForm = ({
   // const router = useRouter(); // ページ遷移する場合
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault(); // ブラウザの標準送信を無効化
+    event.preventDefault();
     const formData = new FormData(event.currentTarget);
 
-    console.log("walletId in formData:", formData.get("walletId"));
+    // ★重要: TRANSFER の時は categoryId を明示的に空にする
+    if (selectedType === "TRANSFER") {
+      formData.set("categoryId", "");
+    } else {
+      // 逆に TRANSFER 以外なら toWalletId を空にする
+      formData.set("toWalletId", "");
+    }
 
     startTransition(async () => {
-      // IDがあるかどうかでActionを切り替え
       const result = editId
         ? await updateTransaction(editId, formData)
         : await createTransaction(formData);
 
       if (result.success) {
         toast.success(result.message);
-        onCancel(); // 成功したらフォーム（モーダル）を閉じる
-        // ページ遷移が必要なら: router.push("/transactions");
+        onCancel();
       } else {
         toast.error(result.message);
       }
@@ -112,6 +116,7 @@ const TransactionForm = ({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4" noValidate>
+      {/* 1. タブ部分 (変更なし) */}
       <div className="flex w-full p-1 bg-muted rounded-lg">
         {["EXPENSE", "INCOME", "TRANSFER"].map((type) => (
           <button
@@ -124,28 +129,27 @@ const TransactionForm = ({
                 : "text-muted-foreground"
             }`}
           >
-            {type.charAt(0) + type.slice(1).toLowerCase()}
+            {type === "EXPENSE" ? "支出" : type === "INCOME" ? "収入" : "振替"}
           </button>
         ))}
       </div>
 
+      {/* 2. 基本項目 (変更なし) */}
       <Input
         name="title"
         defaultValue={initialData?.title}
-        placeholder="Title"
+        placeholder="タイトル"
         required
         disabled={isPending}
       />
-
       <Input
         name="amount"
         defaultValue={initialData?.amount}
         type="number"
-        placeholder="Amount"
+        placeholder="金額"
         required
         disabled={isPending}
       />
-
       <Input
         name="date"
         defaultValue={initialData?.date}
@@ -154,10 +158,10 @@ const TransactionForm = ({
         disabled={isPending}
       />
 
-      {/* 2. 条件付き表示：カテゴリ（振替以外で表示） */}
-      {selectedType !== "TRANSFER" && (
+      {/* 3. 条件付き表示：カテゴリ */}
+      {selectedType !== "TRANSFER" ? (
         <div className="space-y-2">
-          <Label>Category</Label>
+          <Label>カテゴリ</Label>
           <select
             name="categoryId"
             required
@@ -166,7 +170,7 @@ const TransactionForm = ({
             defaultValue={initialData?.categoryId || ""}
           >
             <option value="" disabled>
-              Select Category
+              カテゴリを選択
             </option>
             {filteredCategories.map((category) => (
               <option key={category.id} value={category.id}>
@@ -175,18 +179,19 @@ const TransactionForm = ({
             ))}
           </select>
         </div>
+      ) : (
+        /* TRANSFER の時は隠しフィールドで categoryId を null 送信する */
+        <input type="hidden" name="categoryId" value="" />
       )}
 
-      {/* 3. 出金元 Wallet（振替の時は "From Wallet" と表示） */}
+      {/* 4. 出金元 Wallet */}
       <div className="space-y-2">
-        <Label>{selectedType === "TRANSFER" ? "From Wallet" : "Wallet"}</Label>
+        <Label>{selectedType === "TRANSFER" ? "振替元" : "使用する財布"}</Label>
+        {/* name 属性を持たせることで FormData に含まれるようにします */}
         <input type="hidden" name="walletId" value={walletId || ""} />
-        <Select
-          value={walletId || ""}
-          onValueChange={(value) => setWalletId(value)}
-        >
+        <Select value={walletId || ""} onValueChange={setWalletId}>
           <SelectTrigger>
-            <SelectValue placeholder="Select a wallet" />
+            <SelectValue placeholder="財布を選択" />
           </SelectTrigger>
           <SelectContent>
             {wallets.map((w) => (
@@ -198,21 +203,18 @@ const TransactionForm = ({
         </Select>
       </div>
 
-      {/* 4. 振替先 Wallet（振替の時だけ表示） */}
+      {/* 5. 振替先 Wallet */}
       {selectedType === "TRANSFER" && (
         <div className="space-y-2">
-          <Label>To Wallet</Label>
+          <Label>振替先</Label>
           <input type="hidden" name="toWalletId" value={toWalletId || ""} />
-          <Select
-            value={toWalletId || ""}
-            onValueChange={(value) => setToWalletId(value)}
-          >
+          <Select value={toWalletId || ""} onValueChange={setToWalletId}>
             <SelectTrigger>
-              <SelectValue placeholder="Select destination wallet" />
+              <SelectValue placeholder="振替先の財布を選択" />
             </SelectTrigger>
             <SelectContent>
               {wallets
-                .filter((w) => w.id !== walletId) // 出金元と同じ財布は選べないようにする
+                .filter((w) => w.id !== walletId)
                 .map((w) => (
                   <SelectItem key={w.id} value={w.id}>
                     {w.name}
@@ -223,18 +225,20 @@ const TransactionForm = ({
         </div>
       )}
 
-      {/* アクションボタン */}
+      {/* 6. ボタン部分 (変更なし) */}
       <div className="flex items-center justify-between pt-4">
+        {/* 編集モード（editIdがある）かつ 削除関数がある場合のみ削除ボタンを表示 */}
         {editId && onDelete && (
           <Button
             type="button"
             variant="destructive"
-            onClick={onDelete}
+            onClick={handleDelete}
             disabled={isPending || isDeleting}
           >
-            {isDeleting ? "Deleting..." : "Delete"}
+            {isDeleting ? "削除中..." : "削除"}
           </Button>
         )}
+
         <div className="flex gap-2 ml-auto">
           <Button
             type="button"
@@ -242,10 +246,10 @@ const TransactionForm = ({
             onClick={onCancel}
             disabled={isPending}
           >
-            Cancel
+            キャンセル
           </Button>
           <Button type="submit" disabled={isPending}>
-            {isPending ? "Processing..." : editId ? "Update" : "Create"}
+            {isPending ? "処理中..." : editId ? "更新する" : "追加する"}
           </Button>
         </div>
       </div>

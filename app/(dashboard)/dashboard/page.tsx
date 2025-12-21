@@ -59,17 +59,17 @@ async function DashboardPage({ searchParams }: Props) {
 
   // --- 集計ロジック（変更なし） ---
   const income = transactions
-    .filter((t) => t.category?.type === "INCOME")
+    .filter((t) => t.category?.type === "INCOME" && !t.toWalletId)
     .reduce((sum, t) => sum + t.amount, 0);
 
   const expense = transactions
-    .filter((t) => t.category?.type === "EXPENSE")
+    .filter((t) => t.category?.type === "EXPENSE" && !t.toWalletId)
     .reduce((sum, t) => sum + t.amount, 0);
 
   const balance = income - expense;
 
   const categoryTotals = transactions
-    .filter((t) => t.category?.type === "EXPENSE")
+    .filter((t) => t.category?.type === "EXPENSE" && !t.toWalletId) // ★ここを追加
     .reduce((acc: { [key: string]: number }, t) => {
       const categoryName = t.category?.name || "その他";
       if (!acc[categoryName]) acc[categoryName] = 0;
@@ -102,13 +102,17 @@ async function DashboardPage({ searchParams }: Props) {
 
   const [goals, recentTransactions] = await Promise.all([
     prisma.goal.findMany({
-      where: { userId: user.id }, // ★重要
+      where: { userId: user.id },
     }),
     prisma.transaction.findMany({
-      where: { userId: user.id }, // ★重要
+      where: { userId: user.id },
       take: 5,
       orderBy: { date: "desc" },
-      include: { category: true, wallet: true },
+      include: {
+        category: true,
+        wallet: true,
+        toWallet: true, // ★ これを追加！
+      },
     }),
   ]);
 
@@ -179,46 +183,58 @@ async function DashboardPage({ searchParams }: Props) {
             </div>
             <div className="p-6 pt-0">
               <div className="space-y-4">
-                {recentTransactions.map((t) => (
-                  <div key={t.id} className="flex items-center justify-between">
-                    <div className="flex items-center space-x-4">
+                {recentTransactions.map((t) => {
+                  const isTransfer = !!t.toWalletId;
+                  const isIncome = t.category?.type === "INCOME";
+
+                  // 表示設定の出し分け
+                  const statusColor = isTransfer
+                    ? "bg-blue-100 text-blue-600"
+                    : isIncome
+                    ? "bg-emerald-100 text-emerald-600"
+                    : "bg-rose-100 text-rose-600";
+
+                  const amountPrefix = isTransfer ? "" : isIncome ? "+" : "-";
+
+                  return (
+                    <div
+                      key={t.id}
+                      className="flex items-center justify-between"
+                    >
+                      <div className="flex items-center space-x-4">
+                        <div
+                          className={`p-2 rounded-full ${
+                            statusColor.split(" ")[0]
+                          }`}
+                        >
+                          <Wallet
+                            className={`h-4 w-4 ${statusColor.split(" ")[1]}`}
+                          />
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium leading-none">
+                            {t.title}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            {format(new Date(t.date), "MMM dd, yyyy")} •{" "}
+                            {
+                              t.toWalletId // 振替先IDがあるかチェック
+                                ? `${t.wallet?.name} ➔ ${t.toWallet?.name}` // 振替の場合
+                                : t.wallet?.name // 通常の場合
+                            }
+                          </p>
+                        </div>
+                      </div>
                       <div
-                        className={`p-2 rounded-full ${
-                          t.category?.type === "INCOME"
-                            ? "bg-emerald-100"
-                            : "bg-rose-100"
+                        className={`text-sm font-bold ${
+                          statusColor.split(" ")[1]
                         }`}
                       >
-                        <Wallet
-                          className={`h-4 w-4 ${
-                            t.category?.type === "INCOME"
-                              ? "text-emerald-600"
-                              : "text-rose-600"
-                          }`}
-                        />
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium leading-none">
-                          {t.title}
-                        </p>
-                        <p className="text-xs text-muted-foreground">
-                          {format(new Date(t.date), "MMM dd, yyyy")} •{" "}
-                          {t.wallet?.name}
-                        </p>
+                        {amountPrefix} R$ {t.amount.toLocaleString()}
                       </div>
                     </div>
-                    <div
-                      className={`text-sm font-bold ${
-                        t.category?.type === "INCOME"
-                          ? "text-emerald-600"
-                          : "text-rose-600"
-                      }`}
-                    >
-                      {t.category?.type === "INCOME" ? "+" : "-"} R${" "}
-                      {t.amount.toLocaleString()}
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           </div>

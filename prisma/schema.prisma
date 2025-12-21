@@ -62,6 +62,9 @@ model Wallet {
   type WalletType @default(BANK)
   balance Float @default(0)
   color String?
+  limit Float?
+  closingDay Int?
+  paymentDay Int?
   transactions Transaction[] @relation("FromWallet")
   toTransactions Transaction[] @relation("ToWallet")
   createdAt DateTime @default(now())

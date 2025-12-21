@@ -1,19 +1,24 @@
 "use server";
 
+import { WalletType } from "@/lib/generated/prisma";
 import { prisma } from "@/lib/prisma";
-import { createClient } from "@/lib/supabase"; // ★追加
+import { createClient } from "@/lib/supabase";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
+// 1. スキーマの拡張
 const WalletSchema = z.object({
   name: z.string().min(1, "名前は必須です。"),
   type: z.enum(["CASH", "BANK", "CREDIT_CARD", "E_MONEY"]),
   initialBalance: z.coerce.number(),
+  // クレジットカード用（省略可能）
+  limit: z.coerce.number().optional().nullable(),
+  closingDay: z.coerce.number().min(1).max(31).optional().nullable(),
+  paymentDay: z.coerce.number().min(1).max(31).optional().nullable(),
 });
 
 export type ActionResponse = { success: boolean; message: string };
 
-// 共通ヘルパー関数
 async function getAuthenticatedUser() {
   const supabase = await createClient();
   const {
@@ -27,43 +32,56 @@ export async function upsertWallet(
   id: string | undefined,
   formData: FormData
 ): Promise<ActionResponse> {
-  // 1. ユーザーの取得
   const user = await getAuthenticatedUser();
 
   const validated = WalletSchema.safeParse({
     name: formData.get("name"),
     type: formData.get("type"),
     initialBalance: formData.get("initialBalance"),
+    limit: formData.get("limit"),
+    closingDay: formData.get("closingDay"),
+    paymentDay: formData.get("paymentDay"),
   });
 
-  if (!validated.success) return { success: false, message: "入力が不正です" };
+  if (!validated.success) {
+    console.error(validated.error);
+    return { success: false, message: "入力が不正です" };
+  }
 
-  const { name, type, initialBalance } = validated.data;
+  const { name, type, initialBalance, limit, closingDay, paymentDay } =
+    validated.data;
+
+  // クレジットカードの場合、入力された金額を「負債（マイナス）」として保存するロジック
+  // 例：利用額 50,000 と入れたら、内部的には -50000 になる
+  const finalBalance =
+    type === "CREDIT_CARD" ? -Math.abs(initialBalance) : initialBalance;
 
   try {
+    const data = {
+      name,
+      type: type as WalletType,
+      balance: finalBalance,
+      limit: type === "CREDIT_CARD" ? limit : null,
+      closingDay: type === "CREDIT_CARD" ? closingDay : null,
+      paymentDay: type === "CREDIT_CARD" ? paymentDay : null,
+    };
+
     if (id) {
-      // 編集時：自分の財布か確認しながら更新
       await prisma.wallet.update({
-        where: { id, userId: user.id }, // ★ userId を追加
-        data: {
-          name,
-          type,
-          balance: initialBalance,
-        },
+        where: { id, userId: user.id },
+        data,
       });
     } else {
-      // 新規作成時：userId を含めて作成
       await prisma.wallet.create({
         data: {
-          name,
-          type,
-          balance: initialBalance,
-          userId: user.id, // ★ userId を追加
+          ...data,
+          userId: user.id,
         },
       });
     }
+
     revalidatePath("/wallets");
-    revalidatePath("/dashboard"); // ダッシュボードの合計残高に影響するため
+    revalidatePath("/dashboard");
     return { success: true, message: "Walletを保存しました" };
   } catch (error) {
     console.error(error);
@@ -73,17 +91,10 @@ export async function upsertWallet(
 
 export async function deleteWallet(id: string): Promise<ActionResponse> {
   try {
-    // 2. 削除時：ユーザーチェック
     const user = await getAuthenticatedUser();
-
-    // deleteMany または findFirst で確認してから削除（セキュリティのため）
     await prisma.wallet.delete({
-      where: {
-        id,
-        userId: user.id, // ★ 自分の財布しか消せないようにする
-      },
+      where: { id, userId: user.id },
     });
-
     revalidatePath("/wallets");
     revalidatePath("/dashboard");
     return { success: true, message: "Walletを削除しました" };
