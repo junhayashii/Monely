@@ -2,16 +2,25 @@ import { AuthSuccessToast } from "@/components/auth/AuthSuccessToast";
 import BudgetProgress from "@/components/dashboard/BudgetProgress";
 import CategoryChart from "@/components/dashboard/CategoryChart";
 import DashboardCard from "@/components/dashboard/DashboardCard";
+import SpendingChart from "@/components/dashboard/SpendingChart";
 import MonthPicker from "@/components/MonthPicker";
 import { Button } from "@/components/ui/button";
 import { prisma } from "@/lib/prisma";
-import { createClient } from "@/lib/supabase"; // 追加
-import { endOfMonth, format, parse, startOfMonth } from "date-fns";
-import { TrendingDown, TrendingUp, Wallet } from "lucide-react";
-import { redirect } from "next/navigation"; // 追加
-import { Toaster } from "sonner";
+import { createClient } from "@/lib/supabase";
+import {
+  eachDayOfInterval,
+  eachMonthOfInterval,
+  endOfMonth,
+  format,
+  isSameDay,
+  isSameMonth,
+  parse,
+  startOfMonth,
+  subMonths,
+} from "date-fns";
+import { TrendingDown, TrendingUp, Wallet, ArrowRightLeft } from "lucide-react";
+import { redirect } from "next/navigation";
 
-// 1. 型定義を修正（month に加えて auth も受け取れるようにする）
 type Props = {
   searchParams: Promise<{
     month?: string;
@@ -20,56 +29,64 @@ type Props = {
 };
 
 async function DashboardPage({ searchParams }: Props) {
-  // 3. パラメータの解決（authStatus は resolvedParams.auth のこと）
   const resolvedParams = await searchParams;
   const month = resolvedParams.month;
-  const authStatus = resolvedParams.auth; // これを AuthSuccessToast に渡す
+  const authStatus = resolvedParams.auth;
 
-  // 2. 認証チェック：ログインユーザーのIDを取得
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
-  // ログインしていなければ強制リダイレクト
   if (!user) {
     redirect("/login");
   }
 
-  console.log("Resolved authStatus:", authStatus);
-
+  // --- 期間の設定 ---
   const monthParam = month || format(new Date(), "yyyy-MM");
   const currentMonth = parse(monthParam, "yyyy-MM", new Date());
   const monthStart = startOfMonth(currentMonth);
   const monthEnd = endOfMonth(currentMonth);
+  const sixMonthsAgo = startOfMonth(subMonths(currentMonth, 5));
 
-  // 4. Prisma クエリすべてに userId: user.id を追加（自分のデータだけ出す）
-  const transactions = await prisma.transaction.findMany({
-    where: {
-      userId: user.id, // ★重要
-      date: {
-        gte: monthStart,
-        lte: monthEnd,
+  // --- データベースから全データを一括取得 ---
+  const [allTransactions, wallets, goals, categories] = await Promise.all([
+    prisma.transaction.findMany({
+      where: {
+        userId: user.id,
+        date: { gte: sixMonthsAgo, lte: monthEnd },
       },
-    },
-    include: {
-      category: true,
-    },
-  });
+      include: {
+        category: true,
+        wallet: true,
+        toWallet: true,
+      },
+      orderBy: { date: "desc" },
+    }),
+    prisma.wallet.findMany({ where: { userId: user.id } }),
+    prisma.goal.findMany({ where: { userId: user.id } }),
+    prisma.category.findMany(),
+  ]);
 
-  // --- 集計ロジック（変更なし） ---
-  const income = transactions
+  // 今月分だけのデータをメモリ上でフィルタリング
+  const currentTransactions = allTransactions.filter(
+    (t) => new Date(t.date) >= monthStart && new Date(t.date) <= monthEnd
+  );
+
+  // --- 集計：今月の Income / Expense / Balance ---
+  const income = currentTransactions
     .filter((t) => t.category?.type === "INCOME" && !t.toWalletId)
     .reduce((sum, t) => sum + t.amount, 0);
 
-  const expense = transactions
+  const expense = currentTransactions
     .filter((t) => t.category?.type === "EXPENSE" && !t.toWalletId)
     .reduce((sum, t) => sum + t.amount, 0);
 
   const balance = income - expense;
 
-  const categoryTotals = transactions
-    .filter((t) => t.category?.type === "EXPENSE" && !t.toWalletId) // ★ここを追加
+  // --- 集計：カテゴリ別支出 (円グラフ用) ---
+  const categoryTotals = currentTransactions
+    .filter((t) => t.category?.type === "EXPENSE" && !t.toWalletId)
     .reduce((acc: { [key: string]: number }, t) => {
       const categoryName = t.category?.name || "その他";
       if (!acc[categoryName]) acc[categoryName] = 0;
@@ -82,15 +99,53 @@ async function DashboardPage({ searchParams }: Props) {
     value,
   }));
 
-  const categories = await prisma.category.findMany();
+  // --- チャート用：今月の日別支出集計 ---
+  const daysInMonth = eachDayOfInterval({ start: monthStart, end: monthEnd });
+  const monthlyData = daysInMonth.map((day) => {
+    const dayExpense = currentTransactions
+      .filter(
+        (t) =>
+          !t.toWalletId &&
+          t.category?.type === "EXPENSE" &&
+          isSameDay(new Date(t.date), day)
+      )
+      .reduce((sum, t) => sum + t.amount, 0);
+    return {
+      day: format(day, "d"),
+      amount: dayExpense,
+    };
+  });
 
+  // --- チャート用：過去6ヶ月の月別収支集計 ---
+  const lastSixMonths = eachMonthOfInterval({
+    start: sixMonthsAgo,
+    end: currentMonth,
+  });
+  const yearlyData = lastSixMonths.map((m) => {
+    const monthTransactions = allTransactions.filter((t) =>
+      isSameMonth(new Date(t.date), m)
+    );
+    const inc = monthTransactions
+      .filter((t) => !t.toWalletId && t.category?.type === "INCOME")
+      .reduce((sum, t) => sum + t.amount, 0);
+    const exp = monthTransactions
+      .filter((t) => !t.toWalletId && t.category?.type === "EXPENSE")
+      .reduce((sum, t) => sum + t.amount, 0);
+    return {
+      month: format(m, "MMM"),
+      income: inc,
+      expense: exp,
+      balance: inc - exp,
+    };
+  });
+
+  // --- 予算・貯金目標の計算 ---
   const budgetData = categories
     .filter((cat) => cat.type === "EXPENSE" && cat.budget && cat.budget > 0)
     .map((cat) => {
       const spent = categoryTotals[cat.name] || 0;
       const budget = cat.budget || 0;
       const progress = (spent / budget) * 100;
-
       return {
         name: cat.name,
         spent,
@@ -99,22 +154,6 @@ async function DashboardPage({ searchParams }: Props) {
         status: progress > 90 ? "text-rose-600" : "text-emerald-600",
       };
     });
-
-  const [goals, recentTransactions] = await Promise.all([
-    prisma.goal.findMany({
-      where: { userId: user.id },
-    }),
-    prisma.transaction.findMany({
-      where: { userId: user.id },
-      take: 5,
-      orderBy: { date: "desc" },
-      include: {
-        category: true,
-        wallet: true,
-        toWallet: true, // ★ これを追加！
-      },
-    }),
-  ]);
 
   const totalSaved = goals.reduce((sum, g) => sum + g.currentAmount, 0);
   const totalTarget = goals.reduce((sum, g) => sum + g.targetAmount, 0);
@@ -135,10 +174,10 @@ async function DashboardPage({ searchParams }: Props) {
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <DashboardCard
-          title="Balance"
+          title="Monthly Balance"
           amount={balance}
           icon={<Wallet className="h-4 w-4 text-muted-foreground" />}
-          description="Total balance this month"
+          description="Net income - expenses this month"
         />
         <DashboardCard
           title="Income"
@@ -161,6 +200,11 @@ async function DashboardPage({ searchParams }: Props) {
         />
       </div>
 
+      {/* スペンディングチャート：メインエリア */}
+      <div className="w-full">
+        <SpendingChart monthlyData={monthlyData} yearlyData={yearlyData} />
+      </div>
+
       <div className="grid gap-4 md:grid-cols-4">
         <div className="md:col-span-2">
           <CategoryChart data={chartData} />
@@ -170,6 +214,7 @@ async function DashboardPage({ searchParams }: Props) {
         </div>
       </div>
 
+      {/* 最近の取引セクション */}
       <div className="grid gap-4 md:grid-cols-4">
         <div className="md:col-span-4">
           <div className="rounded-xl border bg-card text-card-foreground shadow">
@@ -183,18 +228,14 @@ async function DashboardPage({ searchParams }: Props) {
             </div>
             <div className="p-6 pt-0">
               <div className="space-y-4">
-                {recentTransactions.map((t) => {
+                {allTransactions.slice(0, 5).map((t) => {
                   const isTransfer = !!t.toWalletId;
                   const isIncome = t.category?.type === "INCOME";
-
-                  // 表示設定の出し分け
                   const statusColor = isTransfer
                     ? "bg-blue-100 text-blue-600"
                     : isIncome
                     ? "bg-emerald-100 text-emerald-600"
                     : "bg-rose-100 text-rose-600";
-
-                  const amountPrefix = isTransfer ? "" : isIncome ? "+" : "-";
 
                   return (
                     <div
@@ -207,9 +248,11 @@ async function DashboardPage({ searchParams }: Props) {
                             statusColor.split(" ")[0]
                           }`}
                         >
-                          <Wallet
-                            className={`h-4 w-4 ${statusColor.split(" ")[1]}`}
-                          />
+                          {isTransfer ? (
+                            <ArrowRightLeft className="h-4 w-4" />
+                          ) : (
+                            <Wallet className="h-4 w-4" />
+                          )}
                         </div>
                         <div>
                           <p className="text-sm font-medium leading-none">
@@ -217,11 +260,9 @@ async function DashboardPage({ searchParams }: Props) {
                           </p>
                           <p className="text-xs text-muted-foreground">
                             {format(new Date(t.date), "MMM dd, yyyy")} •{" "}
-                            {
-                              t.toWalletId // 振替先IDがあるかチェック
-                                ? `${t.wallet?.name} ➔ ${t.toWallet?.name}` // 振替の場合
-                                : t.wallet?.name // 通常の場合
-                            }
+                            {isTransfer
+                              ? `${t.wallet?.name} ➔ ${t.toWallet?.name}`
+                              : t.wallet?.name}
                           </p>
                         </div>
                       </div>
@@ -230,7 +271,8 @@ async function DashboardPage({ searchParams }: Props) {
                           statusColor.split(" ")[1]
                         }`}
                       >
-                        {amountPrefix} R$ {t.amount.toLocaleString()}
+                        {isTransfer ? "" : isIncome ? "+" : "-"} R${" "}
+                        {t.amount.toLocaleString()}
                       </div>
                     </div>
                   );
