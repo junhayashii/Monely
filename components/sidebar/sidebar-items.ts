@@ -1,4 +1,15 @@
-import { Calendar, Home, Inbox, Search, Settings } from "lucide-react";
+import {
+  Bell,
+  CalendarSync,
+  Coins,
+  Goal,
+  Home,
+  PieChart,
+  Scroll,
+  Settings,
+  SettingsIcon,
+  Wallet,
+} from "lucide-react";
 
 export const sidebarItems = [
   {
@@ -9,36 +20,44 @@ export const sidebarItems = [
   {
     title: "Transactions",
     url: "/transactions",
-    icon: Inbox,
+    icon: PieChart,
   },
   {
     title: "Wallets",
     url: "/wallets",
-    icon: Calendar,
+    icon: Wallet,
   },
   {
     title: "Budgets",
     url: "/budgets",
-    icon: Calendar,
+    icon: Coins,
   },
   {
     title: "Recurring Bills",
     url: "/recurring",
-    icon: Calendar,
+    icon: CalendarSync,
   },
   {
     title: "Goals",
     url: "/goals",
-    icon: Calendar,
+    icon: Goal,
   },
   {
     title: "Reports",
     url: "/reports",
-    icon: Search,
+    icon: Scroll,
+  },
+];
+
+export const sidebarFooter = [
+  {
+    title: "Notifications",
+    url: "/notifications",
+    icon: Bell,
   },
   {
     title: "Settings",
     url: "/settings",
-    icon: Settings,
+    icon: SettingsIcon,
   },
 ];

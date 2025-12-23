@@ -119,4 +119,7 @@
   body {
     @apply bg-background text-foreground;
   }
+  :root {
+    --brand-indigo: 243 75% 59%;
+  }
 }

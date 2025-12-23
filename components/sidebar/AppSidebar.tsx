@@ -3,54 +3,165 @@
 import {
   Sidebar,
   SidebarContent,
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarGroupLabel,
+  SidebarFooter,
+  SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarTrigger,
+  useSidebar,
 } from "@/components/ui/sidebar";
-
-import { sidebarItems } from "./sidebar-items";
+import { sidebarFooter, sidebarItems } from "./sidebar-items";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import {
+  Bell,
+  Settings as SettingsIcon,
+  LogOut,
+  ChevronRight,
+} from "lucide-react";
+
+import logo from "@/public/logo.png";
+import Image from "next/image";
 
 const AppSidebar = () => {
   const pathname = usePathname();
+  const { state } = useSidebar(); // 'expanded' | 'collapsed'
+  const isCollapsed = state === "collapsed";
 
   const isActive = (url: string) => {
     return pathname === url || pathname.startsWith(`${url}/`);
   };
 
   return (
-    <Sidebar>
-      <SidebarContent>
-        <SidebarGroup>
-          <SidebarGroupLabel>Application</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {sidebarItems.map((item) => {
-                const active = isActive(item.url);
-                return (
-                  <SidebarMenuItem key={item.title}>
-                    <SidebarMenuButton
-                      asChild
-                      className={
-                        active ? "bg-accent text-accent-foreground" : ""
-                      }
-                    >
-                      <Link href={item.url}>
-                        <item.icon />
-                        <span>{item.title}</span>
-                      </Link>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                );
-              })}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+    <Sidebar
+      collapsible="icon"
+      className="border-r border-slate-200 dark:border-slate-800"
+    >
+      {/* 1. Sidebar Header (Logo Section) */}
+      <SidebarHeader className="py-4 relative group/header min-h-[64px] flex items-center justify-center">
+        <div
+          className={`flex items-center w-full transition-all duration-300 ${
+            isCollapsed ? "justify-center" : "justify-between px-2"
+          }`}
+        >
+          {/* ロゴエリア */}
+          <div className="flex items-center gap-2">
+            <div
+              className={`transition-all duration-200 ${
+                isCollapsed ? "group-hover/header:opacity-0" : "opacity-100"
+              }`}
+            >
+              <Image
+                src={logo}
+                width={32}
+                height={32}
+                alt="Logo"
+                className="shrink-0"
+              />
+            </div>
+            {!isCollapsed && (
+              <h1 className="text-xl font-extrabold tracking-tight text-slate-900 dark:text-white truncate">
+                Cashly
+              </h1>
+            )}
+          </div>
+
+          {/* SidebarTrigger のカスタマイズ */}
+          <div
+            className={
+              isCollapsed
+                ? "absolute inset-0 flex items-center justify-center opacity-0 group-hover/header:opacity-100 transition-opacity"
+                : "group-hover/header:opacity-100 transition-opacity"
+            }
+          >
+            <SidebarTrigger />
+          </div>
+        </div>
+      </SidebarHeader>
+
+      {/* 2. Sidebar Content (Search & Nav) */}
+      <SidebarContent className="px-3 py-2">
+        {/* Navigation Items */}
+        <SidebarMenu className="space-y-1">
+          {sidebarItems.map((item) => {
+            const active = isActive(item.url);
+            return (
+              <SidebarMenuItem key={item.title}>
+                <SidebarMenuButton
+                  asChild
+                  tooltip={item.title}
+                  className={`
+                    flex items-center gap-3 p-3 h-11 rounded-xl transition-all duration-200
+                    ${
+                      active
+                        ? "bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 font-semibold"
+                        : "text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-200"
+                    }
+                  `}
+                >
+                  <Link href={item.url}>
+                    <item.icon
+                      className={`w-5 h-5 shrink-0 ${
+                        active ? "text-indigo-600 dark:text-indigo-400" : ""
+                      }`}
+                    />
+                    {!isCollapsed && (
+                      <span className="text-sm tracking-wide">
+                        {item.title}
+                      </span>
+                    )}
+                    {active && !isCollapsed && (
+                      <ChevronRight className="ml-auto w-4 h-4 opacity-50" />
+                    )}
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            );
+          })}
+        </SidebarMenu>
       </SidebarContent>
+
+      {/* 3. Sidebar Footer (User & Settings) */}
+      <SidebarFooter className="p-3 mt-auto border-t border-slate-200 dark:border-slate-800">
+        <SidebarMenu className="space-y-1">
+          {sidebarFooter.map((item) => {
+            const active = isActive(item.url);
+            return (
+              <SidebarMenuItem key={item.title}>
+                <SidebarMenuButton
+                  asChild
+                  tooltip={item.title}
+                  className={`
+                    flex items-center gap-3 p-3 h-11 rounded-xl transition-all duration-200
+                    ${
+                      active
+                        ? "bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 font-semibold"
+                        : "text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-200"
+                    }
+                  `}
+                >
+                  <Link href={item.url}>
+                    <item.icon
+                      className={`w-5 h-5 shrink-0 ${
+                        active ? "text-indigo-600 dark:text-indigo-400" : ""
+                      }`}
+                    />
+                    {!isCollapsed && (
+                      <span className="text-sm tracking-wide">
+                        {item.title}
+                      </span>
+                    )}
+                    {active && !isCollapsed && (
+                      <ChevronRight className="ml-auto w-4 h-4 opacity-50" />
+                    )}
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            );
+          })}
+        </SidebarMenu>
+      </SidebarFooter>
     </Sidebar>
   );
 };
