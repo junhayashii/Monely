@@ -5,6 +5,14 @@ import DashboardCard from "@/components/dashboard/DashboardCard";
 import SpendingChart from "@/components/dashboard/SpendingChart";
 import MonthPicker from "@/components/MonthPicker";
 import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardAction,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { prisma } from "@/lib/prisma";
 import { createClient } from "@/lib/supabase";
 import {
@@ -161,23 +169,28 @@ async function DashboardPage({ searchParams }: Props) {
     totalTarget > 0 ? (totalSaved / totalTarget) * 100 : 0;
 
   return (
-    <div className="p-8 space-y-8">
+    <div className="p-2 space-y-8">
       <AuthSuccessToast authStatus={authStatus} />
 
+      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold">Dashboard</h1>
-          <p className="text-sm text-muted-foreground">Welcome, {user.email}</p>
+          <p className="text-sm text-muted-foreground">
+            An Overview of {format(currentMonth, "MMMM yyyy")}
+          </p>
         </div>
         <MonthPicker />
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      {/* Stats Cards */}
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
         <DashboardCard
-          title="Monthly Balance"
+          title="Current Balance"
           amount={balance}
-          icon={<Wallet className="h-4 w-4 text-muted-foreground" />}
-          description="Net income - expenses this month"
+          icon={<Wallet className="w-6 h-6" />}
+          trend="-2.5%"
+          isPositive={false}
         />
         <DashboardCard
           title="Income"
@@ -195,58 +208,78 @@ async function DashboardPage({ searchParams }: Props) {
           title="Savings Progress"
           amount={totalSaved}
           icon={<TrendingUp className="h-4 w-4 text-blue-500" />}
-          description={`${Math.round(savingsProgress)}% of total goals`}
           className="text-blue-600"
         />
       </div>
 
       {/* スペンディングチャート：メインエリア */}
-      <div className="w-full">
-        <SpendingChart monthlyData={monthlyData} yearlyData={yearlyData} />
-      </div>
-
-      <div className="grid gap-4 md:grid-cols-4">
+      <div className="grid gap-3 md:grid-cols-3 items-stretch">
         <div className="md:col-span-2">
+          <SpendingChart monthlyData={monthlyData} yearlyData={yearlyData} />
+        </div>
+        <div className="md:col-span-1">
           <CategoryChart data={chartData} />
         </div>
-        <div className="md:col-span-2">
-          <BudgetProgress data={budgetData} />
-        </div>
       </div>
 
-      {/* 最近の取引セクション */}
-      <div className="grid gap-4 md:grid-cols-4">
-        <div className="md:col-span-4">
-          <div className="rounded-xl border bg-card text-card-foreground shadow">
-            <div className="p-6 flex flex-row items-center justify-between">
-              <h3 className="font-semibold leading-none tracking-tight">
-                Recent Transactions
-              </h3>
-              <Button variant="ghost" size="sm" asChild>
-                <a href="/transactions">View All</a>
-              </Button>
-            </div>
-            <div className="p-6 pt-0">
-              <div className="space-y-4">
-                {allTransactions.slice(0, 5).map((t) => {
+      <div className="grid gap-4 md:grid-cols-4 items-stretch">
+        {/* 最近の取引セクション */}
+        <div className="md:col-span-2">
+          <Card>
+            <div className="pointer-events-none absolute -right-16 -top-20 h-40 w-40 rounded-full bg-linear-to-br from-sky-400/15 via-blue-500/8 to-transparent blur-3xl dark:from-sky-500/10 dark:via-blue-500/5" />
+            <CardHeader className="flex flex-row items-center justify-between gap-4">
+              <div>
+                <CardTitle className="text-base font-semibold tracking-tight">
+                  Recent Transactions
+                </CardTitle>
+                <CardDescription className="mt-1 text-xs">
+                  The latest movements across your wallets this month.
+                </CardDescription>
+              </div>
+              <CardAction>
+                <Button variant="ghost" size="sm" asChild>
+                  <a href="/transactions">View All</a>
+                </Button>
+              </CardAction>
+            </CardHeader>
+            <CardContent className="pt-0">
+              <div className="space-y-1.5">
+                {allTransactions.slice(0, 4).map((t) => {
                   const isTransfer = !!t.toWalletId;
                   const isIncome = t.category?.type === "INCOME";
-                  const statusColor = isTransfer
-                    ? "bg-blue-100 text-blue-600"
+
+                  const typeLabel = isTransfer
+                    ? "Transfer"
                     : isIncome
-                    ? "bg-emerald-100 text-emerald-600"
-                    : "bg-rose-100 text-rose-600";
+                    ? "Income"
+                    : "Expense";
+
+                  const iconWrapperClasses = isTransfer
+                    ? "bg-sky-100 text-sky-600 ring-sky-200 dark:bg-sky-500/10 dark:text-sky-300 dark:ring-sky-500/30"
+                    : isIncome
+                    ? "bg-emerald-100 text-emerald-600 ring-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-300 dark:ring-emerald-500/30"
+                    : "bg-rose-100 text-rose-600 ring-rose-200 dark:bg-rose-500/10 dark:text-rose-300 dark:ring-rose-500/30";
+
+                  const pillClasses = isTransfer
+                    ? "bg-sky-50 text-sky-600 ring-sky-100 dark:bg-sky-500/10 dark:text-sky-300 dark:ring-sky-500/30"
+                    : isIncome
+                    ? "bg-emerald-50 text-emerald-600 ring-emerald-100 dark:bg-emerald-500/10 dark:text-emerald-300 dark:ring-emerald-500/30"
+                    : "bg-rose-50 text-rose-600 ring-rose-100 dark:bg-rose-500/10 dark:text-rose-300 dark:ring-rose-500/30";
+
+                  const amountClasses = isTransfer
+                    ? "text-slate-900 dark:text-slate-50"
+                    : isIncome
+                    ? "text-emerald-600 dark:text-emerald-300"
+                    : "text-rose-600 dark:text-rose-300";
 
                   return (
                     <div
                       key={t.id}
-                      className="flex items-center justify-between"
+                      className="group flex items-center justify-between gap-4 rounded-xl border border-transparent px-3 py-3 transition-colors duration-200 hover:border-slate-200/80 hover:bg-white/60 dark:hover:border-slate-800/80 dark:hover:bg-slate-900/60"
                     >
-                      <div className="flex items-center space-x-4">
+                      <div className="flex items-center gap-3">
                         <div
-                          className={`p-2 rounded-full ${
-                            statusColor.split(" ")[0]
-                          }`}
+                          className={`flex h-10 w-10 items-center justify-center rounded-xl ring-1 ring-inset ${iconWrapperClasses}`}
                         >
                           {isTransfer ? (
                             <ArrowRightLeft className="h-4 w-4" />
@@ -254,10 +287,17 @@ async function DashboardPage({ searchParams }: Props) {
                             <Wallet className="h-4 w-4" />
                           )}
                         </div>
-                        <div>
-                          <p className="text-sm font-medium leading-none">
-                            {t.title}
-                          </p>
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-2">
+                            <p className="text-sm font-medium leading-none">
+                              {t.title}
+                            </p>
+                            <span
+                              className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-semibold tracking-tight ring-1 ring-inset ${pillClasses}`}
+                            >
+                              {typeLabel}
+                            </span>
+                          </div>
                           <p className="text-xs text-muted-foreground">
                             {format(new Date(t.date), "MMM dd, yyyy")} •{" "}
                             {isTransfer
@@ -267,19 +307,20 @@ async function DashboardPage({ searchParams }: Props) {
                         </div>
                       </div>
                       <div
-                        className={`text-sm font-bold ${
-                          statusColor.split(" ")[1]
-                        }`}
+                        className={`text-sm font-semibold tracking-tight ${amountClasses}`}
                       >
-                        {isTransfer ? "" : isIncome ? "+" : "-"} R${" "}
+                        {!isTransfer && (isIncome ? "+" : "-")} R{" "}
                         {t.amount.toLocaleString()}
                       </div>
                     </div>
                   );
                 })}
               </div>
-            </div>
-          </div>
+            </CardContent>
+          </Card>
+        </div>
+        <div className="md:col-span-2">
+          <BudgetProgress data={budgetData} />
         </div>
       </div>
     </div>

@@ -19,12 +19,26 @@ export const columns: ColumnDef<Transaction>[] = [
     header: "Amount",
     cell: ({ row }) => {
       const amount = row.getValue("amount") as number;
-      // 日本円なら "JPY"、USDならそのままでOKです
+      const tx = row.original as any;
+      const isTransfer = !!tx.toWalletId;
+      const isIncome = tx.category?.type === "INCOME";
+      
       const formatted = amount.toLocaleString("ja-JP", {
         style: "currency",
         currency: "JPY",
       });
-      return <span>{formatted}</span>;
+      
+      const amountClasses = isTransfer
+        ? "text-slate-900 dark:text-slate-50 font-semibold"
+        : isIncome
+        ? "text-emerald-600 dark:text-emerald-400 font-semibold"
+        : "text-rose-600 dark:text-rose-400 font-semibold";
+      
+      return (
+        <span className={amountClasses}>
+          {!isTransfer && (isIncome ? "+" : "-")} {formatted}
+        </span>
+      );
     },
   },
   {
@@ -40,7 +54,7 @@ export const columns: ColumnDef<Transaction>[] = [
         return (
           <Badge
             variant="outline"
-            className="bg-blue-50 text-blue-700 border-blue-200"
+            className="bg-sky-50 text-sky-600 border-sky-200 ring-1 ring-inset ring-sky-100 dark:bg-sky-500/10 dark:text-sky-300 dark:border-sky-500/30 dark:ring-sky-500/30"
           >
             Transfer
           </Badge>
@@ -51,8 +65,8 @@ export const columns: ColumnDef<Transaction>[] = [
         <Badge
           className={
             type === "INCOME"
-              ? "bg-green-100 text-green-700"
-              : "bg-red-100 text-red-700"
+              ? "bg-emerald-50 text-emerald-600 ring-1 ring-inset ring-emerald-100 dark:bg-emerald-500/10 dark:text-emerald-300 dark:ring-emerald-500/30"
+              : "bg-rose-50 text-rose-600 ring-1 ring-inset ring-rose-100 dark:bg-rose-500/10 dark:text-rose-300 dark:ring-rose-500/30"
           }
           variant="secondary"
         >
@@ -70,14 +84,14 @@ export const columns: ColumnDef<Transaction>[] = [
       const toWallet = tx.toWallet?.name;
 
       return (
-        <div className="flex items-center gap-1 text-xs font-medium">
-          <span className="px-2 py-1 rounded-full bg-secondary">
+        <div className="flex items-center gap-2 text-xs">
+          <span className="px-2.5 py-1 rounded-full bg-slate-100 text-slate-700 ring-1 ring-inset ring-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:ring-slate-700 font-medium">
             {fromWallet}
           </span>
           {toWallet && (
             <>
-              <span className="text-muted-foreground">➔</span>
-              <span className="px-2 py-1 rounded-full bg-blue-100 text-blue-700 font-bold">
+              <span className="text-slate-400 dark:text-slate-500">➔</span>
+              <span className="px-2.5 py-1 rounded-full bg-sky-50 text-sky-600 ring-1 ring-inset ring-sky-100 dark:bg-sky-500/10 dark:text-sky-300 dark:ring-sky-500/30 font-semibold">
                 {toWallet}
               </span>
             </>

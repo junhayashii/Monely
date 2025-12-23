@@ -25,13 +25,13 @@ const TransactionFilters = ({ categories, wallets }: any) => {
   };
 
   return (
-    <div className="flex flex-wrap gap-2">
+    <div className="flex flex-wrap gap-3">
       {/* Type Filter */}
       <Select
         value={searchParams.get("type") || "all"}
         onValueChange={(v) => updateFilter("type", v)}
       >
-        <SelectTrigger className="w-[130px]">
+        <SelectTrigger className="w-full sm:w-[140px] border-slate-200/70 dark:border-slate-800/70">
           <SelectValue placeholder="Type" />
         </SelectTrigger>
         <SelectContent>
@@ -46,7 +46,7 @@ const TransactionFilters = ({ categories, wallets }: any) => {
         value={searchParams.get("categoryId") || "all"}
         onValueChange={(v) => updateFilter("categoryId", v)}
       >
-        <SelectTrigger className="w-[150px]">
+        <SelectTrigger className="w-full sm:w-[160px] border-slate-200/70 dark:border-slate-800/70">
           <SelectValue placeholder="Category" />
         </SelectTrigger>
         <SelectContent>
@@ -64,7 +64,7 @@ const TransactionFilters = ({ categories, wallets }: any) => {
         value={searchParams.get("walletId") || "all"}
         onValueChange={(v) => updateFilter("walletId", v)}
       >
-        <SelectTrigger className="w-[150px]">
+        <SelectTrigger className="w-full sm:w-[160px] border-slate-200/70 dark:border-slate-800/70">
           <SelectValue placeholder="Wallet" />
         </SelectTrigger>
         <SelectContent>

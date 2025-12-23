@@ -25,11 +25,11 @@ const Searchbar = () => {
   };
 
   return (
-    <div className="relative w-full max-w-sm">
+    <div className="relative w-full">
       <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
       <Input
         placeholder="Search by title..."
-        className="pl-9"
+        className="pl-9 border-slate-200/70 dark:border-slate-800/70 focus-visible:ring-2 focus-visible:ring-sky-500/20"
         defaultValue={searchParams.get("q")?.toString()}
         onChange={(e) => handleSearch(e.target.value)}
       />

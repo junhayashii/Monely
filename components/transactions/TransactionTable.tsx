@@ -9,7 +9,7 @@ const TransactionTable = ({ data }: { data: Transaction[] }) => {
   const router = useRouter();
 
   return (
-    <div>
+    <div className="w-full">
       <DataTable
         columns={columns}
         data={data}
