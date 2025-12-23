@@ -2,6 +2,7 @@ import AddTransactionButton from "@/components/transactions/AddTransactionButton
 import TransactionTable from "@/components/transactions/TransactionTable";
 import TransactionModalController from "@/components/transactions/TransactionModalController";
 import { prisma } from "@/lib/prisma";
+import { Prisma } from "@/lib/generated/prisma";
 import Searchbar from "@/components/transactions/Searchbar";
 import { startOfMonth, endOfMonth, parseISO, format } from "date-fns";
 import MonthPicker from "@/components/MonthPicker";
@@ -25,7 +26,8 @@ const TransactionsPage = async ({
     q?: string;
     month?: string;
     type?: "INCOME" | "EXPENSE";
-    categwalletId?: string;
+    categoryId?: string;
+    walletId?: string;
     page?: string;
   }>;
 }) => {
@@ -44,7 +46,7 @@ const TransactionsPage = async ({
   const currentPage = Number(page) || 1;
   const skip = (currentPage - 1) * PAGE_SIZE;
 
-  const where: any = {
+  const where: Prisma.TransactionWhereInput = {
     userId: user.id,
   };
 

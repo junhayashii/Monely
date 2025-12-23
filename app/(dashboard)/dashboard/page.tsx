@@ -58,7 +58,7 @@ async function DashboardPage({ searchParams }: Props) {
   const sixMonthsAgo = startOfMonth(subMonths(currentMonth, 5));
 
   // --- データベースから全データを一括取得 ---
-  const [allTransactions, wallets, goals, categories] = await Promise.all([
+  const [allTransactions, goals, categories] = await Promise.all([
     prisma.transaction.findMany({
       where: {
         userId: user.id,
@@ -71,7 +71,6 @@ async function DashboardPage({ searchParams }: Props) {
       },
       orderBy: { date: "desc" },
     }),
-    prisma.wallet.findMany({ where: { userId: user.id } }),
     prisma.goal.findMany({ where: { userId: user.id } }),
     prisma.category.findMany(),
   ]);
@@ -164,9 +163,6 @@ async function DashboardPage({ searchParams }: Props) {
     });
 
   const totalSaved = goals.reduce((sum, g) => sum + g.currentAmount, 0);
-  const totalTarget = goals.reduce((sum, g) => sum + g.targetAmount, 0);
-  const savingsProgress =
-    totalTarget > 0 ? (totalSaved / totalTarget) * 100 : 0;
 
   return (
     <div className="p-2 space-y-8">
