@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useTransition } from "react";
-import { Plus, Target } from "lucide-react";
+import { useState, useTransition, useEffect } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
+import { Target } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
@@ -13,20 +14,32 @@ import { toast } from "sonner";
 import AddSavingsForm from "@/components/goals/AddSavingsForm";
 
 function GoalList({ goals, wallets }: { goals: any[]; wallets: any[] }) {
+  const searchParams = useSearchParams();
+  const router = useRouter();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSavingsOpen, setIsSavingsOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [selectedGoal, setSelectedGoal] = useState<any>(null);
   const [isPending, startTransition] = useTransition();
 
+  // クエリパラメータからmode=addを監視
+  useEffect(() => {
+    const mode = searchParams.get("mode");
+    if (mode === "add" && !isModalOpen) {
+      setSelectedGoal(null);
+      setIsModalOpen(true);
+    }
+  }, [searchParams, isModalOpen]);
+
   const handleEdit = (goal: any) => {
     setSelectedGoal(goal);
     setIsModalOpen(true);
   };
 
-  const handleAdd = () => {
-    setSelectedGoal(null);
-    setIsModalOpen(true);
+  const closeModal = () => {
+    setIsModalOpen(false);
+    // クエリパラメータをクリア
+    router.push("/goals");
   };
 
   const handleDelete = () => {
@@ -35,7 +48,7 @@ function GoalList({ goals, wallets }: { goals: any[]; wallets: any[] }) {
       if (result.success) {
         toast.success("Goal deleted successfully");
         setIsDeleteOpen(false);
-        setIsModalOpen(false);
+        closeModal();
       } else {
         toast.error(result.message);
       }
@@ -50,12 +63,6 @@ function GoalList({ goals, wallets }: { goals: any[]; wallets: any[] }) {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-end">
-        <Button onClick={handleAdd}>
-          <Plus className="mr-2 h-4 w-4" /> Add New Goal
-        </Button>
-      </div>
-
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {goals.map((goal) => {
           const progress = Math.min(
@@ -109,11 +116,17 @@ function GoalList({ goals, wallets }: { goals: any[]; wallets: any[] }) {
 
       <AddEditModal
         open={isModalOpen}
-        onOpenChange={setIsModalOpen}
+        onOpenChange={(open) => {
+          if (!open) {
+            closeModal();
+          } else {
+            setIsModalOpen(true);
+          }
+        }}
         title={selectedGoal ? "Edit Goal" : "Add New Goal"}
         description="Track your savings progress for something special."
       >
-        <GoalForm goal={selectedGoal} onSuccess={() => setIsModalOpen(false)} />
+        <GoalForm goal={selectedGoal} onSuccess={closeModal} />
         {selectedGoal && (
           <div className="px-6 pb-4">
             <Button

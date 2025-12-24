@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useTransition } from "react";
-import { Plus } from "lucide-react";
+import { useState, useTransition, useEffect } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import WalletCard from "./WalletCard";
 import WalletForm from "./WalletForm";
@@ -11,19 +11,31 @@ import { deleteWallet } from "@/app/(dashboard)/wallets/actions";
 import { toast } from "sonner";
 
 function WalletList({ wallets }: { wallets: any[] }) {
+  const searchParams = useSearchParams();
+  const router = useRouter();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [selectedWallet, setSelectedWallet] = useState<any>(null);
   const [isPending, startTransition] = useTransition();
+
+  // クエリパラメータからmode=addを監視
+  useEffect(() => {
+    const mode = searchParams.get("mode");
+    if (mode === "add" && !isModalOpen) {
+      setSelectedWallet(null);
+      setIsModalOpen(true);
+    }
+  }, [searchParams, isModalOpen]);
 
   const handleEdit = (wallet: any) => {
     setSelectedWallet(wallet);
     setIsModalOpen(true);
   };
 
-  const handleAdd = () => {
-    setSelectedWallet(null);
-    setIsModalOpen(true);
+  const closeModal = () => {
+    setIsModalOpen(false);
+    // クエリパラメータをクリア
+    router.push("/wallets");
   };
 
   const handleDelete = () => {
@@ -32,7 +44,7 @@ function WalletList({ wallets }: { wallets: any[] }) {
       if (result.success) {
         toast.success(result.message);
         setIsDeleteOpen(false);
-        setIsModalOpen(false);
+        closeModal();
       } else {
         toast.error(result.message);
       }
@@ -41,12 +53,6 @@ function WalletList({ wallets }: { wallets: any[] }) {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-end">
-        <Button onClick={handleAdd}>
-          <Plus className="mr-2 h-4 w-4" /> Add New Wallet
-        </Button>
-      </div>
-
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {wallets.map((wallet) => (
           <WalletCard
@@ -62,13 +68,19 @@ function WalletList({ wallets }: { wallets: any[] }) {
       {/* 編集・追加モーダル */}
       <AddEditModal
         open={isModalOpen}
-        onOpenChange={setIsModalOpen}
+        onOpenChange={(open) => {
+          if (!open) {
+            closeModal();
+          } else {
+            setIsModalOpen(true);
+          }
+        }}
         title={selectedWallet ? "Edit Wallet" : "Add New Wallet"}
         description="Set up your bank accounts, credit cards, or cash."
       >
         <WalletForm
           wallet={selectedWallet}
-          onSuccess={() => setIsModalOpen(false)}
+          onSuccess={closeModal}
         />
         {selectedWallet && (
           <div className="px-6 pb-4">

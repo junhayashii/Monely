@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useTransition } from "react";
-import { Plus, CalendarClock } from "lucide-react";
+import { useState, useTransition, useEffect } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
+import { CalendarClock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import AddEditModal from "@/components/AddEditModal";
@@ -18,18 +19,30 @@ function RecurringList({
   wallets: any[];
   categories: any[];
 }) {
+  const searchParams = useSearchParams();
+  const router = useRouter();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedBill, setSelectedBill] = useState<any>(null);
   const [isPending, startTransition] = useTransition();
+
+  // クエリパラメータからmode=addを監視
+  useEffect(() => {
+    const mode = searchParams.get("mode");
+    if (mode === "add" && !isModalOpen) {
+      setSelectedBill(null);
+      setIsModalOpen(true);
+    }
+  }, [searchParams, isModalOpen]);
 
   const handleEdit = (bill: any) => {
     setSelectedBill(bill);
     setIsModalOpen(true);
   };
 
-  const handleAdd = () => {
-    setSelectedBill(null);
-    setIsModalOpen(true);
+  const closeModal = () => {
+    setIsModalOpen(false);
+    // クエリパラメータをクリア
+    router.push("/recurring");
   };
   const handlePay = (e: React.MouseEvent, billId: string) => {
     e.stopPropagation(); // 編集モーダルが開くのを防ぐ
@@ -58,9 +71,6 @@ function RecurringList({
             R$ {totalMonthly.toLocaleString()}
           </h2>
         </div>
-        <Button onClick={handleAdd}>
-          <Plus className="mr-2 h-4 w-4" /> Add Bill
-        </Button>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -105,7 +115,13 @@ function RecurringList({
 
       <AddEditModal
         open={isModalOpen}
-        onOpenChange={setIsModalOpen}
+        onOpenChange={(open) => {
+          if (!open) {
+            closeModal();
+          } else {
+            setIsModalOpen(true);
+          }
+        }}
         title={selectedBill ? "Edit Bill" : "Add Recurring Bill"}
         description="Manage your subscriptions and fixed expenses."
       >
@@ -113,7 +129,7 @@ function RecurringList({
           bill={selectedBill}
           wallets={wallets}
           categories={categories}
-          onSuccess={() => setIsModalOpen(false)}
+          onSuccess={closeModal}
         />
       </AddEditModal>
     </div>

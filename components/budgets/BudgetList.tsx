@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, useEffect } from "react";
 import { toast } from "sonner";
+import { useSearchParams, useRouter } from "next/navigation";
 import BudgetCard from "@/components/budgets/BudgetCard";
 import AddEditModal from "@/components/AddEditModal";
 import DeleteDialog from "@/components/DeleteDialog";
@@ -20,7 +21,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Plus } from "lucide-react";
 
 interface Category {
   id: string;
@@ -34,6 +34,8 @@ interface BudgetListProps {
 }
 
 function BudgetList({ categories, spentMap }: BudgetListProps) {
+  const searchParams = useSearchParams();
+  const router = useRouter();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<any>(null);
   const [isPending, startTransition] = useTransition();
@@ -43,6 +45,18 @@ function BudgetList({ categories, spentMap }: BudgetListProps) {
   const [name, setName] = useState("");
   const [budget, setBudget] = useState(0);
   const [type, setType] = useState("EXPENSE");
+
+  // クエリパラメータからmode=addを監視
+  useEffect(() => {
+    const mode = searchParams.get("mode");
+    if (mode === "add" && !isModalOpen) {
+      setSelectedCategory(null);
+      setName("");
+      setBudget(0);
+      setType("EXPENSE");
+      setIsModalOpen(true);
+    }
+  }, [searchParams, isModalOpen]);
 
   const openModal = (category?: any) => {
     if (category) {
@@ -57,6 +71,12 @@ function BudgetList({ categories, spentMap }: BudgetListProps) {
       setType("EXPENSE");
     }
     setIsModalOpen(true);
+  };
+
+  const closeModal = () => {
+    setIsModalOpen(false);
+    // クエリパラメータをクリア
+    router.push("/budgets");
   };
 
   const handleSave = async () => {
@@ -76,7 +96,7 @@ function BudgetList({ categories, spentMap }: BudgetListProps) {
 
       if (result.success) {
         toast.success(result.message); // ★ 成功！
-        setIsModalOpen(false);
+        closeModal();
       } else {
         toast.error(result.message); // ★ 失敗を通知
       }
@@ -97,12 +117,6 @@ function BudgetList({ categories, spentMap }: BudgetListProps) {
   };
   return (
     <div className="space-y-8">
-      <div className="flex justify-end">
-        <Button onClick={() => openModal()}>
-          <Plus className="mr-2 h-4 w-4" /> Add Budget Item
-        </Button>
-      </div>
-
       {/* セクション分け表示 */}
       <section className="space-y-4">
         <h2 className="text-xl font-semibold">Expense Budgets</h2>
@@ -143,7 +157,13 @@ function BudgetList({ categories, spentMap }: BudgetListProps) {
         title={selectedCategory ? "Edit Category" : "Add New Category"}
         description="Set your category name and monthly target amount."
         open={isModalOpen}
-        onOpenChange={setIsModalOpen}
+        onOpenChange={(open) => {
+          if (!open) {
+            closeModal();
+          } else {
+            setIsModalOpen(true);
+          }
+        }}
       >
         <div className="space-y-4 py-4">
           <div className="space-y-2">

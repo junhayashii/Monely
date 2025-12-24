@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import GoalList from "@/components/goals/GoalList"; // 先ほど作ったコンポーネント
+import AddGoalButton from "@/components/goals/AddGoalButton";
 import { createClient } from "@/lib/supabase";
 
 export default async function GoalsPage() {
@@ -25,8 +26,17 @@ export default async function GoalsPage() {
   ]);
 
   return (
-    <div className="p-6 space-y-6">
-      <h1 className="text-2xl font-bold">Saving Goals</h1>
+    <div className="space-y-6 p-2">
+      {/* Header */}
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Saving Goals</h1>
+          <p className="text-sm text-muted-foreground mt-1">
+            Track your savings progress for something special
+          </p>
+        </div>
+        <AddGoalButton />
+      </div>
 
       {/* 2. 取得したデータを GoalList (クライアントコンポーネント) に渡す */}
       <GoalList goals={goals} wallets={wallets} />

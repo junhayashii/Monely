@@ -1,4 +1,5 @@
 import WalletList from "@/components/wallets/WalletList";
+import AddWalletButton from "@/components/wallets/AddWalletButton";
 import { prisma } from "@/lib/prisma";
 import { createClient } from "@/lib/supabase";
 
@@ -21,15 +22,17 @@ async function WalletsPage() {
   });
 
   return (
-    <div className="p-6 space-y-6">
-      <div className="flex flex-col gap-2">
-        <h1 className="text-3xl font-bold tracking-tight">Wallets</h1>
-        <p className="text-muted-foreground">
-          Manage your bank accounts, credit cards, and cash
-        </p>
+    <div className="space-y-6 p-2">
+      {/* Header */}
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Wallets</h1>
+          <p className="text-sm text-muted-foreground mt-1">
+            Manage your bank accounts, credit cards, and cash
+          </p>
+        </div>
+        <AddWalletButton />
       </div>
-
-      <hr />
 
       <WalletList wallets={wallets} />
     </div>
