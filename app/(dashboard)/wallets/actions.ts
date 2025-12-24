@@ -99,9 +99,33 @@ export async function deleteWallet(id: string): Promise<ActionResponse> {
     revalidatePath("/dashboard");
     return { success: true, message: "Walletを削除しました" };
   } catch (error) {
+    console.error(error);
     return {
       success: false,
       message: "削除に失敗しました（取引データがある可能性があります）",
     };
+  }
+}
+
+export async function getWalletTransactions(walletId: string) {
+  try {
+    const user = await getAuthenticatedUser();
+    const transactions = await prisma.transaction.findMany({
+      where: {
+        userId: user.id,
+        OR: [{ walletId: walletId }, { toWalletId: walletId }],
+      },
+      include: {
+        category: true,
+        wallet: true,
+        toWallet: true,
+      },
+      orderBy: { date: "desc" },
+      take: 50, // 最新50件を取得
+    });
+    return { success: true, data: transactions };
+  } catch (error) {
+    console.error("Error fetching transactions:", error);
+    return { success: false, data: [] };
   }
 }
