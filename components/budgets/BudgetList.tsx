@@ -21,11 +21,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 
 interface Category {
   id: string;
   name: string;
   budget: number | null;
+  type: "EXPENSE" | "INCOME";
 }
 
 interface BudgetListProps {
@@ -37,28 +39,35 @@ function BudgetList({ categories, spentMap }: BudgetListProps) {
   const searchParams = useSearchParams();
   const router = useRouter();
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState<any>(null);
+  const [selectedCategory, setSelectedCategory] = useState<Category | null>(
+    null
+  );
   const [isPending, startTransition] = useTransition();
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
-  const [categoryToDelete, setCategoryToDelete] = useState<any>(null);
+  const [categoryToDelete, setCategoryToDelete] = useState<Category | null>(
+    null
+  );
 
   const [name, setName] = useState("");
   const [budget, setBudget] = useState(0);
   const [type, setType] = useState("EXPENSE");
 
-  // クエリパラメータからmode=addを監視
+  // クエリパラメータからmode=addとtypeを監視
   useEffect(() => {
     const mode = searchParams.get("mode");
+    const typeParam = searchParams.get("type");
     if (mode === "add" && !isModalOpen) {
-      setSelectedCategory(null);
-      setName("");
-      setBudget(0);
-      setType("EXPENSE");
-      setIsModalOpen(true);
+      startTransition(() => {
+        setSelectedCategory(null);
+        setName("");
+        setBudget(0);
+        setType(typeParam === "INCOME" ? "INCOME" : "EXPENSE");
+        setIsModalOpen(true);
+      });
     }
-  }, [searchParams, isModalOpen]);
+  }, [searchParams, isModalOpen, startTransition]);
 
-  const openModal = (category?: any) => {
+  const openModal = (category?: Category) => {
     if (category) {
       setSelectedCategory(category);
       setName(category.name);
@@ -84,7 +93,8 @@ function BudgetList({ categories, spentMap }: BudgetListProps) {
     const formData = new FormData();
     formData.append("name", name);
     formData.append("type", type);
-    formData.append("budget", budget.toString());
+    // Incomeの場合はbudgetを0またはnullにする
+    formData.append("budget", type === "INCOME" ? "0" : budget.toString());
 
     startTransition(async () => {
       let result;
@@ -104,6 +114,7 @@ function BudgetList({ categories, spentMap }: BudgetListProps) {
   };
 
   const handleConfirmDelete = () => {
+    if (!categoryToDelete) return;
     startTransition(async () => {
       const result = await deleteCategory(categoryToDelete.id);
       if (result.success) {
@@ -117,45 +128,66 @@ function BudgetList({ categories, spentMap }: BudgetListProps) {
   };
   return (
     <div className="space-y-8">
-      {/* セクション分け表示 */}
-      <section className="space-y-4">
-        <h2 className="text-xl font-semibold">Expense Budgets</h2>
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {categories
-            .filter((c: any) => c.type === "EXPENSE")
-            .map((cat: any) => (
-              <BudgetCard
-                key={cat.id}
-                name={cat.name}
-                spent={spentMap[cat.id] || 0}
-                budget={cat.budget || 0}
-                onClick={() => openModal(cat)}
-              />
-            ))}
-        </div>
-      </section>
+      <Tabs defaultValue="expense" className="w-full">
+        <TabsList className="grid w-full max-w-md grid-cols-2">
+          <TabsTrigger value="expense">Expense Budgets</TabsTrigger>
+          <TabsTrigger value="income">Income</TabsTrigger>
+        </TabsList>
 
-      <section className="space-y-4">
-        <h2 className="text-xl font-semibold">Income Goals</h2>
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {categories
-            .filter((c: any) => c.type === "INCOME")
-            .map((cat: any) => (
-              <BudgetCard
-                key={cat.id}
-                name={cat.name}
-                spent={spentMap[cat.id] || 0}
-                budget={cat.budget || 0}
-                onClick={() => openModal(cat)}
-              />
-            ))}
-        </div>
-      </section>
+        <TabsContent value="expense" className="mt-6">
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {categories
+              .filter((c) => c.type === "EXPENSE")
+              .map((cat) => (
+                <BudgetCard
+                  key={cat.id}
+                  name={cat.name}
+                  spent={spentMap[cat.id] || 0}
+                  budget={cat.budget || 0}
+                  onClick={() => openModal(cat)}
+                />
+              ))}
+            {categories.filter((c) => c.type === "EXPENSE").length === 0 && (
+              <div className="col-span-full text-center py-8 text-muted-foreground">
+                No expense budgets yet. Click &quot;Add Budget&quot; to create
+                one.
+              </div>
+            )}
+          </div>
+        </TabsContent>
+
+        <TabsContent value="income" className="mt-6">
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {categories
+              .filter((c) => c.type === "INCOME")
+              .map((cat) => (
+                <BudgetCard
+                  key={cat.id}
+                  name={cat.name}
+                  spent={spentMap[cat.id] || 0}
+                  budget={cat.budget || 0}
+                  type="INCOME"
+                  onClick={() => openModal(cat)}
+                />
+              ))}
+            {categories.filter((c) => c.type === "INCOME").length === 0 && (
+              <div className="col-span-full text-center py-8 text-muted-foreground">
+                No income categories yet. Click &quot;Add Budget&quot; to create
+                one.
+              </div>
+            )}
+          </div>
+        </TabsContent>
+      </Tabs>
 
       {/* ★ ここで AddEditModal を使用 */}
       <AddEditModal
         title={selectedCategory ? "Edit Category" : "Add New Category"}
-        description="Set your category name and monthly target amount."
+        description={
+          type === "INCOME"
+            ? "Set your income category name."
+            : "Set your category name and monthly target amount."
+        }
         open={isModalOpen}
         onOpenChange={(open) => {
           if (!open) {
@@ -186,14 +218,16 @@ function BudgetList({ categories, spentMap }: BudgetListProps) {
               </SelectContent>
             </Select>
           </div>
-          <div className="space-y-2">
-            <Label>Amount (Target/Budget)</Label>
-            <Input
-              type="number"
-              value={budget}
-              onChange={(e) => setBudget(Number(e.target.value))}
-            />
-          </div>
+          {type === "EXPENSE" && (
+            <div className="space-y-2">
+              <Label>Amount (Target/Budget)</Label>
+              <Input
+                type="number"
+                value={budget}
+                onChange={(e) => setBudget(Number(e.target.value))}
+              />
+            </div>
+          )}
 
           <div className="flex justify-between pt-4">
             {selectedCategory && (

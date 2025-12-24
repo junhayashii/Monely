@@ -6,10 +6,46 @@ interface BudgetCardProps {
   name: string;
   spent: number;
   budget: number;
+  type?: "EXPENSE" | "INCOME";
   onClick: () => void;
 }
 
-const BudgetCard = ({ name, spent, budget, onClick }: BudgetCardProps) => {
+const BudgetCard = ({
+  name,
+  spent,
+  budget,
+  type = "EXPENSE",
+  onClick,
+}: BudgetCardProps) => {
+  // Incomeの場合はシンプルな表示
+  if (type === "INCOME") {
+    return (
+      <Card
+        className="cursor-pointer hover:border-primary transition-colors"
+        onClick={onClick}
+      >
+        <CardContent className="pt-6 space-y-4">
+          <div className="flex justify-between items-start">
+            <h3 className="font-bold text-lg">{name}</h3>
+            <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider">
+              Income
+            </span>
+          </div>
+
+          <div>
+            <div className="flex items-baseline gap-1">
+              <span className="text-2xl font-bold">
+                R$ {(spent || 0).toLocaleString()}
+              </span>
+            </div>
+            <p className="text-sm text-muted-foreground mt-1">This month</p>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  // Expenseの場合は従来通りの表示
   const percent = budget > 0 ? (spent / budget) * 100 : 0;
   const left = budget - spent;
   const isOver = left < 0;
