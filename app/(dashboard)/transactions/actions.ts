@@ -36,7 +36,7 @@ export async function createTransaction(
   let user;
   try {
     user = await getAuthenticatedUser();
-  } catch (e) {
+  } catch {
     return { success: false, message: "ログインが必要です。" };
   }
 
