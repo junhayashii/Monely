@@ -1,7 +1,6 @@
 "use client";
 
 import { useSearchParams, useRouter } from "next/navigation";
-import { StringFormatParams } from "zod/v4/core";
 import {
   Select,
   SelectContent,
@@ -9,10 +8,20 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../ui/select";
+import { Button } from "../ui/button";
+import { Badge } from "../ui/badge";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "../ui/popover";
+import { Filter, X } from "lucide-react";
+import { useState } from "react";
 
 const TransactionFilters = ({ categories, wallets }: any) => {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const [open, setOpen] = useState(false);
 
   const updateFilter = (key: string, value: string) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -24,59 +33,131 @@ const TransactionFilters = ({ categories, wallets }: any) => {
     router.push(`?${params.toString()}`);
   };
 
+  const clearAllFilters = () => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.delete("type");
+    params.delete("categoryId");
+    params.delete("walletId");
+    router.push(`?${params.toString()}`);
+  };
+
+  // アクティブなフィルタの数を計算
+  const activeFiltersCount = [
+    searchParams.get("type"),
+    searchParams.get("categoryId"),
+    searchParams.get("walletId"),
+  ].filter(Boolean).length;
+
+  const selectedType = searchParams.get("type") || "all";
+  const selectedCategoryId = searchParams.get("categoryId") || "all";
+  const selectedWalletId = searchParams.get("walletId") || "all";
+
   return (
-    <div className="flex flex-wrap gap-3">
-      {/* Type Filter */}
-      <Select
-        value={searchParams.get("type") || "all"}
-        onValueChange={(v) => updateFilter("type", v)}
-      >
-        <SelectTrigger className="w-full sm:w-[140px] border-slate-200/70 dark:border-slate-800/70">
-          <SelectValue placeholder="Type" />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="all">All Types</SelectItem>
-          <SelectItem value="INCOME">Income</SelectItem>
-          <SelectItem value="EXPENSE">Expense</SelectItem>
-        </SelectContent>
-      </Select>
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button
+          variant="outline"
+          className="w-full sm:w-auto border-slate-200/70 dark:border-slate-800/70"
+        >
+          <Filter className="h-4 w-4 mr-2" />
+          Filters
+          {activeFiltersCount > 0 && (
+            <Badge
+              variant="secondary"
+              className="ml-2 h-5 min-w-5 px-1.5 text-xs"
+            >
+              {activeFiltersCount}
+            </Badge>
+          )}
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-80" align="start">
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h4 className="font-semibold text-sm">Filter Transactions</h4>
+            {activeFiltersCount > 0 && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={clearAllFilters}
+                className="h-7 text-xs"
+              >
+                <X className="h-3 w-3 mr-1" />
+                Clear all
+              </Button>
+            )}
+          </div>
 
-      {/* Category Filter */}
-      <Select
-        value={searchParams.get("categoryId") || "all"}
-        onValueChange={(v) => updateFilter("categoryId", v)}
-      >
-        <SelectTrigger className="w-full sm:w-[160px] border-slate-200/70 dark:border-slate-800/70">
-          <SelectValue placeholder="Category" />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="all">All Categories</SelectItem>
-          {categories.map((c: any) => (
-            <SelectItem key={c.id} value={c.id}>
-              {c.name}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+          <div className="space-y-3">
+            {/* Type Filter */}
+            <div className="space-y-2">
+              <label className="text-xs font-medium text-muted-foreground">
+                Type
+              </label>
+              <Select
+                value={selectedType}
+                onValueChange={(v) => updateFilter("type", v)}
+              >
+                <SelectTrigger className="w-full border-slate-200/70 dark:border-slate-800/70">
+                  <SelectValue placeholder="All Types" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Types</SelectItem>
+                  <SelectItem value="INCOME">Income</SelectItem>
+                  <SelectItem value="EXPENSE">Expense</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
 
-      {/* Wallet Filter */}
-      <Select
-        value={searchParams.get("walletId") || "all"}
-        onValueChange={(v) => updateFilter("walletId", v)}
-      >
-        <SelectTrigger className="w-full sm:w-[160px] border-slate-200/70 dark:border-slate-800/70">
-          <SelectValue placeholder="Wallet" />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="all">All Wallets</SelectItem>
-          {wallets.map((w: any) => (
-            <SelectItem key={w.id} value={w.id}>
-              {w.name}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-    </div>
+            {/* Category Filter */}
+            <div className="space-y-2">
+              <label className="text-xs font-medium text-muted-foreground">
+                Category
+              </label>
+              <Select
+                value={selectedCategoryId}
+                onValueChange={(v) => updateFilter("categoryId", v)}
+              >
+                <SelectTrigger className="w-full border-slate-200/70 dark:border-slate-800/70">
+                  <SelectValue placeholder="All Categories" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Categories</SelectItem>
+                  {categories.map((c: any) => (
+                    <SelectItem key={c.id} value={c.id}>
+                      {c.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Wallet Filter */}
+            <div className="space-y-2">
+              <label className="text-xs font-medium text-muted-foreground">
+                Wallet
+              </label>
+              <Select
+                value={selectedWalletId}
+                onValueChange={(v) => updateFilter("walletId", v)}
+              >
+                <SelectTrigger className="w-full border-slate-200/70 dark:border-slate-800/70">
+                  <SelectValue placeholder="All Wallets" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Wallets</SelectItem>
+                  {wallets.map((w: any) => (
+                    <SelectItem key={w.id} value={w.id}>
+                      {w.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+        </div>
+      </PopoverContent>
+    </Popover>
   );
 };
 

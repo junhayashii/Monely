@@ -114,30 +114,20 @@ const TransactionsPage = async ({
             {month && ` • ${format(selectedMonth, "MMMM yyyy")}`}
           </p>
         </div>
-        <AddTransactionButton />
+        <div className="flex gap-3">
+          <MonthPicker />
+          <AddTransactionButton />
+        </div>
       </div>
 
       {/* Filters Card */}
-      <Card className="relative overflow-hidden border border-slate-200/70 bg-linear-to-br from-white via-slate-50 to-slate-100 shadow-sm dark:border-slate-800/70 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
-        <div className="pointer-events-none absolute -right-12 -top-14 h-32 w-32 rounded-full bg-linear-to-br from-sky-400/15 via-blue-500/8 to-transparent blur-3xl dark:from-sky-500/10 dark:via-blue-500/5" />
-        <CardHeader className="relative">
-          <CardTitle className="text-base font-semibold tracking-tight">
-            Filters & Search
-          </CardTitle>
-          <CardDescription className="text-xs">
-            Filter transactions by date, type, category, or wallet
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="relative space-y-4">
-          <div className="flex flex-col gap-4 sm:flex-row">
-            <div className="flex-1">
-              <Searchbar />
-            </div>
-            <MonthPicker />
-          </div>
-          <TransactionFilters categories={categories} wallets={wallets} />
-        </CardContent>
-      </Card>
+      <div className="flex flex-col gap-4 sm:flex-row">
+        <div className="flex-1">
+          <Searchbar />
+        </div>
+
+        <TransactionFilters categories={categories} wallets={wallets} />
+      </div>
 
       {/* Transactions Table Card */}
       <Card className="relative overflow-hidden border border-slate-200/70 bg-linear-to-br from-white via-slate-50 to-slate-100 shadow-sm dark:border-slate-800/70 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
