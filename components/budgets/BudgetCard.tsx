@@ -34,7 +34,7 @@ const BudgetCard = ({
   if (type === "INCOME") {
     return (
       <Card
-        className="cursor-pointer border border-slate-200/50 dark:border-slate-800/50 bg-white dark:bg-slate-900/50 rounded-[2rem] hover:border-sky-100 dark:hover:border-sky-900/30 transition-all group shadow-sm"
+        className="cursor-pointer border border-slate-200/50 dark:border-slate-800/50 bg-white dark:bg-slate-900/50 rounded-2rem hover:border-sky-100 dark:hover:border-sky-900/30 transition-all group shadow-sm"
         onClick={onClick}
       >
         <CardContent className="space-y-5">
@@ -81,7 +81,7 @@ const BudgetCard = ({
 
   return (
     <Card
-      className="cursor-pointer border border-slate-200/50 dark:border-slate-800/50 bg-white dark:bg-slate-900/50 rounded-[2rem] flex flex-col gap-5 border-transparent hover:border-sky-100 dark:hover:border-sky-900/30 transition-all group shadow-sm"
+      className="cursor-pointer border border-slate-200/50 dark:border-slate-800/50 bg-white dark:bg-slate-900/50 rounded-2rem flex flex-col gap-5 hover:border-sky-100 dark:hover:border-sky-900/30 transition-all group shadow-sm"
       onClick={onClick}
     >
       <CardContent className="space-y-5">
