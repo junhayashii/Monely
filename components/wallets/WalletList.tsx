@@ -17,7 +17,9 @@ function WalletList({ wallets }: { wallets: any[] }) {
   const router = useRouter();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
-  const [selectedWallet, setSelectedWallet] = useState<any>(null);
+  const [selectedWallet, setSelectedWallet] = useState<any>(
+    wallets.length > 0 ? wallets[0] : null
+  );
   const [selectedWalletForEdit, setSelectedWalletForEdit] = useState<any>(null);
   const [transactions, setTransactions] = useState<any[]>([]);
   const [isLoadingTransactions, setIsLoadingTransactions] = useState(false);
