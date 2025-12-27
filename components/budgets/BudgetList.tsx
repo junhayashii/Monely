@@ -52,40 +52,64 @@ function BudgetList({ categories, spentMap }: BudgetListProps) {
   const [budget, setBudget] = useState(0);
   const [type, setType] = useState("EXPENSE");
 
-  // クエリパラメータからmode=addとtypeを監視
-  useEffect(() => {
-    const mode = searchParams.get("mode");
-    const typeParam = searchParams.get("type");
-    if (mode === "add" && !isModalOpen) {
-      startTransition(() => {
-        setSelectedCategory(null);
-        setName("");
-        setBudget(0);
-        setType(typeParam === "INCOME" ? "INCOME" : "EXPENSE");
-        setIsModalOpen(true);
-      });
-    }
-  }, [searchParams, isModalOpen, startTransition]);
+  // クエリパラメータからmodeとidを監視
+  const mode = searchParams.get("mode");
+  const editId = searchParams.get("id");
+  const typeParam = searchParams.get("type");
 
-  const openModal = (category?: Category) => {
-    if (category) {
-      setSelectedCategory(category);
-      setName(category.name);
-      setBudget(category.budget || 0);
-      setType(category.type);
-    } else {
+  // モーダルの状態を計算
+  const categoryToEdit = editId
+    ? categories.find((c) => c.id === editId)
+    : undefined;
+
+  const categoryForDelete =
+    editId && mode === "delete"
+      ? categories.find((c) => c.id === editId)
+      : null;
+
+  const isAdd = mode === "add";
+  const isEdit = mode === "edit" && !!categoryToEdit;
+  const isDelete = mode === "delete" && !!categoryForDelete;
+
+  // モーダルが開いているかどうかを計算
+  const shouldOpenModal = isAdd || isEdit;
+  const shouldOpenDelete = isDelete;
+
+  // モーダル用の状態を更新
+  useEffect(() => {
+    if (isAdd) {
       setSelectedCategory(null);
       setName("");
       setBudget(0);
-      setType("EXPENSE");
+      setType(typeParam === "INCOME" ? "INCOME" : "EXPENSE");
+    } else if (isEdit && categoryToEdit) {
+      setSelectedCategory(categoryToEdit);
+      setName(categoryToEdit.name);
+      setBudget(categoryToEdit.budget || 0);
+      setType(categoryToEdit.type);
     }
-    setIsModalOpen(true);
-  };
+  }, [isAdd, isEdit, categoryToEdit, typeParam]);
+
+  useEffect(() => {
+    setIsModalOpen(shouldOpenModal);
+  }, [shouldOpenModal]);
+
+  useEffect(() => {
+    if (isDelete && categoryForDelete) {
+      setCategoryToDelete(categoryForDelete);
+    } else {
+      setCategoryToDelete(null);
+    }
+    setIsDeleteOpen(shouldOpenDelete);
+  }, [isDelete, categoryForDelete, shouldOpenDelete]);
 
   const closeModal = () => {
-    setIsModalOpen(false);
     // クエリパラメータをクリア
-    router.push("/budgets");
+    const params = new URLSearchParams(searchParams.toString());
+    params.delete("mode");
+    params.delete("id");
+    params.delete("type");
+    router.push(`/budgets?${params.toString()}`);
   };
 
   const handleSave = async () => {
@@ -119,23 +143,44 @@ function BudgetList({ categories, spentMap }: BudgetListProps) {
       const result = await deleteCategory(categoryToDelete.id);
       if (result.success) {
         toast.success(result.message);
-        setIsDeleteOpen(false);
-        setIsModalOpen(false);
+        // 成功したら一覧ページに戻る
+        router.push("/budgets");
       } else {
         toast.error(result.message);
+        // 失敗した場合は編集ページに戻る
+        const editId = searchParams.get("id");
+        if (editId) {
+          router.push(`/budgets?mode=edit&id=${editId}`);
+        }
       }
     });
   };
   return (
     <div className="space-y-8">
       <Tabs defaultValue="expense" className="w-full">
-        <TabsList className="grid w-full max-w-md grid-cols-2">
-          <TabsTrigger value="expense">Expense Budgets</TabsTrigger>
-          <TabsTrigger value="income">Income</TabsTrigger>
-        </TabsList>
+        {/* Header with Tabs */}
+        <div className="flex items-center justify-between px-2 mb-6">
+          <h3 className="text-xl font-bold dark:text-white">
+            Category Budgets
+          </h3>
+          <TabsList className="flex p-1 bg-slate-100 dark:bg-slate-900/50 rounded-2xl border border-slate-200/50 dark:border-slate-800/50">
+            <TabsTrigger
+              value="expense"
+              className="px-6 py-2 rounded-xl text-xs font-bold transition-all data-[state=active]:bg-white dark:data-[state=active]:bg-slate-800 data-[state=active]:text-sky-600 dark:data-[state=active]:text-sky-400 data-[state=active]:shadow-sm"
+            >
+              Expense Budgets
+            </TabsTrigger>
+            <TabsTrigger
+              value="income"
+              className="px-6 py-2 rounded-xl text-xs font-bold transition-all data-[state=active]:bg-white dark:data-[state=active]:bg-slate-800 data-[state=active]:text-sky-600 dark:data-[state=active]:text-sky-400 data-[state=active]:shadow-sm"
+            >
+              Income
+            </TabsTrigger>
+          </TabsList>
+        </div>
 
-        <TabsContent value="expense" className="mt-6">
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <TabsContent value="expense" className="mt-0">
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
             {categories
               .filter((c) => c.type === "EXPENSE")
               .map((cat) => (
@@ -144,7 +189,8 @@ function BudgetList({ categories, spentMap }: BudgetListProps) {
                   name={cat.name}
                   spent={spentMap[cat.id] || 0}
                   budget={cat.budget || 0}
-                  onClick={() => openModal(cat)}
+                  onClick={() => router.push(`/budgets?categoryId=${cat.id}`)}
+                  onEdit={() => router.push(`/budgets?mode=edit&id=${cat.id}`)}
                 />
               ))}
             {categories.filter((c) => c.type === "EXPENSE").length === 0 && (
@@ -156,8 +202,8 @@ function BudgetList({ categories, spentMap }: BudgetListProps) {
           </div>
         </TabsContent>
 
-        <TabsContent value="income" className="mt-6">
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <TabsContent value="income" className="mt-0">
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
             {categories
               .filter((c) => c.type === "INCOME")
               .map((cat) => (
@@ -167,7 +213,8 @@ function BudgetList({ categories, spentMap }: BudgetListProps) {
                   spent={spentMap[cat.id] || 0}
                   budget={cat.budget || 0}
                   type="INCOME"
-                  onClick={() => openModal(cat)}
+                  onClick={() => router.push(`/budgets?categoryId=${cat.id}`)}
+                  onEdit={() => router.push(`/budgets?mode=edit&id=${cat.id}`)}
                 />
               ))}
             {categories.filter((c) => c.type === "INCOME").length === 0 && (
@@ -192,8 +239,6 @@ function BudgetList({ categories, spentMap }: BudgetListProps) {
         onOpenChange={(open) => {
           if (!open) {
             closeModal();
-          } else {
-            setIsModalOpen(true);
           }
         }}
       >
@@ -234,8 +279,7 @@ function BudgetList({ categories, spentMap }: BudgetListProps) {
               <Button
                 variant="destructive"
                 onClick={() => {
-                  setCategoryToDelete(selectedCategory);
-                  setIsDeleteOpen(true);
+                  router.push(`/budgets?mode=delete&id=${selectedCategory.id}`);
                 }}
               >
                 Delete
@@ -252,7 +296,14 @@ function BudgetList({ categories, spentMap }: BudgetListProps) {
         open={isDeleteOpen}
         title={`Delete "${categoryToDelete?.name}"?`}
         description="This will permanently delete this category and all related transaction history. This action cannot be undone."
-        onCancel={() => setIsDeleteOpen(false)}
+        onCancel={() => {
+          const editId = searchParams.get("id");
+          if (editId) {
+            router.push(`/budgets?mode=edit&id=${editId}`);
+          } else {
+            router.push("/budgets");
+          }
+        }}
         onConfirm={handleConfirmDelete}
         isConfirming={isPending}
       />

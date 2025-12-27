@@ -10,11 +10,7 @@ import {
 } from "../ui/select";
 import { Button } from "../ui/button";
 import { Badge } from "../ui/badge";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "../ui/popover";
+import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import { Filter, X } from "lucide-react";
 import { useState } from "react";
 
