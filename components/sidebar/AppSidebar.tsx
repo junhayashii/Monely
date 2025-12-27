@@ -23,8 +23,13 @@ import {
 
 import logo from "@/public/logo.png";
 import Image from "next/image";
+import { Badge } from "@/components/ui/badge";
 
-const AppSidebar = () => {
+type AppSidebarProps = {
+  unreadNotificationCount?: number;
+};
+
+const AppSidebar = ({ unreadNotificationCount = 0 }: AppSidebarProps) => {
   const pathname = usePathname();
   const { state } = useSidebar(); // 'expanded' | 'collapsed'
   const isCollapsed = state === "collapsed";
@@ -127,6 +132,7 @@ const AppSidebar = () => {
         <SidebarMenu className="space-y-1">
           {sidebarFooter.map((item) => {
             const active = isActive(item.url);
+            const isNotifications = item.title === "Notifications";
             return (
               <SidebarMenuItem key={item.title}>
                 <SidebarMenuButton
@@ -141,7 +147,7 @@ const AppSidebar = () => {
                     }
                   `}
                 >
-                  <Link href={item.url}>
+                  <Link href={item.url} className="flex items-center w-full">
                     <item.icon
                       className={`w-5 h-5 shrink-0 ${
                         active ? "text-indigo-600 dark:text-indigo-400" : ""
@@ -152,6 +158,30 @@ const AppSidebar = () => {
                         {item.title}
                       </span>
                     )}
+                    {isNotifications &&
+                      unreadNotificationCount > 0 &&
+                      !isCollapsed && (
+                        <Badge
+                          variant="destructive"
+                          className="ml-auto text-[10px] px-1.5 py-0 min-w-[20px] h-5 flex items-center justify-center"
+                        >
+                          {unreadNotificationCount > 99
+                            ? "99+"
+                            : unreadNotificationCount}
+                        </Badge>
+                      )}
+                    {isNotifications &&
+                      unreadNotificationCount > 0 &&
+                      isCollapsed && (
+                        <Badge
+                          variant="destructive"
+                          className="absolute -top-1 -right-1 text-[8px] px-1 min-w-[16px] h-4 flex items-center justify-center"
+                        >
+                          {unreadNotificationCount > 99
+                            ? "99+"
+                            : unreadNotificationCount}
+                        </Badge>
+                      )}
                     {active && !isCollapsed && (
                       <ChevronRight className="ml-auto w-4 h-4 opacity-50" />
                     )}

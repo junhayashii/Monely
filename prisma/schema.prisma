@@ -46,6 +46,7 @@ model Category {
   // createdAt DateTime @default(now())
   // updatedAt DateTime @updatedAt
   recurringBills RecurringBill[]
+  notifications Notification[]
 }
 
 enum WalletType {
@@ -96,6 +97,23 @@ model RecurringBill {
   category Category? @relation(fields: [categoryId], references: [id])
   walletId String
   wallet Wallet @relation(fields: [walletId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum NotificationType {
+  BUDGET_EXCEEDED
+}
+
+model Notification {
+  id String @id @default(cuid())
+  userId String
+  type NotificationType
+  title String
+  message String
+  categoryId String?
+  category Category? @relation(fields: [categoryId], references: [id])
+  read Boolean @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }

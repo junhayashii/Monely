@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { createClient } from "@/lib/supabase";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
+import { checkBudgetAndNotify } from "@/lib/notifications";
 
 // --- 1. Zod スキーマの修正 ---
 // categoryId と toWalletId はどちらかが入っていれば良いので optional にします
@@ -99,6 +100,11 @@ export async function createTransaction(
       }
     });
 
+    // 予算超過チェックと通知作成（EXPENSEカテゴリの場合のみ）
+    if (categoryId) {
+      await checkBudgetAndNotify(user.id, categoryId, date);
+    }
+
     revalidatePath("/transactions");
     revalidatePath("/wallets");
     return { success: true, message: "Transaction created!" };
@@ -185,6 +191,11 @@ export async function updateTransaction(
         data: { title, amount, date, categoryId, walletId, toWalletId },
       });
     });
+
+    // 予算超過チェックと通知作成（EXPENSEカテゴリの場合のみ）
+    if (categoryId) {
+      await checkBudgetAndNotify(user.id, categoryId, date);
+    }
 
     revalidatePath("/transactions");
     revalidatePath("/wallets");

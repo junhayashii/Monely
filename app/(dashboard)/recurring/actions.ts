@@ -3,6 +3,7 @@
 import { prisma } from "@/lib/prisma";
 import { createClient } from "@/lib/supabase"; // ★追加
 import { revalidatePath } from "next/cache";
+import { checkBudgetAndNotify } from "@/lib/notifications";
 
 // 共通ヘルパー
 async function getAuthenticatedUser() {
@@ -125,6 +126,11 @@ export async function processRecurringPayment(billId: string) {
         data: { nextDate },
       });
     });
+
+    // 予算超過チェックと通知作成
+    if (bill.categoryId) {
+      await checkBudgetAndNotify(user.id, bill.categoryId, new Date());
+    }
 
     revalidatePath("/recurring");
     revalidatePath("/wallets");
