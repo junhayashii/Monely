@@ -1,7 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
-
+import { Area, AreaChart, ResponsiveContainer } from "recharts";
 import { Card, CardContent } from "../ui/card";
 import { useCurrency } from "@/contexts/CurrencyContext";
 
@@ -12,7 +12,15 @@ interface DashboardCardProps {
   trend?: string;
   isPositive?: boolean;
   className?: string;
+  color?: string;
 }
+
+// Generate simple sparkline data
+const generateSparkData = () => {
+  return Array.from({ length: 7 }, () => ({
+    value: Math.random() * 100 + 50,
+  }));
+};
 
 const DashboardCard = ({
   title,
@@ -21,43 +29,59 @@ const DashboardCard = ({
   trend,
   isPositive = true,
   className = "",
+  color = "#0ea5e9",
 }: DashboardCardProps) => {
   const { formatCurrency } = useCurrency();
+  const sparkData = generateSparkData();
+  
   return (
-    <Card className="relative overflow-hidden border border-slate-200/70 bg-linear-to-br from-white via-slate-50 to-slate-100 shadow-sm transition-all duration-300 hover:-translate-y-px hover:shadow-md dark:border-slate-800/70 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
-      <div className="pointer-events-none absolute -right-12 -top-14 h-32 w-32 rounded-full bg-linear-to-br from-sky-400/15 via-blue-500/8 to-transparent blur-3xl dark:from-sky-500/10 dark:via-blue-500/5" />
-      <CardContent className="relative px-4">
-        <div className="mb-4 flex items-start justify-between gap-3">
+    <Card className="glass-card relative overflow-hidden rounded-[2rem] shadow-sm transition-lumina hover:-translate-y-1 hover:shadow-lumina border border-transparent hover:border-sky-100 dark:hover:border-sky-900/30 group">
+      <CardContent className="relative p-6 flex flex-col gap-5 z-10">
+        <div className="flex items-center justify-between">
+          <div className="p-3 bg-slate-50 dark:bg-slate-800/50 rounded-2xl group-hover:scale-110 transition-transform">
+            {icon}
+          </div>
           {trend && (
             <span
-              className={`flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-semibold tracking-tight ${
+              className={`text-[10px] font-bold px-3 py-1 rounded-full ${
                 isPositive
-                  ? "bg-emerald-50 text-emerald-600 ring-1 ring-inset ring-emerald-100 dark:bg-emerald-500/10 dark:text-emerald-300 dark:ring-emerald-500/20"
-                  : "bg-rose-50 text-rose-600 ring-1 ring-inset ring-rose-100 dark:bg-rose-500/10 dark:text-rose-300 dark:ring-rose-500/20"
+                  ? "bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400"
+                  : "bg-rose-50 dark:bg-rose-900/20 text-rose-600 dark:text-rose-400"
               }`}
             >
-              <span className="inline-block h-2 w-2 rounded-full bg-current" />
               {trend}
             </span>
           )}
-          <div className="flex items-center justify-center h-11 w-11 rounded-xl bg-slate-900/5 text-sky-600 ring-1 ring-inset ring-slate-200/70 transition-transform duration-300 group-hover:scale-105 dark:bg-white/5 dark:text-sky-300 dark:ring-slate-800">
-            <div className="scale-110">{icon}</div>
-          </div>
         </div>
 
-        <div className="space-y-1.5">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400">
+        <div>
+          <p className="text-[10px] text-slate-500 dark:text-slate-400 font-bold uppercase tracking-widest">
             {title}
           </p>
-          <div className="flex items-baseline gap-2">
-            <span
-              className={`text-2xl font-semibold tracking-tight text-slate-900 dark:text-white ${className}`}
-            >
-              {formatCurrency(amount)}
-            </span>
-          </div>
+          <p
+            className={`text-2xl font-bold mt-1 text-slate-900 dark:text-white ${className}`}
+          >
+            {formatCurrency(amount)}
+          </p>
         </div>
       </CardContent>
+      
+      {/* Sparkline Chart */}
+      <div className="absolute inset-x-0 bottom-0 h-16 opacity-30 pointer-events-none">
+        <ResponsiveContainer width="100%" height="100%">
+          <AreaChart data={sparkData}>
+            <Area
+              type="monotone"
+              dataKey="value"
+              stroke={color}
+              fill={color}
+              strokeWidth={2}
+              fillOpacity={0.2}
+              dot={false}
+            />
+          </AreaChart>
+        </ResponsiveContainer>
+      </div>
     </Card>
   );
 };

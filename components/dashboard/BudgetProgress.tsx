@@ -10,7 +10,6 @@ import {
   CardHeader,
   CardTitle,
 } from "../ui/card";
-import { Progress } from "../ui/progress";
 import { Button } from "../ui/button";
 import { useCurrency } from "@/contexts/CurrencyContext";
 
@@ -73,10 +72,10 @@ const BudgetProgress = ({ data }: { data: BudgetData[] }) => {
                   </div>
 
                   <span
-                    className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-semibold ${
+                    className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-[10px] font-bold ${
                       overBudget
-                        ? "bg-rose-50 text-rose-600 ring-1 ring-inset ring-rose-100 dark:bg-rose-500/10 dark:text-rose-200 dark:ring-rose-500/20"
-                        : "bg-emerald-50 text-emerald-600 ring-1 ring-inset ring-emerald-100 dark:bg-emerald-500/10 dark:text-emerald-200 dark:ring-emerald-500/20"
+                        ? "bg-rose-50 dark:bg-rose-900/20 text-rose-600 dark:text-rose-400"
+                        : "bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400"
                     }`}
                   >
                     {overBudget
@@ -86,7 +85,18 @@ const BudgetProgress = ({ data }: { data: BudgetData[] }) => {
                 </div>
 
                 <div className="mt-2 space-y-1">
-                  <Progress value={clampedProgress} className="h-2.5" />
+                  <div className="relative h-2.5 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
+                    <div
+                      className={`h-full transition-all ${
+                        overBudget
+                          ? "bg-rose-500"
+                          : item.progress > 90
+                          ? "bg-amber-500"
+                          : "bg-emerald-500"
+                      }`}
+                      style={{ width: `${clampedProgress}%` }}
+                    />
+                  </div>
                   <div className="flex items-center justify-end text-[11px] font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
                     <span className={item.status}>
                       {overBudget

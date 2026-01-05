@@ -165,14 +165,16 @@ async function DashboardPage({ searchParams }: Props) {
   const totalSaved = goals.reduce((sum, g) => sum + g.currentAmount, 0);
 
   return (
-    <div className="p-2 space-y-8">
+    <div className="space-y-8 pb-16">
       <AuthSuccessToast authStatus={authStatus} />
 
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold">Dashboard</h1>
-          <p className="text-sm text-muted-foreground">
+          <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
+            Dashboard
+          </h1>
+          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
             An Overview of {format(currentMonth, "MMMM yyyy")}
           </p>
         </div>
@@ -180,31 +182,35 @@ async function DashboardPage({ searchParams }: Props) {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
         <DashboardCard
           title="Current Balance"
           amount={balance}
-          icon={<Wallet className="w-6 h-6" />}
+          icon={<Wallet className="w-5 h-5 text-sky-500" />}
           trend="-2.5%"
           isPositive={false}
+          color="#0ea5e9"
         />
         <DashboardCard
           title="Income"
           amount={income}
-          icon={<TrendingUp className="h-4 w-4 text-emerald-500" />}
+          icon={<TrendingUp className="w-5 h-5 text-emerald-500" />}
           className="text-emerald-600"
+          color="#34d399"
         />
         <DashboardCard
           title="Expense"
           amount={expense}
-          icon={<TrendingDown className="h-4 w-4 text-rose-500" />}
+          icon={<TrendingDown className="w-5 h-5 text-rose-500" />}
           className="text-rose-600"
+          color="#fb7185"
         />
         <DashboardCard
           title="Savings Progress"
           amount={totalSaved}
-          icon={<TrendingUp className="h-4 w-4 text-blue-500" />}
-          className="text-blue-600"
+          icon={<TrendingUp className="w-5 h-5 text-indigo-500" />}
+          className="text-indigo-600"
+          color="#818cf8"
         />
       </div>
 
@@ -221,7 +227,7 @@ async function DashboardPage({ searchParams }: Props) {
       <div className="grid gap-4 md:grid-cols-4 items-stretch">
         {/* 最近の取引セクション */}
         <div className="md:col-span-2">
-          <Card>
+          <Card className="glass-card relative overflow-hidden">
             <div className="pointer-events-none absolute -right-16 -top-20 h-40 w-40 rounded-full bg-linear-to-br from-sky-400/15 via-blue-500/8 to-transparent blur-3xl dark:from-sky-500/10 dark:via-blue-500/5" />
             <CardHeader className="flex flex-row items-center justify-between gap-4">
               <div>

@@ -4,7 +4,15 @@ import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useCurrency } from "@/contexts/CurrencyContext";
 
-const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#8884d8"];
+const COLORS = [
+  "#0ea5e9", // sky-500 - primary
+  "#fb7185", // rose-400
+  "#34d399", // emerald-400
+  "#fbbf24", // amber-400
+  "#818cf8", // indigo-400
+  "#f472b6", // pink-400
+  "#a78bfa", // violet-400
+];
 
 type CategoryDatum = { name: string; value: number };
 
@@ -76,21 +84,28 @@ const CategoryChart = ({ data }: { data: CategoryDatum[] }) => {
     );
   }
 
+  // Format currency without decimals
+  const formatCurrencyNoDecimals = (value: number) => {
+    const formatted = formatCurrency(value);
+    // Remove .00 if present
+    return formatted.replace(/\.00$/, "");
+  };
+
   return (
     <Card className="col-span-4 h-full flex flex-col">
       <CardHeader>
         <CardTitle>Expenses by Category</CardTitle>
       </CardHeader>
-      <CardContent className="flex-1">
-        <div className="h-full w-full min-h-[300px]">
+      <CardContent className="flex-1 flex flex-col">
+        <div className="h-full w-full min-h-[200px] max-h-[250px] -mt-4">
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
               <Pie
                 data={cleaned}
                 cx="50%"
-                cy="50%"
-                innerRadius={60}
-                outerRadius={88}
+                cy="45%"
+                innerRadius={50}
+                outerRadius={75}
                 paddingAngle={4}
                 dataKey="value"
                 cornerRadius={8}
@@ -106,7 +121,7 @@ const CategoryChart = ({ data }: { data: CategoryDatum[] }) => {
                 content={
                   <CustomTooltip
                     total={total}
-                    formatCurrency={formatCurrency}
+                    formatCurrency={formatCurrencyNoDecimals}
                   />
                 }
                 offset={12}
@@ -119,7 +134,7 @@ const CategoryChart = ({ data }: { data: CategoryDatum[] }) => {
               />
               <text
                 x="50%"
-                y="48%"
+                y="45%"
                 textAnchor="middle"
                 dominantBaseline="middle"
                 className="text-center"
@@ -132,17 +147,17 @@ const CategoryChart = ({ data }: { data: CategoryDatum[] }) => {
                   Total
                 </tspan>
                 <tspan
-                  className="fill-slate-900 text-lg font-bold dark:fill-white"
+                  className="fill-slate-900 text-sm font-bold dark:fill-white"
                   x="50%"
-                  dy="1.3em"
+                  dy="1.2em"
                 >
-                  {formatCurrency(total)}
+                  {formatCurrencyNoDecimals(total)}
                 </tspan>
               </text>
             </PieChart>
           </ResponsiveContainer>
         </div>
-        <div className="flex gap-3 justify-center text-sm text-slate-700 dark:text-slate-200">
+        <div className="flex gap-3 justify-center text-sm text-slate-700 dark:text-slate-200 mt-3">
           {cleaned.map((item, idx) => (
             <div key={item.name} className="flex items-center gap-2">
               <span

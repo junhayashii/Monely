@@ -28,7 +28,7 @@ function DataTable<TData, TValue>({
   });
 
   return (
-    <div className="glass-card rounded-[2.5rem] overflow-hidden shadow-sm flex flex-col bg-white dark:bg-slate-950 border border-slate-200/70 dark:border-slate-800/70">
+    <div className="glass-card rounded-[2.5rem] overflow-hidden shadow-sm flex flex-col">
       <div className="overflow-x-auto overflow-y-auto max-h-[calc(100vh-24rem)] md:max-h-[calc(100vh-20rem)]">
         <table className="w-full text-left">
           <thead className="sticky top-0 z-10 bg-white dark:bg-slate-950">

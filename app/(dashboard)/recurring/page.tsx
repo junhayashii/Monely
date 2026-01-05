@@ -31,12 +31,14 @@ export default async function RecurringPage() {
   ]);
 
   return (
-    <div className="space-y-6 p-2">
+    <div className="space-y-12 max-w-4xl mx-auto pb-20">
       {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Recurring Bills</h1>
-          <p className="text-sm text-muted-foreground mt-1">
+          <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
+            Recurring Bills
+          </h1>
+          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
             Manage your subscriptions and fixed expenses
           </p>
         </div>

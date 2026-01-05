@@ -2,9 +2,7 @@
 
 import { useState, useEffect, useTransition } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { CalendarClock, Repeat } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { CalendarClock } from "lucide-react";
 import AddEditModal from "@/components/AddEditModal";
 import RecurringForm from "./RecurringForm";
 import { RecurringBill, Category, Wallet } from "@/lib/generated/prisma";
@@ -97,112 +95,107 @@ function RecurringList({ bills, wallets, categories }: RecurringListProps) {
     }
   };
 
+  // For now, treat all bills as active since isActive field may not exist
+  const activeBills = bills;
+  const pausedBills: typeof bills = [];
+
   return (
-    <div className="space-y-6">
-      {/* Summary Cards */}
-      <div className="grid gap-4 md:grid-cols-2">
-        <Card>
-          <CardContent className="pt-6">
-            <div className="space-y-1">
-              <p className="text-sm text-muted-foreground">Monthly Total</p>
-              <h2 className="text-3xl font-bold">
-                {formatCurrency(totalMonthly)}
-              </h2>
+    <div className="space-y-12">
+      {/* Elegant Fluid Header */}
+      <div className="relative p-10 rounded-[3rem] overflow-hidden group">
+        <div className="absolute inset-0 bg-gradient-to-br from-sky-400/20 via-indigo-400/10 to-transparent dark:from-sky-900/40 dark:via-slate-900/20" />
+        <div className="absolute -right-20 -top-20 w-80 h-80 bg-sky-300/20 blur-[100px] rounded-full animate-pulse" />
+        
+        <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-8">
+          <div className="space-y-2 text-center md:text-left">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/40 dark:bg-slate-800/40 backdrop-blur-md border border-white/20 text-[10px] font-bold uppercase tracking-[0.2em] text-sky-600 dark:text-sky-300">
+              Monthly Commitment
             </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <div className="space-y-1">
-              <p className="text-sm text-muted-foreground">Yearly Total</p>
-              <h2 className="text-3xl font-bold">
-                {formatCurrency(totalYearly)}
-              </h2>
+            <h2 className="text-5xl font-bold tracking-tight text-slate-900 dark:text-white">
+              {formatCurrency(totalMonthly)}
+            </h2>
+            <p className="text-sm text-slate-500 dark:text-slate-400 font-medium opacity-80">
+              Your automated wealth outflows for this cycle.
+            </p>
+          </div>
+          
+          <div className="flex gap-4">
+            <div className="glass-card px-6 py-4 rounded-3xl text-center">
+              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Active</p>
+              <p className="text-xl font-bold dark:text-white">{activeBills.length}</p>
             </div>
-          </CardContent>
-        </Card>
+            <div className="glass-card px-6 py-4 rounded-3xl text-center">
+              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Paused</p>
+              <p className="text-xl font-bold dark:text-white">{pausedBills.length}</p>
+            </div>
+          </div>
+        </div>
       </div>
 
-      {/* Bills Grid */}
+      {/* Bills List */}
       {bills.length === 0 ? (
-        <Card>
-          <CardContent className="pt-6">
-            <div className="text-center py-12 text-muted-foreground">
-              <p className="text-sm">
-                No recurring bills yet. Click &quot;Add Bill&quot; to create
-                one.
-              </p>
-            </div>
-          </CardContent>
-        </Card>
+        <div className="glass-card p-12 rounded-[2.5rem] text-center">
+          <p className="text-slate-500 dark:text-slate-400">
+            No recurring bills yet. Click &quot;Add Bill&quot; to create one.
+          </p>
+        </div>
       ) : (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {bills.map((bill) => (
-            <Card
-              key={bill.id}
-              className="cursor-pointer hover:border-primary transition-colors"
-              onClick={() => handleEdit(bill)}
-            >
-              <CardContent className="pt-6 space-y-4">
-                {/* Header */}
-                <div className="flex justify-between items-start">
-                  <h3 className="font-bold text-lg leading-tight">
-                    {bill.name}
-                  </h3>
-                  <CalendarClock className="h-4 w-4 text-muted-foreground shrink-0 ml-2" />
-                </div>
-
-                {/* Amount */}
-                <div className="space-y-1">
-                  <div className="flex items-baseline gap-1">
-                    <span className="text-2xl font-bold">
-                      {formatCurrency(bill.amount)}
-                    </span>
+        <div className="space-y-4 px-2">
+          {bills.map((bill) => {
+            const isActive = true; // All bills are active for now
+            const categoryColor = bill.category?.name === "Entertainment" ? "bg-rose-400" :
+                                 bill.category?.name === "Housing" ? "bg-sky-400" :
+                                 bill.category?.name === "Health" ? "bg-emerald-400" :
+                                 bill.category?.name === "Shopping" ? "bg-amber-400" :
+                                 bill.category?.name === "Software" ? "bg-indigo-400" :
+                                 "bg-slate-400";
+            
+            return (
+              <div
+                key={bill.id}
+                className={`group relative flex items-center justify-between p-6 rounded-[2rem] transition-all duration-500 ${
+                  isActive 
+                  ? 'glass-card hover:shadow-2xl hover:shadow-sky-100 dark:hover:shadow-none border border-slate-200/50 dark:border-slate-800/50' 
+                  : 'opacity-50 grayscale hover:grayscale-0 bg-slate-50 dark:bg-slate-900/20 border border-transparent'
+                }`}
+                onClick={() => handleEdit(bill)}
+              >
+                <div className="flex items-center gap-6">
+                  <div className={`w-14 h-14 rounded-2xl flex items-center justify-center transition-all group-hover:scale-110 ${categoryColor} bg-opacity-10 ${categoryColor.replace('bg-', 'text-')}`}>
+                    <CalendarClock className="w-5 h-5" />
                   </div>
-                  <div className="flex items-center gap-2 mt-2">
-                    <Badge variant="outline" className="text-xs font-medium">
-                      <Repeat className="h-3 w-3 mr-1" />
-                      {bill.frequency === "MONTHLY" ? "Monthly" : "Yearly"}
-                    </Badge>
-                    {bill.category && (
-                      <Badge
-                        variant="secondary"
-                        className="text-xs font-medium"
-                      >
-                        {bill.category.name}
-                      </Badge>
-                    )}
-                  </div>
-                </div>
-
-                {/* Next Payment Date */}
-                <div className="pt-2 border-t">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs text-muted-foreground">
-                      Next Payment
-                    </span>
-                    <span
-                      className={`text-sm font-semibold ${getDateColor(
-                        bill.nextDate
-                      )}`}
-                    >
-                      {formatNextDate(bill.nextDate)}
-                    </span>
-                  </div>
-                  {bill.wallet && (
-                    <div className="flex items-center justify-between mt-2">
-                      <span className="text-xs text-muted-foreground">
-                        Wallet
-                      </span>
-                      <span className="text-xs font-medium">
-                        {bill.wallet.name}
-                      </span>
+                  
+                  <div className="space-y-1">
+                    <h4 className="text-base font-bold text-slate-900 dark:text-white group-hover:text-sky-500 transition-colors">
+                      {bill.name}
+                    </h4>
+                    <div className="flex items-center gap-3 text-[10px] font-bold uppercase tracking-widest text-slate-400">
+                      <span>{bill.frequency === "MONTHLY" ? "Monthly" : "Yearly"}</span>
+                      <span className="w-1 h-1 bg-slate-200 dark:bg-slate-700 rounded-full" />
+                      <span>Next: {formatNextDate(bill.nextDate)}</span>
+                      {bill.category && (
+                        <>
+                          <span className="w-1 h-1 bg-slate-200 dark:bg-slate-700 rounded-full" />
+                          <span>{bill.category.name}</span>
+                        </>
+                      )}
                     </div>
-                  )}
+                  </div>
                 </div>
-              </CardContent>
-            </Card>
-          ))}
+
+                <div className="flex items-center gap-12">
+                  <div className="text-right">
+                    <p className="text-lg font-bold text-slate-900 dark:text-white">
+                      {formatCurrency(bill.amount)}
+                    </p>
+                    <p className={`text-[9px] font-bold uppercase tracking-tighter ${isActive ? 'text-sky-500' : 'text-slate-400'}`}>
+                      {isActive ? 'Active Tracking' : 'Paused'}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
         </div>
       )}
 

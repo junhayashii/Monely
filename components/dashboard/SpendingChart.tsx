@@ -35,16 +35,17 @@ type CustomTooltipProps = {
 };
 
 const COLORS = {
-  primary: "#0ea5e9",
-  danger: "#f43f5e",
-  grid: "rgba(148,163,184,0.35)",
+  primary: "#0ea5e9", // sky-500
+  danger: "#fb7185", // rose-400 (softer than before)
+  success: "#34d399", // emerald-400
+  grid: "rgba(148,163,184,0.25)", // lighter grid
 };
 
 const getSeriesColor = (name?: string) => {
   if (!name) return COLORS.primary;
   const key = name.toLowerCase();
-  if (key.includes("income")) return COLORS.primary;
-  if (key.includes("expense")) return COLORS.danger;
+  if (key.includes("income")) return COLORS.success; // emerald for income
+  if (key.includes("expense")) return COLORS.danger; // rose for expense
   return COLORS.primary;
 };
 
@@ -53,15 +54,16 @@ const CustomTooltip = ({ active, payload, label }: CustomTooltipProps) => {
 
   return (
     <div
+      className="rounded-2xl border border-slate-200/50 dark:border-slate-800/50 bg-white/95 dark:bg-slate-900/95 backdrop-blur-sm px-4 py-3 shadow-lg"
       style={{
-        borderRadius: "14px",
+        borderRadius: "16px",
         border: "none",
-        boxShadow: "0 10px 20px rgba(0,0,0,0.08)",
+        boxShadow: "0 10px 20px rgba(0,0,0,0.1)",
         backgroundColor: "rgba(255,255,255,0.95)",
         padding: "12px 14px",
       }}
     >
-      <div style={{ color: "#475569", fontSize: 12, marginBottom: 6 }}>
+      <div className="text-xs font-bold text-slate-500 dark:text-slate-400 mb-2">
         {label}
       </div>
       {payload.map((entry: CustomTooltipPayload, idx: number) => {
@@ -80,7 +82,7 @@ const CustomTooltip = ({ active, payload, label }: CustomTooltipProps) => {
                 backgroundColor: color,
               }}
             />
-            <span style={{ color, fontWeight: 700 }}>
+            <span style={{ color, fontWeight: 700, fontSize: "13px" }}>
               {entry.name}: {entry.value}
             </span>
           </div>
@@ -126,7 +128,7 @@ export default function SpendingChart({
         </Tabs>
       </CardHeader>
       <CardContent className="flex-1">
-        <div className="h-full w-full min-h-[320px]">
+        <div className="h-full w-full min-h-[280px]">
           <ResponsiveContainer width="100%" height="100%">
             {view === "monthly" ? (
               <BarChart data={monthlyData} margin={{ left: -12, right: 8 }}>
@@ -135,12 +137,12 @@ export default function SpendingChart({
                     <stop
                       offset="5%"
                       stopColor={COLORS.primary}
-                      stopOpacity={0.4}
+                      stopOpacity={0.5}
                     />
                     <stop
                       offset="95%"
                       stopColor={COLORS.primary}
-                      stopOpacity={0}
+                      stopOpacity={0.1}
                     />
                   </linearGradient>
                 </defs>
@@ -148,7 +150,7 @@ export default function SpendingChart({
                   strokeDasharray="3 3"
                   vertical={false}
                   stroke={COLORS.grid}
-                  opacity={0.8}
+                  opacity={0.4}
                 />
                 <XAxis
                   dataKey="day"
@@ -184,12 +186,12 @@ export default function SpendingChart({
                   <linearGradient id="colorIncome" x1="0" y1="0" x2="0" y2="1">
                     <stop
                       offset="5%"
-                      stopColor={COLORS.primary}
-                      stopOpacity={0.25}
+                      stopColor={COLORS.success}
+                      stopOpacity={0.3}
                     />
                     <stop
                       offset="95%"
-                      stopColor={COLORS.primary}
+                      stopColor={COLORS.success}
                       stopOpacity={0}
                     />
                   </linearGradient>
@@ -197,7 +199,7 @@ export default function SpendingChart({
                     <stop
                       offset="5%"
                       stopColor={COLORS.danger}
-                      stopOpacity={0.25}
+                      stopOpacity={0.3}
                     />
                     <stop
                       offset="95%"
@@ -210,7 +212,7 @@ export default function SpendingChart({
                   strokeDasharray="3 3"
                   vertical={false}
                   stroke={COLORS.grid}
-                  opacity={0.9}
+                  opacity={0.4}
                 />
                 <XAxis
                   dataKey="month"
@@ -231,7 +233,7 @@ export default function SpendingChart({
                 <Area
                   type="monotone"
                   dataKey="income"
-                  stroke={COLORS.primary}
+                  stroke={COLORS.success}
                   strokeWidth={3}
                   fillOpacity={1}
                   fill="url(#colorIncome)"

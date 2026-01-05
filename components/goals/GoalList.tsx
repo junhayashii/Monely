@@ -4,8 +4,6 @@ import { useState, useTransition, useEffect } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { Target } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
 import AddEditModal from "@/components/AddEditModal";
 import DeleteDialog from "@/components/DeleteDialog";
 import GoalForm from "./GoalForm";
@@ -63,54 +61,108 @@ function GoalList({ goals, wallets }: { goals: any[]; wallets: any[] }) {
     setIsSavingsOpen(true);
   };
 
+  const getGoalColor = (index: number) => {
+    const colors = [
+      "bg-emerald-300",
+      "bg-amber-300",
+      "bg-sky-300",
+      "bg-rose-300",
+      "bg-indigo-300",
+    ];
+    return colors[index % colors.length];
+  };
+
   return (
-    <div className="space-y-6">
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {goals.map((goal) => {
+    <div className="space-y-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {goals.map((goal, idx) => {
           const progress = Math.min(
             (goal.currentAmount / goal.targetAmount) * 100,
             100
           );
+          const goalColor = getGoalColor(idx);
+
           return (
-            <Card
+            <div
               key={goal.id}
-              className="cursor-pointer hover:border-primary transition-colors"
+              className="glass-card p-6 rounded-3xl relative overflow-hidden cursor-pointer hover:shadow-lg transition-all"
               onClick={() => handleEdit(goal)}
             >
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">
-                  {goal.name}
-                </CardTitle>
-                <Target className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">
-                  {formatCurrency(goal.currentAmount)}
+              <div className="flex items-center gap-3 mb-6">
+                <div className={`p-3 rounded-2xl ${goalColor} bg-opacity-20`}>
+                  <Target
+                    className={`w-5 h-5 ${goalColor.replace("bg-", "text-")}`}
+                  />
                 </div>
-                <p className="text-xs text-muted-foreground">
-                  Target: {formatCurrency(goal.targetAmount)}
-                </p>
-                <div className="mt-4 space-y-2">
-                  <Progress value={progress} className="h-2" />
-                  <div className="flex justify-between text-[10px] text-muted-foreground">
-                    <span>{progress.toFixed(1)}%</span>
-                    <span>
-                      Remaining: {formatCurrency(
-                        goal.targetAmount - goal.currentAmount
-                      )}
-                    </span>
+                <div>
+                  <h4 className="font-bold text-slate-900 dark:text-white">
+                    {goal.name}
+                  </h4>
+                  {goal.deadline && (
+                    <div className="flex items-center gap-2 text-[10px] text-slate-400 mt-0.5">
+                      <span>
+                        Until{" "}
+                        {new Date(goal.deadline).toLocaleDateString("en-US", {
+                          month: "short",
+                          day: "numeric",
+                          year: "numeric",
+                        })}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <div className="flex justify-between items-end">
+                  <div>
+                    <p className="text-[10px] text-slate-500 uppercase font-bold tracking-wider">
+                      Saved
+                    </p>
+                    <p className="text-xl font-bold text-slate-900 dark:text-white">
+                      {formatCurrency(goal.currentAmount)}
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-[10px] text-slate-500 uppercase font-bold tracking-wider">
+                      Target
+                    </p>
+                    <p className="text-sm font-semibold text-slate-400">
+                      {formatCurrency(goal.targetAmount)}
+                    </p>
                   </div>
                 </div>
-                <Button
-                  className="w-full mt-4 bg-primary/10 text-primary hover:bg-primary hover:text-white"
-                  variant="ghost"
-                  size="sm"
-                  onClick={(e) => handleAddSavings(e, goal)}
+
+                <div className="space-y-2">
+                  <div className="h-3 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                    <div
+                      style={{ width: `${progress}%` }}
+                      className={`h-full ${goalColor} rounded-full transition-all duration-1000`}
+                    />
+                  </div>
+                  <p className="text-right text-[10px] font-bold text-slate-500">
+                    {Math.round(progress)}% Complete
+                  </p>
+                </div>
+
+                <button
+                  className="w-full mt-4 flex items-center justify-between p-3 rounded-2xl bg-slate-50 dark:bg-slate-800 hover:bg-sky-50 dark:hover:bg-sky-900/20 text-slate-600 dark:text-slate-300 hover:text-sky-600 transition-all text-xs font-bold"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleAddSavings(e, goal);
+                  }}
                 >
                   Add Savings
-                </Button>
-              </CardContent>
-            </Card>
+                  <span className="text-sky-500">→</span>
+                </button>
+              </div>
+
+              {progress >= 100 && (
+                <div className="absolute top-4 right-4 bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 p-2 rounded-full shadow-sm">
+                  <span className="text-xs">🏆</span>
+                </div>
+              )}
+            </div>
           );
         })}
       </div>

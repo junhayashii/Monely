@@ -41,7 +41,7 @@ const AppSidebar = ({ unreadNotificationCount = 0 }: AppSidebarProps) => {
   return (
     <Sidebar
       collapsible="icon"
-      className="border-r border-slate-200 dark:border-slate-800"
+      className="border-r border-slate-200/50 dark:border-slate-800/50 glass-card backdrop-blur-xl"
     >
       {/* 1. Sidebar Header (Logo Section) */}
       <SidebarHeader className="py-4 relative group/header min-h-[64px] flex items-center justify-center">
@@ -66,7 +66,7 @@ const AppSidebar = ({ unreadNotificationCount = 0 }: AppSidebarProps) => {
               />
             </div>
             {!isCollapsed && (
-              <h1 className="text-xl font-extrabold tracking-tight text-slate-900 dark:text-white truncate">
+              <h1 className="text-xl font-extrabold tracking-tight gradient-text-sky truncate">
                 Cashly
               </h1>
             )}
@@ -97,18 +97,18 @@ const AppSidebar = ({ unreadNotificationCount = 0 }: AppSidebarProps) => {
                   asChild
                   tooltip={item.title}
                   className={`
-                    flex items-center gap-3 p-3 h-11 rounded-xl transition-all duration-200
+                    flex items-center gap-3 p-3 h-11 rounded-2xl transition-lumina
                     ${
                       active
-                        ? "bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 font-semibold"
-                        : "text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-200"
+                        ? "bg-sky-500 text-white shadow-md shadow-sky-200 dark:shadow-none font-semibold"
+                        : "text-slate-500 dark:text-slate-400 hover:bg-sky-50 dark:hover:bg-sky-900/20 hover:text-sky-600 dark:hover:text-sky-400"
                     }
                   `}
                 >
                   <Link href={item.url}>
                     <item.icon
                       className={`w-5 h-5 shrink-0 ${
-                        active ? "text-indigo-600 dark:text-indigo-400" : ""
+                        active ? "text-white" : ""
                       }`}
                     />
                     {!isCollapsed && (
@@ -128,7 +128,7 @@ const AppSidebar = ({ unreadNotificationCount = 0 }: AppSidebarProps) => {
       </SidebarContent>
 
       {/* 3. Sidebar Footer (User & Settings) */}
-      <SidebarFooter className="p-3 mt-auto border-t border-slate-200 dark:border-slate-800">
+      <SidebarFooter className="p-3 mt-auto border-t border-slate-200/50 dark:border-slate-800/50">
         <SidebarMenu className="space-y-1">
           {sidebarFooter.map((item) => {
             const active = isActive(item.url);
@@ -139,18 +139,18 @@ const AppSidebar = ({ unreadNotificationCount = 0 }: AppSidebarProps) => {
                   asChild
                   tooltip={item.title}
                   className={`
-                    flex items-center gap-3 p-3 h-11 rounded-xl transition-all duration-200
+                    flex items-center gap-3 p-3 h-11 rounded-2xl transition-lumina
                     ${
                       active
-                        ? "bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 font-semibold"
-                        : "text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-200"
+                        ? "bg-sky-500 text-white shadow-md shadow-sky-200 dark:shadow-none font-semibold"
+                        : "text-slate-500 dark:text-slate-400 hover:bg-sky-50 dark:hover:bg-sky-900/20 hover:text-sky-600 dark:hover:text-sky-400"
                     }
                   `}
                 >
                   <Link href={item.url} className="flex items-center w-full">
                     <item.icon
                       className={`w-5 h-5 shrink-0 ${
-                        active ? "text-indigo-600 dark:text-indigo-400" : ""
+                        active ? "text-white" : ""
                       }`}
                     />
                     {!isCollapsed && (

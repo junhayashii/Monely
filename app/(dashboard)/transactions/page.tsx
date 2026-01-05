@@ -97,12 +97,14 @@ const TransactionsPage = async ({
   const selectedMonth = month ? parseISO(`${month}-01`) : new Date();
 
   return (
-    <div className="space-y-6 p-2">
+    <div className="space-y-6 pb-16">
       {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Transactions</h1>
-          <p className="text-sm text-muted-foreground mt-1">
+          <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
+            Transactions
+          </h1>
+          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
             Manage and track all your financial transactions
             {month && ` • ${format(selectedMonth, "MMMM yyyy")}`}
           </p>

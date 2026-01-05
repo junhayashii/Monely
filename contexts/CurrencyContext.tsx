@@ -34,9 +34,11 @@ export function CurrencyProvider({ children }: { children: ReactNode }) {
 
   const setCurrency = (newCurrency: Currency) => {
     setCurrencyState(newCurrency);
-    localStorage.setItem("currency", newCurrency);
-    // Trigger a custom event to notify all components
-    window.dispatchEvent(new CustomEvent("currencyChanged", { detail: newCurrency }));
+    if (typeof window !== "undefined") {
+      localStorage.setItem("currency", newCurrency);
+      // Trigger a custom event to notify all components
+      window.dispatchEvent(new CustomEvent("currencyChanged", { detail: newCurrency }));
+    }
   };
 
   const formatCurrency = (value: number): string => {
@@ -55,11 +57,8 @@ export function CurrencyProvider({ children }: { children: ReactNode }) {
     return CURRENCY_CONFIG[currency].symbol;
   };
 
-  // Prevent hydration mismatch
-  if (!mounted) {
-    return <>{children}</>;
-  }
-
+  // Always provide the context, even before mounted, to prevent errors
+  // The currency will be updated from localStorage once mounted
   return (
     <CurrencyContext.Provider value={{ currency, setCurrency, formatCurrency, getCurrencySymbol }}>
       {children}
@@ -74,4 +73,3 @@ export function useCurrency() {
   }
   return context;
 }
-

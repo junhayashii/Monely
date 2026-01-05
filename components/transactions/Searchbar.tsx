@@ -25,7 +25,7 @@ const Searchbar = () => {
   };
 
   return (
-    <div className="glass-card rounded-[2.5rem] overflow-hidden shadow-sm bg-white dark:bg-slate-950 border border-slate-200/70 dark:border-slate-800/70">
+    <div className="glass-card rounded-2xl overflow-hidden shadow-sm">
       <div className="relative px-4 py-4">
         <Search className="absolute left-8 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400 dark:text-slate-500" />
         <Input

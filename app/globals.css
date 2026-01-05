@@ -41,6 +41,34 @@
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
+  
+  /* Lumina Design System Colors */
+  --color-lumina-sky: var(--lumina-sky);
+  --color-lumina-sky-light: var(--lumina-sky-light);
+  --color-lumina-sky-dark: var(--lumina-sky-dark);
+  --color-lumina-rose: var(--lumina-rose);
+  --color-lumina-rose-light: var(--lumina-rose-light);
+  --color-lumina-rose-dark: var(--lumina-rose-dark);
+  --color-lumina-emerald: var(--lumina-emerald);
+  --color-lumina-emerald-light: var(--lumina-emerald-light);
+  --color-lumina-emerald-dark: var(--lumina-emerald-dark);
+  --color-lumina-amber: var(--lumina-amber);
+  --color-lumina-amber-light: var(--lumina-amber-light);
+  --color-lumina-amber-dark: var(--lumina-amber-dark);
+  --color-lumina-indigo: var(--lumina-indigo);
+  --color-lumina-indigo-light: var(--lumina-indigo-light);
+  --color-lumina-indigo-dark: var(--lumina-indigo-dark);
+  
+  /* Gradient Colors */
+  --gradient-sky: var(--gradient-sky-start), var(--gradient-sky-end);
+  --gradient-rose: var(--gradient-rose-start), var(--gradient-rose-end);
+  --gradient-emerald: var(--gradient-emerald-start), var(--gradient-emerald-end);
+  
+  /* Glass Morphism */
+  --glass-bg-light: var(--glass-bg-light-color);
+  --glass-bg-dark: var(--glass-bg-dark-color);
+  --glass-border-light: var(--glass-border-light-color);
+  --glass-border-dark: var(--glass-border-dark-color);
 }
 
 :root {
@@ -76,6 +104,37 @@
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
+  
+  /* Lumina Design System - Light Mode */
+  --lumina-sky: #0ea5e9; /* sky-500 */
+  --lumina-sky-light: #7dd3fc; /* sky-300 */
+  --lumina-sky-dark: #0284c7; /* sky-600 */
+  --lumina-rose: #fb7185; /* rose-400 */
+  --lumina-rose-light: #fda4af; /* rose-300 */
+  --lumina-rose-dark: #f43f5e; /* rose-500 */
+  --lumina-emerald: #34d399; /* emerald-400 */
+  --lumina-emerald-light: #6ee7b7; /* emerald-300 */
+  --lumina-emerald-dark: #10b981; /* emerald-500 */
+  --lumina-amber: #fbbf24; /* amber-400 */
+  --lumina-amber-light: #fcd34d; /* amber-300 */
+  --lumina-amber-dark: #f59e0b; /* amber-500 */
+  --lumina-indigo: #818cf8; /* indigo-400 */
+  --lumina-indigo-light: #a5b4fc; /* indigo-300 */
+  --lumina-indigo-dark: #6366f1; /* indigo-500 */
+  
+  /* Gradients */
+  --gradient-sky-start: #0ea5e9;
+  --gradient-sky-end: #3b82f6;
+  --gradient-rose-start: #fb7185;
+  --gradient-rose-end: #f43f5e;
+  --gradient-emerald-start: #34d399;
+  --gradient-emerald-end: #10b981;
+  
+  /* Glass Morphism - Light Mode */
+  --glass-bg-light-color: rgba(255, 255, 255, 0.7);
+  --glass-bg-dark-color: rgba(15, 23, 42, 0.8);
+  --glass-border-light-color: rgba(226, 232, 240, 0.5);
+  --glass-border-dark-color: rgba(30, 41, 59, 0.5);
 }
 
 .dark {
@@ -110,6 +169,29 @@
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.556 0 0);
+  
+  /* Lumina Design System - Dark Mode (slightly adjusted for better contrast) */
+  --lumina-sky: #38bdf8; /* sky-400 - lighter for dark mode */
+  --lumina-sky-light: #7dd3fc; /* sky-300 */
+  --lumina-sky-dark: #0ea5e9; /* sky-500 */
+  --lumina-rose: #fb7185; /* rose-400 */
+  --lumina-rose-light: #fda4af; /* rose-300 */
+  --lumina-rose-dark: #f43f5e; /* rose-500 */
+  --lumina-emerald: #34d399; /* emerald-400 */
+  --lumina-emerald-light: #6ee7b7; /* emerald-300 */
+  --lumina-emerald-dark: #10b981; /* emerald-500 */
+  --lumina-amber: #fbbf24; /* amber-400 */
+  --lumina-amber-light: #fcd34d; /* amber-300 */
+  --lumina-amber-dark: #f59e0b; /* amber-500 */
+  --lumina-indigo: #818cf8; /* indigo-400 */
+  --lumina-indigo-light: #a5b4fc; /* indigo-300 */
+  --lumina-indigo-dark: #6366f1; /* indigo-500 */
+  
+  /* Glass Morphism - Dark Mode */
+  --glass-bg-light-color: rgba(15, 23, 42, 0.8);
+  --glass-bg-dark-color: rgba(15, 23, 42, 0.9);
+  --glass-border-light-color: rgba(30, 41, 59, 0.5);
+  --glass-border-dark-color: rgba(51, 65, 85, 0.5);
 }
 
 @layer base {
@@ -117,6 +199,75 @@
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-slate-50 text-slate-900 antialiased;
+    @apply bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 antialiased;
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+}
+
+/* Glass Morphism Utility Classes */
+@layer utilities {
+  .glass-card {
+    background: var(--glass-bg-light-color);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid var(--glass-border-light-color);
+  }
+  
+  .dark .glass-card {
+    background: var(--glass-bg-dark-color);
+    border-color: var(--glass-border-dark-color);
+  }
+  
+  /* Gradient Text */
+  .gradient-text-sky {
+    background: linear-gradient(to right, var(--gradient-sky-start), var(--gradient-sky-end));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  
+  .gradient-text-rose {
+    background: linear-gradient(to right, var(--gradient-rose-start), var(--gradient-rose-end));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  
+  .gradient-text-emerald {
+    background: linear-gradient(to right, var(--gradient-emerald-start), var(--gradient-emerald-end));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  
+  /* Enhanced Shadows */
+  .shadow-lumina {
+    box-shadow: 0 10px 15px -3px rgba(14, 165, 233, 0.1), 0 4px 6px -2px rgba(14, 165, 233, 0.05);
+  }
+  
+  .dark .shadow-lumina {
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.2);
+  }
+  
+  .shadow-lumina-sky {
+    box-shadow: 0 10px 15px -3px rgba(14, 165, 233, 0.2), 0 4px 6px -2px rgba(14, 165, 233, 0.1);
+  }
+  
+  /* Smooth Transitions */
+  .transition-lumina {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  /* Rounded Corners - Lumina Style */
+  .rounded-lumina {
+    border-radius: 2.5rem;
+  }
+  
+  .rounded-lumina-lg {
+    border-radius: 3rem;
+  }
+  
+  .rounded-lumina-xl {
+    border-radius: 4rem;
   }
 }
