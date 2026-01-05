@@ -1,3 +1,5 @@
+"use client";
+
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -8,6 +10,7 @@ import {
   MoreVertical,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useCurrency } from "@/contexts/CurrencyContext";
 
 interface WalletCardProps {
   name: string;
@@ -73,6 +76,7 @@ function WalletCard({
   onSelect,
   onEdit,
 }: WalletCardProps) {
+  const { formatCurrency } = useCurrency();
   const Config = typeConfig[type] || typeConfig.CASH;
   const cardNumber = generateCardNumber(name);
 
@@ -144,7 +148,7 @@ function WalletCard({
               {name}
             </p>
             <p className="text-2xl font-bold tracking-tight">
-              R$ {balance.toLocaleString()}
+              {formatCurrency(balance)}
             </p>
           </div>
 

@@ -53,7 +53,7 @@ function GoalForm({ goal, onSuccess }: GoalFormProps) {
         />
       </div>
       <div className="space-y-2">
-        <Label htmlFor="target">Target Amount (R$)</Label>
+        <Label htmlFor="target">Target Amount</Label>
         <Input
           id="target"
           type="number"

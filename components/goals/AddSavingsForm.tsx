@@ -1,3 +1,5 @@
+"use client";
+
 import { addSavings } from "@/app/(dashboard)/goals/actions";
 import { useState, useTransition } from "react";
 import { Label } from "@/components/ui/label";
@@ -11,6 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../ui/select";
+import { useCurrency } from "@/contexts/CurrencyContext";
 
 const AddSavingsForm = ({
   goal,
@@ -21,6 +24,7 @@ const AddSavingsForm = ({
   wallets: any[];
   onSuccess: () => void;
 }) => {
+  const { formatCurrency } = useCurrency();
   const [isPending, startTransition] = useTransition();
   const [amount, setAmount] = useState<number>(0);
   const [walletId, setWalletId] = useState<string>("");
@@ -51,7 +55,7 @@ const AddSavingsForm = ({
           <SelectContent>
             {wallets.map((wallet) => (
               <SelectItem key={wallet.id} value={wallet.id}>
-                {wallet.name} (R$ {wallet.balance.toLocaleString()})
+                {wallet.name} ({formatCurrency(wallet.balance)})
               </SelectItem>
             ))}
           </SelectContent>

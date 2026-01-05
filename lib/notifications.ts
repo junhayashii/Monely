@@ -71,7 +71,7 @@ export async function checkBudgetAndNotify(
         title: `予算超過: ${category.name}`,
         message: `${
           category.name
-        }の予算（R$ ${category.budget.toLocaleString()}）をR$ ${overAmount.toLocaleString()}超過しました。`,
+        }の予算（${category.budget.toLocaleString()}）を${overAmount.toLocaleString()}超過しました。`,
       },
     });
   }

@@ -133,7 +133,7 @@ export async function addSavings(
 
     return {
       success: true,
-      message: `R$ ${amount.toLocaleString()} 貯金しました！`,
+      message: `${amount.toLocaleString()} 貯金しました！`,
     };
   } catch (error: any) {
     console.error("Savings error:", error);

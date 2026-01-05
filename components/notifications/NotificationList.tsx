@@ -11,6 +11,7 @@ import { format } from "date-fns";
 import { markNotificationAsRead, deleteNotification } from "@/app/(dashboard)/notifications/actions";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import { useCurrency } from "@/contexts/CurrencyContext";
 
 type Notification = {
   id: string;
@@ -33,7 +34,31 @@ type NotificationListProps = {
 export default function NotificationList({
   notifications,
 }: NotificationListProps) {
+  const { formatCurrency, getCurrencySymbol } = useCurrency();
   const router = useRouter();
+
+  // Format currency values in notification messages
+  const formatNotificationMessage = (message: string): string => {
+    const currencySymbol = getCurrencySymbol();
+    // Replace "R$" with current currency symbol and format numbers
+    // Pattern: "R$ 1000" or "R$1000" or just numbers in parentheses or after certain words
+    let formatted = message.replace(/R\$\s*(\d{1,3}(?:[,\s]\d{3})*(?:\.\d{2})?)/g, (match, numStr) => {
+      const numValue = parseFloat(numStr.replace(/[,\s]/g, ''));
+      if (!isNaN(numValue)) {
+        return formatCurrency(numValue);
+      }
+      return match;
+    });
+    // Also handle standalone large numbers that might be currency (in parentheses or after certain patterns)
+    formatted = formatted.replace(/\((\d{1,3}(?:[,\s]\d{3})*(?:\.\d{2})?)\)/g, (match, numStr) => {
+      const numValue = parseFloat(numStr.replace(/[,\s]/g, ''));
+      if (!isNaN(numValue) && numValue > 10) {
+        return `(${formatCurrency(numValue)})`;
+      }
+      return match;
+    });
+    return formatted;
+  };
 
   const handleMarkAsRead = async (id: string) => {
     await markNotificationAsRead(id);
@@ -94,7 +119,7 @@ export default function NotificationList({
                       )}
                     </div>
                     <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
-                      {notification.message}
+                      {formatNotificationMessage(notification.message)}
                     </p>
                     {notification.category && (
                       <div className="mt-2">

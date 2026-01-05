@@ -1,6 +1,9 @@
+"use client";
+
 import type { ReactNode } from "react";
 
 import { Card, CardContent } from "../ui/card";
+import { useCurrency } from "@/contexts/CurrencyContext";
 
 interface DashboardCardProps {
   title: string;
@@ -19,6 +22,7 @@ const DashboardCard = ({
   isPositive = true,
   className = "",
 }: DashboardCardProps) => {
+  const { formatCurrency } = useCurrency();
   return (
     <Card className="relative overflow-hidden border border-slate-200/70 bg-linear-to-br from-white via-slate-50 to-slate-100 shadow-sm transition-all duration-300 hover:-translate-y-px hover:shadow-md dark:border-slate-800/70 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
       <div className="pointer-events-none absolute -right-12 -top-14 h-32 w-32 rounded-full bg-linear-to-br from-sky-400/15 via-blue-500/8 to-transparent blur-3xl dark:from-sky-500/10 dark:via-blue-500/5" />
@@ -49,7 +53,7 @@ const DashboardCard = ({
             <span
               className={`text-2xl font-semibold tracking-tight text-slate-900 dark:text-white ${className}`}
             >
-              R${amount.toLocaleString()}
+              {formatCurrency(amount)}
             </span>
           </div>
         </div>

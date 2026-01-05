@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/select";
 import { User } from "@supabase/supabase-js";
 import { Sparkles, Check } from "lucide-react";
+import { useCurrency } from "@/contexts/CurrencyContext";
 
 interface SettingsContentProps {
   user: User;
@@ -27,9 +28,9 @@ interface SettingsContentProps {
 function SettingsContent({ user }: SettingsContentProps) {
   const router = useRouter();
   const { theme, setTheme } = useTheme();
+  const { currency, setCurrency } = useCurrency();
   const [mounted, setMounted] = useState(false);
   const [isPending, startTransition] = useTransition();
-  const [currency, setCurrency] = useState("JPY");
   const [emailNotifications, setEmailNotifications] = useState(true);
   const [budgetAlerts, setBudgetAlerts] = useState(true);
   const [isPro, setIsPro] = useState(false);
@@ -42,10 +43,8 @@ function SettingsContent({ user }: SettingsContentProps) {
   useEffect(() => {
     setMounted(true);
     // Load settings from localStorage
-    const savedCurrency = localStorage.getItem("currency") || "JPY";
     const savedEmailNotifications = localStorage.getItem("emailNotifications") !== "false";
     const savedBudgetAlerts = localStorage.getItem("budgetAlerts") !== "false";
-    setCurrency(savedCurrency);
     setEmailNotifications(savedEmailNotifications);
     setBudgetAlerts(savedBudgetAlerts);
     // TODO: Check Pro status from database or Supabase metadata
@@ -65,8 +64,7 @@ function SettingsContent({ user }: SettingsContentProps) {
   };
 
   const handleCurrencyChange = (value: string) => {
-    setCurrency(value);
-    localStorage.setItem("currency", value);
+    setCurrency(value as "USD" | "JPY" | "BRL");
     toast.success("Currency updated");
   };
 
@@ -97,12 +95,9 @@ function SettingsContent({ user }: SettingsContentProps) {
   }
 
   const currencies = [
-    { value: "JPY", label: "Japanese Yen (¥)", symbol: "¥" },
     { value: "USD", label: "US Dollar ($)", symbol: "$" },
-    { value: "EUR", label: "Euro (€)", symbol: "€" },
-    { value: "GBP", label: "British Pound (£)", symbol: "£" },
-    { value: "CNY", label: "Chinese Yuan (¥)", symbol: "¥" },
-    { value: "KRW", label: "South Korean Won (₩)", symbol: "₩" },
+    { value: "JPY", label: "Japanese Yen (¥)", symbol: "¥" },
+    { value: "BRL", label: "Brazilian Real (R$)", symbol: "R$" },
   ];
 
   return (

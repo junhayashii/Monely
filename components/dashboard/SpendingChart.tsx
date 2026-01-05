@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useCurrency } from "@/contexts/CurrencyContext";
 
 import {
   Area,
@@ -103,6 +104,7 @@ export default function SpendingChart({
   monthlyData,
   yearlyData,
 }: SpendingChartProps) {
+  const { formatCurrency } = useCurrency();
   const [view, setView] = useState("monthly");
 
   return (
@@ -160,7 +162,7 @@ export default function SpendingChart({
                   tick={{ fill: "#94a3b8", fontSize: 12 }}
                   tickLine={false}
                   axisLine={false}
-                  tickFormatter={(value) => `R$${value}`}
+                  tickFormatter={(value) => formatCurrency(value)}
                 />
                 <Tooltip
                   cursor={{ fill: "transparent" }}
@@ -221,7 +223,7 @@ export default function SpendingChart({
                   tick={{ fill: "#94a3b8", fontSize: 12 }}
                   tickLine={false}
                   axisLine={false}
-                  tickFormatter={(value) => `R$${value}`}
+                  tickFormatter={(value) => formatCurrency(value)}
                   width={70}
                 />
                 <Tooltip content={<CustomTooltip />} />

@@ -4,6 +4,7 @@ import { ColumnDef } from "@tanstack/react-table";
 import { Transaction } from "@/lib/generated/prisma";
 import { format, parseISO } from "date-fns";
 import { ArrowUpRight, ArrowDownRight, Calendar } from "lucide-react";
+import { useCurrency } from "@/contexts/CurrencyContext";
 
 type TransactionWithRelations = Transaction & {
   category?: { name: string; type: string } | null;
@@ -12,7 +13,10 @@ type TransactionWithRelations = Transaction & {
   toWalletId?: string | null;
 };
 
-export const columns: ColumnDef<Transaction>[] = [
+export function useColumns(): ColumnDef<Transaction>[] {
+  const { formatCurrency } = useCurrency();
+
+  return [
   {
     accessorKey: "title",
     header: "Transaction",
@@ -127,7 +131,7 @@ export const columns: ColumnDef<Transaction>[] = [
       const isTransfer = !!tx.toWalletId;
       const isIncome = tx.category?.type === "INCOME";
 
-      const formatted = `¥${Math.abs(amount).toLocaleString("ja-JP")}`;
+      const formatted = formatCurrency(Math.abs(amount));
 
       const amountClasses = isTransfer
         ? "text-slate-900 dark:text-white"
@@ -143,4 +147,5 @@ export const columns: ColumnDef<Transaction>[] = [
       );
     },
   },
-];
+  ];
+}

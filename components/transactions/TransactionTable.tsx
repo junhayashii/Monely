@@ -1,7 +1,7 @@
 "use client";
 
 import DataTable from "../data-table/DataTable";
-import { columns } from "./Columns";
+import { useColumns } from "./Columns";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Transaction } from "@/lib/generated/prisma";
 import { ReactNode } from "react";
@@ -15,6 +15,7 @@ const TransactionTable = ({
 }) => {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const columns = useColumns();
 
   const handleRowClick = (transaction: Transaction) => {
     const params = new URLSearchParams(searchParams.toString());

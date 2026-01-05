@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import AddEditModal from "@/components/AddEditModal";
 import RecurringForm from "./RecurringForm";
 import { RecurringBill, Category, Wallet } from "@/lib/generated/prisma";
+import { useCurrency } from "@/contexts/CurrencyContext";
 
 interface RecurringBillWithRelations extends RecurringBill {
   category: Category | null;
@@ -21,6 +22,7 @@ interface RecurringListProps {
 }
 
 function RecurringList({ bills, wallets, categories }: RecurringListProps) {
+  const { formatCurrency } = useCurrency();
   const searchParams = useSearchParams();
   const router = useRouter();
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -104,7 +106,7 @@ function RecurringList({ bills, wallets, categories }: RecurringListProps) {
             <div className="space-y-1">
               <p className="text-sm text-muted-foreground">Monthly Total</p>
               <h2 className="text-3xl font-bold">
-                R$ {totalMonthly.toLocaleString()}
+                {formatCurrency(totalMonthly)}
               </h2>
             </div>
           </CardContent>
@@ -114,7 +116,7 @@ function RecurringList({ bills, wallets, categories }: RecurringListProps) {
             <div className="space-y-1">
               <p className="text-sm text-muted-foreground">Yearly Total</p>
               <h2 className="text-3xl font-bold">
-                R$ {totalYearly.toLocaleString()}
+                {formatCurrency(totalYearly)}
               </h2>
             </div>
           </CardContent>
@@ -154,7 +156,7 @@ function RecurringList({ bills, wallets, categories }: RecurringListProps) {
                 <div className="space-y-1">
                   <div className="flex items-baseline gap-1">
                     <span className="text-2xl font-bold">
-                      R$ {bill.amount.toLocaleString()}
+                      {formatCurrency(bill.amount)}
                     </span>
                   </div>
                   <div className="flex items-center gap-2 mt-2">

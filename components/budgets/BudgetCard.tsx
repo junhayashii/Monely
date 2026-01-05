@@ -1,3 +1,5 @@
+"use client";
+
 import React from "react";
 import { Card, CardContent } from "../ui/card";
 import {
@@ -7,6 +9,7 @@ import {
   ChevronRight,
   MoreHorizontal,
 } from "lucide-react";
+import { useCurrency } from "@/contexts/CurrencyContext";
 
 interface BudgetCardProps {
   name: string;
@@ -25,6 +28,7 @@ const BudgetCard = ({
   onClick,
   onEdit,
 }: BudgetCardProps) => {
+  const { formatCurrency } = useCurrency();
   const handleEditClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     onEdit?.();
@@ -65,7 +69,7 @@ const BudgetCard = ({
               This Month
             </p>
             <p className="text-2xl font-bold text-slate-900 dark:text-white">
-              R$ {(spent || 0).toLocaleString()}
+              {formatCurrency(spent || 0)}
             </p>
           </div>
         </CardContent>
@@ -97,7 +101,7 @@ const BudgetCard = ({
                 {name}
               </h4>
               <p className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">
-                Plan R$ {(budget || 0).toLocaleString()}
+                Plan {formatCurrency(budget || 0)}
               </p>
             </div>
           </div>
@@ -116,7 +120,7 @@ const BudgetCard = ({
                 Spent
               </p>
               <p className="text-xl font-bold text-slate-900 dark:text-white">
-                R$ {(spent || 0).toLocaleString()}
+                {formatCurrency(spent || 0)}
               </p>
             </div>
             <div className="text-right">
@@ -124,7 +128,7 @@ const BudgetCard = ({
                 Left
               </p>
               <p className="text-sm font-semibold text-slate-500 dark:text-slate-400">
-                R$ {Math.max(left, 0).toLocaleString()}
+                {formatCurrency(Math.max(left, 0))}
               </p>
             </div>
           </div>

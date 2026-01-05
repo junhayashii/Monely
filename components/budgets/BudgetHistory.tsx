@@ -3,6 +3,7 @@
 import { useState, useTransition, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import { useCurrency } from "@/contexts/CurrencyContext";
 import {
   ArrowLeft,
   Pencil,
@@ -91,9 +92,11 @@ const DetailStatCard = ({
 const CustomTooltip = ({
   active,
   payload,
+  formatCurrency,
 }: {
   active?: boolean;
   payload?: any[];
+  formatCurrency: (value: number) => string;
 }) => {
   if (!active || !payload || payload.length === 0) return null;
 
@@ -109,7 +112,7 @@ const CustomTooltip = ({
             style={{ backgroundColor: entry.color }}
           />
           <span className="text-sm font-bold" style={{ color: entry.color }}>
-            {entry.name}: R$ {entry.value.toLocaleString()}
+            {entry.name}: {formatCurrency(entry.value)}
           </span>
         </div>
       ))}
@@ -122,6 +125,7 @@ export default function BudgetHistory({
   transactions,
   monthlyData,
 }: BudgetHistoryProps) {
+  const { formatCurrency } = useCurrency();
   const router = useRouter();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
@@ -208,18 +212,18 @@ export default function BudgetHistory({
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <DetailStatCard
           label="Average Spend"
-          value={`R$ ${averageSpend.toLocaleString()}`}
+          value={formatCurrency(averageSpend)}
           icon={<Activity className="w-4 h-4 text-sky-500" />}
         />
         <DetailStatCard
           label="Monthly Limit"
-          value={`R$ ${(category.budget || 0).toLocaleString()}`}
+          value={formatCurrency(category.budget || 0)}
           icon={<Calendar className="w-4 h-4 text-emerald-500" />}
         />
         <DetailStatCard
           label="Status"
           value={isOverLimit ? "Over Limit" : "Under Limit"}
-          subValue={`R$ ${diff.toLocaleString()} diff`}
+          subValue={`${formatCurrency(diff)} diff`}
           icon={
             <TrendingUp
               className={`w-4 h-4 ${
@@ -267,9 +271,9 @@ export default function BudgetHistory({
                 axisLine={false}
                 tickLine={false}
                 tick={{ fill: "#94a3b8", fontSize: 12 }}
-                tickFormatter={(value) => `R$${value}`}
+                tickFormatter={(value) => formatCurrency(value)}
               />
-              <Tooltip content={<CustomTooltip />} />
+              <Tooltip content={<CustomTooltip formatCurrency={formatCurrency} />} />
               <Legend />
               <Area
                 type="monotone"
@@ -307,8 +311,8 @@ export default function BudgetHistory({
             </h5>
             <p className="text-sm text-slate-600 dark:text-slate-400 mt-1 leading-relaxed">
               {isOverLimit
-                ? `Your ${category.name.toLowerCase()} spending is currently over budget by R$ ${diff.toLocaleString()}. Consider reviewing your expenses to stay within your monthly limit.`
-                : `Your ${category.name.toLowerCase()} spending is within budget. You have R$ ${diff.toLocaleString()} remaining this month. Keep up the good work!`}
+                ? `Your ${category.name.toLowerCase()} spending is currently over budget by ${formatCurrency(diff)}. Consider reviewing your expenses to stay within your monthly limit.`
+                : `Your ${category.name.toLowerCase()} spending is within budget. You have ${formatCurrency(diff)} remaining this month. Keep up the good work!`}
             </p>
           </div>
         </div>

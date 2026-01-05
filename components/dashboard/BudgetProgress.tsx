@@ -1,3 +1,5 @@
+"use client";
+
 import React from "react";
 
 import {
@@ -10,6 +12,7 @@ import {
 } from "../ui/card";
 import { Progress } from "../ui/progress";
 import { Button } from "../ui/button";
+import { useCurrency } from "@/contexts/CurrencyContext";
 
 interface BudgetData {
   name: string;
@@ -20,6 +23,7 @@ interface BudgetData {
 }
 
 const BudgetProgress = ({ data }: { data: BudgetData[] }) => {
+  const { formatCurrency } = useCurrency();
   const hasData = data.length > 0;
   const sortedData = data.slice().sort((a, b) => b.progress - a.progress);
   const displayedData = sortedData.slice(0, 3);
@@ -64,8 +68,7 @@ const BudgetProgress = ({ data }: { data: BudgetData[] }) => {
                       {item.name}
                     </p>
                     <p className="text-xs text-muted-foreground">
-                      R$ {item.spent.toLocaleString()} / R${" "}
-                      {item.budget.toLocaleString()}
+                      {formatCurrency(item.spent)} / {formatCurrency(item.budget)}
                     </p>
                   </div>
 
@@ -87,8 +90,8 @@ const BudgetProgress = ({ data }: { data: BudgetData[] }) => {
                   <div className="flex items-center justify-end text-[11px] font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
                     <span className={item.status}>
                       {overBudget
-                        ? `+R$ ${(item.spent - item.budget).toLocaleString()}`
-                        : `R$ ${remaining.toLocaleString()} left`}
+                        ? `+${formatCurrency(item.spent - item.budget)}`
+                        : `${formatCurrency(remaining)} left`}
                     </span>
                   </div>
                 </div>

@@ -2,17 +2,17 @@
 
 import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useCurrency } from "@/contexts/CurrencyContext";
 
 const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#8884d8"];
 
 type CategoryDatum = { name: string; value: number };
 
-const formatCurrency = (value: number) => `R$ ${value.toLocaleString()}`;
-
 const CustomTooltip = ({
   active,
   payload,
   total,
+  formatCurrency,
 }: {
   active?: boolean;
   payload?: {
@@ -21,6 +21,7 @@ const CustomTooltip = ({
     payload?: { percent?: number; value?: number };
   }[];
   total: number;
+  formatCurrency: (value: number) => string;
 }) => {
   if (!active || !payload || payload.length === 0) return null;
   const entry = payload[0];
@@ -58,6 +59,7 @@ const CustomTooltip = ({
 };
 
 const CategoryChart = ({ data }: { data: CategoryDatum[] }) => {
+  const { formatCurrency } = useCurrency();
   const cleaned = data.filter((d) => d.value > 0);
   const total = cleaned.reduce((sum, item) => sum + item.value, 0);
 
@@ -101,7 +103,12 @@ const CategoryChart = ({ data }: { data: CategoryDatum[] }) => {
                 ))}
               </Pie>
               <Tooltip
-                content={<CustomTooltip total={total} />}
+                content={
+                  <CustomTooltip
+                    total={total}
+                    formatCurrency={formatCurrency}
+                  />
+                }
                 offset={12}
                 allowEscapeViewBox={{ x: true, y: true }}
                 wrapperStyle={{

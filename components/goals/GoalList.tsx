@@ -12,8 +12,10 @@ import GoalForm from "./GoalForm";
 import { deleteGoal } from "@/app/(dashboard)/goals/actions";
 import { toast } from "sonner";
 import AddSavingsForm from "@/components/goals/AddSavingsForm";
+import { useCurrency } from "@/contexts/CurrencyContext";
 
 function GoalList({ goals, wallets }: { goals: any[]; wallets: any[] }) {
+  const { formatCurrency } = useCurrency();
   const searchParams = useSearchParams();
   const router = useRouter();
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -83,20 +85,19 @@ function GoalList({ goals, wallets }: { goals: any[]; wallets: any[] }) {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">
-                  R$ {goal.currentAmount.toLocaleString()}
+                  {formatCurrency(goal.currentAmount)}
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  Target: R$ {goal.targetAmount.toLocaleString()}
+                  Target: {formatCurrency(goal.targetAmount)}
                 </p>
                 <div className="mt-4 space-y-2">
                   <Progress value={progress} className="h-2" />
                   <div className="flex justify-between text-[10px] text-muted-foreground">
                     <span>{progress.toFixed(1)}%</span>
                     <span>
-                      Remaining: R${" "}
-                      {(
+                      Remaining: {formatCurrency(
                         goal.targetAmount - goal.currentAmount
-                      ).toLocaleString()}
+                      )}
                     </span>
                   </div>
                 </div>

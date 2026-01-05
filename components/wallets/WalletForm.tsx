@@ -87,7 +87,7 @@ function WalletForm({ wallet, onSuccess }: WalletFormProps) {
 
       <div className="space-y-2">
         <Label htmlFor="balance">
-          {type === "CREDIT_CARD" ? "現在の利用額 (未決済分)" : "初期残高"} (R$)
+          {type === "CREDIT_CARD" ? "現在の利用額 (未決済分)" : "初期残高"}
         </Label>
         <div className="relative">
           {type === "CREDIT_CARD" && (
