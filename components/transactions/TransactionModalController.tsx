@@ -36,6 +36,28 @@ const TransactionModalController = ({
   const isEdit = mode === "edit" && !!transactionToEdit;
   const isDelete = mode === "delete" && !!transactionToEdit;
 
+  // 検索パラメータを保持してURLを構築するヘルパー関数
+  const buildUrl = (paramsToAdd?: Record<string, string | null>) => {
+    const params = new URLSearchParams(searchParams.toString());
+    
+    // modeとidを削除（これらはモーダル用のパラメータ）
+    params.delete("mode");
+    params.delete("id");
+    
+    // 追加のパラメータがあれば設定
+    if (paramsToAdd) {
+      Object.entries(paramsToAdd).forEach(([key, value]) => {
+        if (value) {
+          params.set(key, value);
+        } else {
+          params.delete(key);
+        }
+      });
+    }
+    
+    return `?${params.toString()}`;
+  };
+
   /* ---------- Add / Edit ---------- */
   if (isAdd || isEdit) {
     return (
@@ -45,7 +67,7 @@ const TransactionModalController = ({
           isEdit ? "Update your transaction" : "Create a new transaction"
         }
         open
-        onOpenChange={() => router.push("/transactions")}
+        onOpenChange={() => router.push(buildUrl())}
       >
         <TransactionForm
           editId={isEdit ? editId! : undefined}
@@ -63,8 +85,13 @@ const TransactionModalController = ({
                 }
               : undefined
           }
-          onCancel={() => router.push("/transactions")}
-          onDelete={() => router.push(`?mode=delete&id=${editId}`)}
+          onCancel={() => router.push(buildUrl())}
+          onDelete={() => {
+            const params = new URLSearchParams(searchParams.toString());
+            params.set("mode", "delete");
+            params.set("id", editId!);
+            router.push(`?${params.toString()}`);
+          }}
         />
       </AddEditModal>
     );
@@ -81,12 +108,15 @@ const TransactionModalController = ({
 
         if (result.success) {
           toast.success(result.message);
-          // 成功したら一覧ページに戻る
-          router.push("/transactions");
+          // 成功したら一覧ページに戻る（検索パラメータを保持）
+          router.push(buildUrl());
         } else {
           toast.error(result.message);
-          // 失敗した場合はダイアログを閉じるか、開いたままにするか（今回は閉じる）
-          router.push(`?mode=edit&id=${editId}`);
+          // 失敗した場合は編集モードに戻る（検索パラメータを保持）
+          const params = new URLSearchParams(searchParams.toString());
+          params.set("mode", "edit");
+          params.set("id", editId);
+          router.push(`?${params.toString()}`);
         }
       });
     };
@@ -96,7 +126,12 @@ const TransactionModalController = ({
         open
         title="Delete Transaction"
         description="Are you sure you want to delete this transaction?"
-        onCancel={() => router.push(`?mode=edit&id=${editId}`)}
+        onCancel={() => {
+          const params = new URLSearchParams(searchParams.toString());
+          params.set("mode", "edit");
+          params.set("id", editId!);
+          router.push(`?${params.toString()}`);
+        }}
         onConfirm={handleDeleteConfirm} // ★定義した関数を渡す
         isConfirming={isDeleting} // ★ローディング状態を渡す
       />

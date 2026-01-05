@@ -25,19 +25,21 @@ const Searchbar = () => {
   };
 
   return (
-    <div className="relative w-full">
-      <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-      <Input
-        placeholder="Search by title..."
-        className="pl-9 border-slate-200/70 dark:border-slate-800/70 focus-visible:ring-2 focus-visible:ring-sky-500/20"
-        defaultValue={searchParams.get("q")?.toString()}
-        onChange={(e) => handleSearch(e.target.value)}
-      />
-      {isPending && (
-        <div className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-muted-foreground animate-pulse">
-          Searching...
-        </div>
-      )}
+    <div className="glass-card rounded-[2.5rem] overflow-hidden shadow-sm bg-white dark:bg-slate-950 border border-slate-200/70 dark:border-slate-800/70">
+      <div className="relative px-4 py-4">
+        <Search className="absolute left-8 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400 dark:text-slate-500" />
+        <Input
+          placeholder="Search by title..."
+          className="pl-10 pr-24 border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 text-sm h-auto py-0 placeholder:text-slate-400 dark:placeholder:text-slate-500"
+          defaultValue={searchParams.get("q")?.toString()}
+          onChange={(e) => handleSearch(e.target.value)}
+        />
+        {isPending && (
+          <div className="absolute right-12 top-1/2 -translate-y-1/2 text-[10px] text-slate-400 dark:text-slate-500 animate-pulse">
+            Searching...
+          </div>
+        )}
+      </div>
     </div>
   );
 };

@@ -9,13 +9,6 @@ import MonthPicker from "@/components/MonthPicker";
 import TransactionFilters from "@/components/transactions/TransactionFilters";
 import TransactionPagination from "@/components/transactions/TransactionPagination";
 import { createClient } from "@/lib/supabase";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 
 const PAGE_SIZE = 10;
 
@@ -120,47 +113,31 @@ const TransactionsPage = async ({
         </div>
       </div>
 
-      {/* Filters Card */}
+      {/* Filters */}
       <div className="flex flex-col gap-4 sm:flex-row">
         <div className="flex-1">
           <Searchbar />
         </div>
-
-        <TransactionFilters categories={categories} wallets={wallets} />
+        <div className="sm:w-auto">
+          <TransactionFilters categories={categories} wallets={wallets} />
+        </div>
       </div>
 
-      {/* Transactions Table Card */}
-      <Card className="relative overflow-hidden border border-slate-200/70 bg-linear-to-br from-white via-slate-50 to-slate-100 shadow-sm dark:border-slate-800/70 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
-        <div className="pointer-events-none absolute -right-12 -top-14 h-32 w-32 rounded-full bg-linear-to-br from-sky-400/15 via-blue-500/8 to-transparent blur-3xl dark:from-sky-500/10 dark:via-blue-500/5" />
-        <CardHeader className="relative">
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle className="text-base font-semibold tracking-tight">
-                All Transactions
-              </CardTitle>
-              <CardDescription className="text-xs mt-1">
-                {totalCount === 0
-                  ? "No transactions found"
-                  : `Showing ${skip + 1}-${Math.min(
-                      skip + PAGE_SIZE,
-                      totalCount
-                    )} of ${totalCount} transactions`}
-              </CardDescription>
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent className="relative">
-          <TransactionTable data={transactions} />
-          {totalPages > 1 && (
-            <div className="mt-6">
-              <TransactionPagination
-                totalPages={totalPages}
-                currentPage={currentPage}
-              />
-            </div>
-          )}
-        </CardContent>
-      </Card>
+      {/* Transactions Table */}
+      <TransactionTable
+        data={transactions}
+        pagination={
+          totalPages > 1 ? (
+            <TransactionPagination
+              totalPages={totalPages}
+              currentPage={currentPage}
+              skip={skip}
+              pageSize={PAGE_SIZE}
+              totalCount={totalCount}
+            />
+          ) : undefined
+        }
+      />
 
       {/* Modal */}
       <TransactionModalController

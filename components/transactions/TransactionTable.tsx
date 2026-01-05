@@ -2,20 +2,34 @@
 
 import DataTable from "../data-table/DataTable";
 import { columns } from "./Columns";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Transaction } from "@/lib/generated/prisma";
+import { ReactNode } from "react";
 
-const TransactionTable = ({ data }: { data: Transaction[] }) => {
+const TransactionTable = ({
+  data,
+  pagination,
+}: {
+  data: Transaction[];
+  pagination?: ReactNode;
+}) => {
   const router = useRouter();
+  const searchParams = useSearchParams();
+
+  const handleRowClick = (transaction: Transaction) => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("mode", "edit");
+    params.set("id", transaction.id);
+    router.push(`?${params.toString()}`);
+  };
 
   return (
     <div className="w-full">
       <DataTable
         columns={columns}
         data={data}
-        onRowClick={(data) => {
-          router.push(`?mode=edit&id=${data.id}`);
-        }}
+        onRowClick={handleRowClick}
+        pagination={pagination}
       />
     </div>
   );
