@@ -623,7 +623,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
       </section>
 
       {/* Footer */}
-      <footer className="max-w-7xl mx-auto px-8 pt-20 pb-12 border-t border-slate-100 dark:border-slate-800">
+      <footer className="max-w-7xl mx-auto px-8 pt-20 pb-12 border-t border-slate-200 dark:border-slate-800">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-12 mb-20 text-sm">
           <div className="col-span-2 space-y-6">
             <div className="flex items-center gap-3">
