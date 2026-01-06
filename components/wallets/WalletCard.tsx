@@ -85,8 +85,8 @@ function WalletCard({
       className={cn(
         "relative cursor-pointer transition-all duration-300",
         isSelected
-          ? "scale-105 z-10"
-          : "hover:scale-[1.02] hover:-translate-y-1"
+          ? "scale-102 z-10"
+          : "hover:scale-[1.01] hover:-translate-y-1"
       )}
       onClick={onSelect}
     >

@@ -5,7 +5,13 @@ import { createBrowserClient } from "@supabase/ssr";
 import { useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
 import { toast } from "sonner";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Label } from "@/components/ui/label";
@@ -43,7 +49,8 @@ function SettingsContent({ user }: SettingsContentProps) {
   useEffect(() => {
     setMounted(true);
     // Load settings from localStorage
-    const savedEmailNotifications = localStorage.getItem("emailNotifications") !== "false";
+    const savedEmailNotifications =
+      localStorage.getItem("emailNotifications") !== "false";
     const savedBudgetAlerts = localStorage.getItem("budgetAlerts") !== "false";
     setEmailNotifications(savedEmailNotifications);
     setBudgetAlerts(savedBudgetAlerts);
@@ -158,14 +165,15 @@ function SettingsContent({ user }: SettingsContentProps) {
               </SelectContent>
             </Select>
             <p className="text-xs text-muted-foreground">
-              This will be used to display all monetary amounts throughout the app
+              This will be used to display all monetary amounts throughout the
+              app
             </p>
           </div>
         </CardContent>
       </Card>
 
       {/* Notification Settings */}
-      <Card>
+      {/* <Card>
         <CardHeader>
           <CardTitle>Notification Settings</CardTitle>
           <CardDescription>
@@ -184,7 +192,9 @@ function SettingsContent({ user }: SettingsContentProps) {
               <input
                 type="checkbox"
                 checked={emailNotifications}
-                onChange={(e) => handleEmailNotificationsChange(e.target.checked)}
+                onChange={(e) =>
+                  handleEmailNotificationsChange(e.target.checked)
+                }
                 className="sr-only peer"
               />
               <div className="w-11 h-6 bg-muted peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary dark:peer-checked:bg-primary"></div>
@@ -209,7 +219,7 @@ function SettingsContent({ user }: SettingsContentProps) {
             </label>
           </div>
         </CardContent>
-      </Card>
+      </Card> */}
 
       {/* Appearance */}
       <Card>
@@ -240,7 +250,7 @@ function SettingsContent({ user }: SettingsContentProps) {
       </Card>
 
       {/* Pro Subscription */}
-      <Card className="border-primary/20">
+      {/* <Card className="border-primary/20">
         <CardHeader>
           <div className="flex items-center gap-2">
             <Sparkles className="h-5 w-5 text-primary" />
@@ -274,7 +284,7 @@ function SettingsContent({ user }: SettingsContentProps) {
             </>
           )}
         </CardContent>
-      </Card>
+      </Card> */}
 
       {/* Account Settings */}
       <Card>
@@ -285,13 +295,13 @@ function SettingsContent({ user }: SettingsContentProps) {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="space-y-2">
+          {/* <div className="space-y-2">
             <Label>Danger Zone</Label>
             <p className="text-sm text-muted-foreground">
               Irreversible and destructive actions
             </p>
           </div>
-          <Separator />
+          <Separator /> */}
           <div className="flex items-center justify-between">
             <div>
               <p className="font-medium">Sign Out</p>
@@ -303,6 +313,7 @@ function SettingsContent({ user }: SettingsContentProps) {
               variant="outline"
               onClick={handleSignOut}
               disabled={isPending}
+              className="bg-red-500 hover:bg-red-600 text-white hover:text-white"
             >
               {isPending ? "Signing out..." : "Sign Out"}
             </Button>
