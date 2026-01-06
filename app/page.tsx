@@ -1,7 +1,13 @@
-import React from "react";
+"use client";
 
-const Page = () => {
-  return <div className="text-4xl">Monely</div>;
-};
+import LandingPage from "@/components/landing-page/LandingPage";
 
-export default Page;
+export default function Home() {
+  return (
+    <LandingPage
+      onGetStarted={() => console.log("Get Started!")}
+      onLogin={() => console.log("Login!")}
+      isDarkMode={false}
+    />
+  );
+}

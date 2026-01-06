@@ -67,7 +67,7 @@ const AppSidebar = ({ unreadNotificationCount = 0 }: AppSidebarProps) => {
             </div>
             {!isCollapsed && (
               <h1 className="text-xl font-extrabold tracking-tight gradient-text-sky truncate">
-                Cashly
+                Monely
               </h1>
             )}
           </div>
