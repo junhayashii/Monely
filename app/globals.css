@@ -41,7 +41,7 @@
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
-  
+
   /* Lumina Design System Colors */
   --color-lumina-sky: var(--lumina-sky);
   --color-lumina-sky-light: var(--lumina-sky-light);
@@ -58,12 +58,12 @@
   --color-lumina-indigo: var(--lumina-indigo);
   --color-lumina-indigo-light: var(--lumina-indigo-light);
   --color-lumina-indigo-dark: var(--lumina-indigo-dark);
-  
+
   /* Gradient Colors */
   --gradient-sky: var(--gradient-sky-start), var(--gradient-sky-end);
   --gradient-rose: var(--gradient-rose-start), var(--gradient-rose-end);
   --gradient-emerald: var(--gradient-emerald-start), var(--gradient-emerald-end);
-  
+
   /* Glass Morphism */
   --glass-bg-light: var(--glass-bg-light-color);
   --glass-bg-dark: var(--glass-bg-dark-color);
@@ -104,7 +104,7 @@
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
-  
+
   /* Lumina Design System - Light Mode */
   --lumina-sky: #0ea5e9; /* sky-500 */
   --lumina-sky-light: #7dd3fc; /* sky-300 */
@@ -121,7 +121,7 @@
   --lumina-indigo: #818cf8; /* indigo-400 */
   --lumina-indigo-light: #a5b4fc; /* indigo-300 */
   --lumina-indigo-dark: #6366f1; /* indigo-500 */
-  
+
   /* Gradients */
   --gradient-sky-start: #0ea5e9;
   --gradient-sky-end: #3b82f6;
@@ -129,7 +129,7 @@
   --gradient-rose-end: #f43f5e;
   --gradient-emerald-start: #34d399;
   --gradient-emerald-end: #10b981;
-  
+
   /* Glass Morphism - Light Mode */
   --glass-bg-light-color: rgba(255, 255, 255, 0.7);
   --glass-bg-dark-color: rgba(15, 23, 42, 0.8);
@@ -169,7 +169,7 @@
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.556 0 0);
-  
+
   /* Lumina Design System - Dark Mode (slightly adjusted for better contrast) */
   --lumina-sky: #38bdf8; /* sky-400 - lighter for dark mode */
   --lumina-sky-light: #7dd3fc; /* sky-300 */
@@ -186,7 +186,7 @@
   --lumina-indigo: #818cf8; /* indigo-400 */
   --lumina-indigo-light: #a5b4fc; /* indigo-300 */
   --lumina-indigo-dark: #6366f1; /* indigo-500 */
-  
+
   /* Glass Morphism - Dark Mode */
   --glass-bg-light-color: rgba(15, 23, 42, 0.8);
   --glass-bg-dark-color: rgba(15, 23, 42, 0.9);
@@ -212,62 +212,171 @@
     -webkit-backdrop-filter: blur(16px);
     border: 1px solid var(--glass-border-light-color);
   }
-  
+
   .dark .glass-card {
     background: var(--glass-bg-dark-color);
     border-color: var(--glass-border-dark-color);
   }
-  
+
   /* Gradient Text */
   .gradient-text-sky {
-    background: linear-gradient(to right, var(--gradient-sky-start), var(--gradient-sky-end));
+    background: linear-gradient(
+      to right,
+      var(--gradient-sky-start),
+      var(--gradient-sky-end)
+    );
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
   }
-  
+
   .gradient-text-rose {
-    background: linear-gradient(to right, var(--gradient-rose-start), var(--gradient-rose-end));
+    background: linear-gradient(
+      to right,
+      var(--gradient-rose-start),
+      var(--gradient-rose-end)
+    );
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
   }
-  
+
   .gradient-text-emerald {
-    background: linear-gradient(to right, var(--gradient-emerald-start), var(--gradient-emerald-end));
+    background: linear-gradient(
+      to right,
+      var(--gradient-emerald-start),
+      var(--gradient-emerald-end)
+    );
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
   }
-  
+
   /* Enhanced Shadows */
   .shadow-lumina {
-    box-shadow: 0 10px 15px -3px rgba(14, 165, 233, 0.1), 0 4px 6px -2px rgba(14, 165, 233, 0.05);
+    box-shadow: 0 10px 15px -3px rgba(14, 165, 233, 0.1),
+      0 4px 6px -2px rgba(14, 165, 233, 0.05);
   }
-  
+
   .dark .shadow-lumina {
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3),
+      0 4px 6px -2px rgba(0, 0, 0, 0.2);
   }
-  
+
   .shadow-lumina-sky {
-    box-shadow: 0 10px 15px -3px rgba(14, 165, 233, 0.2), 0 4px 6px -2px rgba(14, 165, 233, 0.1);
+    box-shadow: 0 10px 15px -3px rgba(14, 165, 233, 0.2),
+      0 4px 6px -2px rgba(14, 165, 233, 0.1);
   }
-  
+
   /* Smooth Transitions */
   .transition-lumina {
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
-  
+
   /* Rounded Corners - Lumina Style */
   .rounded-lumina {
     border-radius: 2.5rem;
   }
-  
+
   .rounded-lumina-lg {
     border-radius: 3rem;
   }
-  
+
   .rounded-lumina-xl {
     border-radius: 4rem;
+  }
+}
+
+@layer utilities {
+  /* ふわっと浮き上がるアニメーション */
+  .animate-fade-in-up {
+    animation: fadeInUp 0.8s ease-out forwards;
+  }
+
+  /* 単純なフェードイン */
+  .animate-fade-in {
+    animation: fadeIn 1.2s ease-out forwards;
+  }
+
+  /* ヒーロー画像などの浮遊感 */
+  .animate-float {
+    animation: float 6s ease-in-out infinite;
+  }
+
+  /* 背景のゆっくりした鼓動 */
+  .animate-slow-pulse {
+    animation: slowPulse 10s ease-in-out infinite;
+  }
+
+  /* 背景グラデーションが動くアニメーション */
+  .animate-gradient-xy {
+    background-size: 400% 400%;
+    animation: gradientXY 15s ease infinite;
+  }
+
+  /* グラフが伸びるようなアニメーション */
+  .animate-grow-width {
+    animation: growWidth 1.5s ease-out forwards;
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0) rotate(0);
+  }
+  50% {
+    transform: translateY(-20px) rotate(5deg);
+  }
+}
+
+@keyframes slowPulse {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 0.4;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 0.6;
+  }
+}
+
+@keyframes gradientXY {
+  0%,
+  100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+@keyframes growWidth {
+  from {
+    width: 0;
+  }
+  to {
+    width: var(--target-width);
   }
 }
