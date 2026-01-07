@@ -218,16 +218,17 @@ export default function ReportsContent({
                       tickFormatter={(value) => formatCurrency(value)}
                     />
                     <Tooltip
-                      cursor={{ fill: "rgba(241, 245, 249, 0.5)" }}
                       contentStyle={{
                         borderRadius: "16px",
                         border: "none",
                         backgroundColor: "rgba(255, 255, 255, 0.9)",
                         color: "#0f172a",
                       }}
-                      formatter={(value: number) => formatCurrency(value)}
+                      formatter={(value: number | undefined) =>
+                        value !== undefined ? formatCurrency(value) : ""
+                      }
                     />
-                    <Legend iconType="circle" />
+                    <Legend verticalAlign="bottom" height={36} />
                     <Bar
                       dataKey="income"
                       fill="#0ea5e9"
@@ -287,7 +288,9 @@ export default function ReportsContent({
                         backgroundColor: "rgba(255, 255, 255, 0.9)",
                         color: "#0f172a",
                       }}
-                      formatter={(value: number) => formatCurrency(value)}
+                      formatter={(value: number | undefined) =>
+                        value !== undefined ? formatCurrency(value) : ""
+                      }
                     />
                     <Legend verticalAlign="bottom" height={36} />
                   </PieChart>
@@ -347,7 +350,9 @@ export default function ReportsContent({
                       border: "none",
                       backgroundColor: "#fff",
                     }}
-                    formatter={(value: number) => formatCurrency(value)}
+                    formatter={(value: number | undefined) =>
+                      value !== undefined ? formatCurrency(value) : ""
+                    }
                   />
                   <Area
                     type="monotone"
@@ -399,7 +404,9 @@ export default function ReportsContent({
                       border: "none",
                       backgroundColor: "#fff",
                     }}
-                    formatter={(value: number) => formatCurrency(value)}
+                    formatter={(value: number | undefined) =>
+                      value !== undefined ? formatCurrency(value) : ""
+                    }
                   />
                   <Legend />
                   <Line
