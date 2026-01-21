@@ -57,8 +57,21 @@ async function DashboardPage({ searchParams }: Props) {
   const monthEnd = endOfMonth(currentMonth);
   const sixMonthsAgo = startOfMonth(subMonths(currentMonth, 5));
 
-  // --- データベースから全データを一括取得 ---
-  const [allTransactions, goals, categories] = await Promise.all([
+  // --- データベースクエリを分割：今月分・6ヶ月分 ---
+  // 今月分トランザクションだけ取得
+  const [currentTransactions, lastSixMonthTransactions, goals, categories] = await Promise.all([
+    prisma.transaction.findMany({
+      where: {
+        userId: user.id,
+        date: { gte: monthStart, lte: monthEnd },
+      },
+      include: {
+        category: true,
+        wallet: true,
+        toWallet: true,
+      },
+      orderBy: { date: "desc" },
+    }),
     prisma.transaction.findMany({
       where: {
         userId: user.id,
@@ -74,11 +87,6 @@ async function DashboardPage({ searchParams }: Props) {
     prisma.goal.findMany({ where: { userId: user.id } }),
     prisma.category.findMany(),
   ]);
-
-  // 今月分だけのデータをメモリ上でフィルタリング
-  const currentTransactions = allTransactions.filter(
-    (t) => new Date(t.date) >= monthStart && new Date(t.date) <= monthEnd
-  );
 
   // --- 集計：今月の Income / Expense / Balance ---
   const income = currentTransactions
@@ -129,7 +137,7 @@ async function DashboardPage({ searchParams }: Props) {
     end: currentMonth,
   });
   const yearlyData = lastSixMonths.map((m) => {
-    const monthTransactions = allTransactions.filter((t) =>
+    const monthTransactions = lastSixMonthTransactions.filter((t) =>
       isSameMonth(new Date(t.date), m)
     );
     const inc = monthTransactions
@@ -246,7 +254,7 @@ async function DashboardPage({ searchParams }: Props) {
             </CardHeader>
             <CardContent className="pt-0">
               <div className="space-y-1.5">
-                {allTransactions.slice(0, 4).map((t) => {
+                {currentTransactions.slice(0, 4).map((t) => {
                   const isTransfer = !!t.toWalletId;
                   const isIncome = t.category?.type === "INCOME";
 
