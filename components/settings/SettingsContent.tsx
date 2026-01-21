@@ -2,6 +2,7 @@
 
 import { useState, useTransition, useEffect } from "react";
 import { createBrowserClient } from "@supabase/ssr";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
 import { toast } from "sonner";
@@ -47,7 +48,6 @@ function SettingsContent({ user }: SettingsContentProps) {
   );
 
   useEffect(() => {
-    setMounted(true);
     // Load settings from localStorage
     const savedEmailNotifications =
       localStorage.getItem("emailNotifications") !== "false";
@@ -55,6 +55,7 @@ function SettingsContent({ user }: SettingsContentProps) {
     setEmailNotifications(savedEmailNotifications);
     setBudgetAlerts(savedBudgetAlerts);
     // TODO: Check Pro status from database or Supabase metadata
+    setMounted(true);
   }, []);
 
   const handleSignOut = async () => {
@@ -97,8 +98,24 @@ function SettingsContent({ user }: SettingsContentProps) {
     toast.info("Pro subscription coming soon!");
   };
 
+  // mounted判定：読み込み時のみskeleton
   if (!mounted) {
-    return null;
+    return (
+      <div className="space-y-6">
+        {/* Profile Skeleton */}
+        <Skeleton className="h-32 w-full" />
+        {/* Currency Skeleton */}
+        <Skeleton className="h-24 w-full" />
+        {/* Notification Skeleton */}
+        <Skeleton className="h-24 w-full" />
+        {/* Appearance Skeleton */}
+        <Skeleton className="h-24 w-full" />
+        {/* Pro Skeleton */}
+        <Skeleton className="h-32 w-full" />
+        {/* Account Skeleton */}
+        <Skeleton className="h-24 w-full" />
+      </div>
+    );
   }
 
   const currencies = [
@@ -152,18 +169,23 @@ function SettingsContent({ user }: SettingsContentProps) {
         <CardContent className="space-y-4">
           <div className="space-y-2">
             <Label>Default Currency</Label>
-            <Select value={currency} onValueChange={handleCurrencyChange}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {currencies.map((curr) => (
-                  <SelectItem key={curr.value} value={curr.value}>
-                    {curr.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            {/* Currency Skeleton: 値未取得時だけ表示 */}
+            {!currency ? (
+              <Skeleton className="h-10 w-40" />
+            ) : (
+              <Select value={currency} onValueChange={handleCurrencyChange}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {currencies.map((curr) => (
+                    <SelectItem key={curr.value} value={curr.value}>
+                      {curr.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
             <p className="text-xs text-muted-foreground">
               This will be used to display all monetary amounts throughout the
               app
