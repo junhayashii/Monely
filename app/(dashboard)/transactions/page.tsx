@@ -86,7 +86,10 @@ const TransactionsPage = async ({
       take: PAGE_SIZE,
     }),
     prisma.transaction.count({ where }),
-    prisma.category.findMany({ orderBy: { name: "asc" } }),
+    prisma.category.findMany({
+      where: { userId: user.id },
+      orderBy: { name: "asc" },
+    }),
     prisma.wallet.findMany({
       where: { userId: user.id },
       orderBy: { name: "asc" },

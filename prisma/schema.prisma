@@ -28,6 +28,9 @@ model Transaction {
   wallet Wallet? @relation("FromWallet", fields: [walletId], references: [id])
   toWalletId String?
   toWallet Wallet? @relation("ToWallet", fields: [toWalletId], references: [id])
+
+  @@index([userId])
+  @@index([userId, date])
 }
 
 enum CategoryType {
@@ -47,6 +50,8 @@ model Category {
   // updatedAt DateTime @updatedAt
   recurringBills RecurringBill[]
   notifications Notification[]
+
+  @@index([userId])
 }
 
 enum WalletType {
@@ -71,6 +76,8 @@ model Wallet {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   recurringBills RecurringBill[]
+
+  @@index([userId])
 }
 
 model Goal {
@@ -83,6 +90,8 @@ model Goal {
   deadline DateTime?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@index([userId])
 }
 
 model RecurringBill {
@@ -99,6 +108,8 @@ model RecurringBill {
   wallet Wallet @relation(fields: [walletId], references: [id])
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@index([userId])
 }
 
 enum NotificationType {
@@ -116,4 +127,6 @@ model Notification {
   read Boolean @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@index([userId])
 }
