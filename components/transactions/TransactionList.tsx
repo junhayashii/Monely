@@ -20,18 +20,33 @@ interface TransactionListProps {
   };
 }
 
+/**
+ * TransactionList - A Server Component that fetches and displays transactions.
+ * 
+ * This component is responsible for:
+ * 1. Consuming searchParams to build a Prisma 'where' clause.
+ * 2. Calculating pagination (skip/take).
+ * 3. Fetching transactions, total count, and metadata (categories/wallets) in parallel.
+ * 4. Rendering the TransactionTable and TransactionModalController.
+ */
 export default async function TransactionList({
   userId,
   searchParams,
 }: TransactionListProps) {
   const { q, month, type, categoryId, walletId, page } = searchParams;
+  
+  // PAGINATION SETUP: 
+  // Standard 10 items per page. We default to page 1 if not specified.
   const currentPage = Number(page) || 1;
   const skip = (currentPage - 1) * PAGE_SIZE;
 
+  // QUERY BUILDING:
+  // We construct the Prisma 'where' object dynamically based on user input.
   const where: Prisma.TransactionWhereInput = {
     userId,
   };
 
+  // 1. Text Search: Matches the transaction title (case-insensitive)
   if (q?.trim()) {
     where.title = {
       contains: q.trim(),
@@ -39,6 +54,7 @@ export default async function TransactionList({
     };
   }
 
+  // 2. Date Filter: Filters by the selected month using date-fns
   if (month) {
     const referenceDate = parseISO(`${month}-01`);
     where.date = {
@@ -47,23 +63,29 @@ export default async function TransactionList({
     };
   }
 
+  // 3. Category Type: Income vs Expense
   if (type) {
     where.category = { type: type };
   }
 
+  // 4. Specific Category
   if (categoryId) {
     where.categoryId = categoryId;
   }
 
+  // 5. Specific Wallet
   if (walletId) {
     where.walletId = walletId;
   }
 
-  // Selective fetching for better performance
+  // DATA FETCHING:
+  // We use Promise.all to fetch everything in a single round-trip to the DB.
+  // Note: categories and wallets are 'getCached' in lib/data-fetching to minimize redundant DB calls.
   const [transactions, totalCount, categories, wallets] = await Promise.all([
     prisma.transaction.findMany({
       where,
       orderBy: { date: "desc" },
+      // PERFORMANCE TIP: We only select the fields we actually need to display or use in modals.
       select: {
         id: true,
         title: true,
@@ -88,6 +110,10 @@ export default async function TransactionList({
 
   return (
     <>
+      {/* 
+          Main Table View 
+          We pass the transactions data and a pre-rendered pagination component.
+      */}
       <TransactionTable
         data={transactions as any}
         pagination={
@@ -103,6 +129,11 @@ export default async function TransactionList({
         }
       />
 
+      {/* 
+          Modal Logic 
+          This client component listens to URL changes (mode=edit/delete) 
+          and handles showing the correct UI overlay.
+      */}
       <TransactionModalController
         transactions={transactions as any}
         categories={categories as any}

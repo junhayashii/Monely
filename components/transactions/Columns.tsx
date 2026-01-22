@@ -13,6 +13,16 @@ type TransactionWithRelations = Transaction & {
   toWalletId?: string | null;
 };
 
+/**
+ * useColumns - TanStack Table Column Definitions
+ * 
+ * This hook defines how each column of the transaction table is rendered.
+ * It includes custom logic for:
+ * - Dynamic icons based on transaction type.
+ * - Responsive visibility (some columns hidden on mobile).
+ * - Multi-wallet display for transfers.
+ * - Currency formatting and semantic color coding (emerald for income, rose for expense).
+ */
 export function useColumns(): ColumnDef<Transaction>[] {
   const { formatCurrency } = useCurrency();
 
@@ -28,6 +38,7 @@ export function useColumns(): ColumnDef<Transaction>[] {
 
         return (
           <div className="flex items-center gap-3 md:gap-4 min-w-[140px] md:min-w-0">
+            {/* 1. Transaction Type Icon */}
             <div
               className={`p-2 md:p-3 rounded-xl md:rounded-2xl shrink-0 ${
                 isTransfer
@@ -45,6 +56,7 @@ export function useColumns(): ColumnDef<Transaction>[] {
                 <ArrowDownRight className="w-3.5 h-3.5 md:w-4 md:h-4" />
               )}
             </div>
+            {/* 2. Title and Mobile Subtext */}
             <div className="flex flex-col gap-0.5 min-w-0">
               <span className="font-bold text-xs md:text-sm text-slate-800 dark:text-slate-200 truncate">
                 {name}
@@ -93,6 +105,7 @@ export function useColumns(): ColumnDef<Transaction>[] {
         const toWallet = tx.toWallet?.name;
         const isTransfer = !!tx.toWalletId;
 
+        // For transfers, we show both the source and destination wallets
         if (isTransfer) {
           return (
             <div className="hidden md:flex items-center gap-2">
@@ -145,6 +158,7 @@ export function useColumns(): ColumnDef<Transaction>[] {
 
         const formatted = formatCurrency(Math.abs(amount));
 
+        // Use semantic colors for positive/negative transactions
         const amountClasses = isTransfer
           ? "text-slate-900 dark:text-white"
           : isIncome
@@ -160,5 +174,4 @@ export function useColumns(): ColumnDef<Transaction>[] {
       },
     },
   ];
-
 }

@@ -11,6 +11,15 @@ import { getCachedCategories, getCachedWallets } from "@/lib/data-fetching";
 import AddTransactionModal from "@/components/transactions/AddTransactionModal";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 
+/**
+ * TransactionsPage - Transactions Management Dashboard
+ * 
+ * This page uses a hybrid rendering strategy:
+ * 1. Immediate Shell: Header, MonthPicker, Searchbar, and Filters are fetched outside 
+ *    the Suspense boundary to ensure the UI shell and navigational controls are zero-delay.
+ * 2. Streaming Data: The transaction list itself is wrapped in <Suspense> and handled 
+ *    by the <TransactionList> component, which performs the heavy database operations.
+ */
 const TransactionsPage = async ({
   searchParams,
 }: {
@@ -24,28 +33,34 @@ const TransactionsPage = async ({
   }>;
 }) => {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const { data: { user } } = await supabase.auth.getUser();
 
   if (!user) {
     return <div>Please log in.</div>;
   }
 
+  // Next.js 15: searchParams must be awaited
   const resolvedParams = await searchParams;
   const { month } = resolvedParams;
 
-  // Fetch filters data in parallel to show filters immediately
+  // FETCH STRATEGY: 
+  // We fetch categories and wallets in parallel here. These are relatively small datasets.
+  // We need them for BOTH the Filter bar (immediate) and the Add Modal (also immediate).
   const [categories, wallets] = await Promise.all([
     getCachedCategories(user.id),
     getCachedWallets(user.id),
   ]);
 
+  // Handle month selection for the dynamic subtitle
   const selectedMonth = month ? parseISO(`${month}-01`) : new Date();
 
   return (
     <div className="space-y-6 pb-16">
-      {/* Header */}
+      {/* 
+          1. Header Section 
+          Displays the title and the MonthPicker/AddButton.
+          The title shows the selected month if the month filter is active.
+      */}
       <div className="flex flex-row items-center justify-between gap-2">
         <div className="flex items-center gap-2 md:gap-3">
           <div className="md:hidden">
@@ -69,7 +84,10 @@ const TransactionsPage = async ({
         </div>
       </div>
 
-      {/* Filters */}
+      {/* 
+          2. Filtering & Search Block
+          The Searchbar and Filters are rendered immediately.
+      */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
         <div className="flex-1 w-full">
           <Searchbar />
@@ -79,7 +97,12 @@ const TransactionsPage = async ({
         </div>
       </div>
 
-      {/* Transactions Table with Streaming */}
+      {/* 
+          3. Streaming Transaction List
+          The table body is streamed to the browser as a separate chunk.
+          Using the searchParams as a key ensures that the Suspense fallback 
+          triggers on every filter change.
+      */}
       <Suspense
         key={JSON.stringify(resolvedParams)}
         fallback={<TransactionTableSkeleton />}
@@ -87,12 +110,19 @@ const TransactionsPage = async ({
         <TransactionList userId={user.id} searchParams={resolvedParams} />
       </Suspense>
 
-      {/* Add Modal (outside suspense so it's always ready) */}
+      {/* 
+          4. Global Modals
+          Modal components are kept at the bottom to maintain a clean structure.
+          They share the same categories/wallets data.
+      */}
       <AddTransactionModal categories={categories as any} wallets={wallets as any} />
     </div>
   );
 };
 
+/**
+ * Loading Placeholder for the Transactions Table
+ */
 function TransactionTableSkeleton() {
   return (
     <div className="glass-card rounded-[2.5rem] border border-slate-200/70 dark:border-slate-800/70 bg-white dark:bg-slate-950 overflow-hidden">
