@@ -58,33 +58,29 @@ const TransactionModalController = ({
     return `?${params.toString()}`;
   };
 
-  /* ---------- Add / Edit ---------- */
-  if (isAdd || isEdit) {
+  /* ---------- Edit ---------- */
+  if (isEdit) {
     return (
       <AddEditModal
-        title={isEdit ? "Edit Transaction" : "Add Transaction"}
-        description={
-          isEdit ? "Update your transaction" : "Create a new transaction"
-        }
+        title="Edit Transaction"
+        description="Update your transaction"
         open
         onOpenChange={() => router.push(buildUrl())}
       >
         <TransactionForm
-          editId={isEdit ? editId! : undefined}
+          editId={editId!}
           categories={categories}
           wallets={wallets}
-          initialData={
-            isEdit
-              ? {
-                  title: transactionToEdit.title,
-                  amount: transactionToEdit.amount,
-                  date: transactionToEdit.date.toISOString().slice(0, 10),
-                  categoryId: transactionToEdit.categoryId ?? "",
-                  walletId: transactionToEdit.walletId ?? "",
-                  toWalletId: transactionToEdit.toWalletId,
-                }
-              : undefined
-          }
+          initialData={{
+            title: transactionToEdit.title,
+            amount: transactionToEdit.amount,
+            date: transactionToEdit.date instanceof Date 
+                ? transactionToEdit.date.toISOString().slice(0, 10)
+                : new Date(transactionToEdit.date).toISOString().slice(0, 10),
+            categoryId: transactionToEdit.categoryId ?? "",
+            walletId: transactionToEdit.walletId ?? "",
+            toWalletId: transactionToEdit.toWalletId,
+          }}
           onCancel={() => router.push(buildUrl())}
           onDelete={() => {
             const params = new URLSearchParams(searchParams.toString());
@@ -96,6 +92,7 @@ const TransactionModalController = ({
       </AddEditModal>
     );
   }
+
 
   /* ---------- Delete ---------- */
   if (isDelete) {

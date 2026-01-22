@@ -26,24 +26,24 @@ export default async function ReportsPage() {
   const sixMonthsAgo = startOfMonth(subMonths(currentMonth, 5));
   const monthEnd = endOfMonth(currentMonth);
 
-  // Fetch all transactions
-  const allTransactions = await prisma.transaction.findMany({
-    where: {
-      userId: user.id,
-      date: { gte: sixMonthsAgo, lte: monthEnd },
-    },
-    include: {
-      category: true,
-      wallet: true,
-      toWallet: true,
-    },
-    orderBy: { date: "desc" },
-  });
-
-  // Get categories
-  const categories = await prisma.category.findMany({
-    where: { userId: user.id },
-  });
+  // Fetch all data in parallel
+  const [allTransactions, categories] = await Promise.all([
+    prisma.transaction.findMany({
+      where: {
+        userId: user.id,
+        date: { gte: sixMonthsAgo, lte: monthEnd },
+      },
+      include: {
+        category: true,
+        wallet: true,
+        toWallet: true,
+      },
+      orderBy: { date: "desc" },
+    }),
+    prisma.category.findMany({
+      where: { userId: user.id },
+    }),
+  ]);
 
   // Calculate monthly data
   const lastSixMonths = eachMonthOfInterval({

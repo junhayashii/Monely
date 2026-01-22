@@ -39,27 +39,27 @@ async function BudgetsPage({
   const monthEnd = endOfMonth(currentMonth);
   const sixMonthsAgo = startOfMonth(subMonths(currentMonth, 5));
 
-  const categories = await prisma.category.findMany({
-    where: { userId: user.id },
-    orderBy: { type: "asc" },
-  });
-
-  // 全期間のトランザクションを取得（グラフ用）
-  const allTransactions = await prisma.transaction.findMany({
-    where: {
-      userId: user.id,
-      date: {
-        gte: sixMonthsAgo,
-        lte: monthEnd,
+  const [categories, allTransactions] = await Promise.all([
+    prisma.category.findMany({
+      where: { userId: user.id },
+      orderBy: { type: "asc" },
+    }),
+    prisma.transaction.findMany({
+      where: {
+        userId: user.id,
+        date: {
+          gte: sixMonthsAgo,
+          lte: monthEnd,
+        },
       },
-    },
-    include: {
-      category: true,
-      wallet: true,
-      toWallet: true,
-    },
-    orderBy: { date: "desc" },
-  });
+      include: {
+        category: true,
+        wallet: true,
+        toWallet: true,
+      },
+      orderBy: { date: "desc" },
+    }),
+  ]);
 
   // 今月分だけのデータをメモリ上でフィルタリング
   const currentTransactions = allTransactions.filter(
@@ -82,23 +82,8 @@ async function BudgetsPage({
       return <div>Category not found.</div>;
     }
 
-    // カテゴリのトランザクションを取得
-    const categoryTransactions = await prisma.transaction.findMany({
-      where: {
-        userId: user.id,
-        categoryId: categoryId,
-        date: {
-          gte: sixMonthsAgo,
-          lte: monthEnd,
-        },
-      },
-      include: {
-        category: true,
-        wallet: true,
-        toWallet: true,
-      },
-      orderBy: { date: "desc" },
-    });
+    // すでに取得済みの allTransactions からフィルタリング
+    const categoryTransactions = allTransactions.filter(t => t.categoryId === categoryId);
 
     // 月別データを準備
     const lastSixMonths = eachMonthOfInterval({

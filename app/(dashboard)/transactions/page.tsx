@@ -1,16 +1,14 @@
 import AddTransactionButton from "@/components/transactions/AddTransactionButton";
-import TransactionTable from "@/components/transactions/TransactionTable";
-import TransactionModalController from "@/components/transactions/TransactionModalController";
-import { prisma } from "@/lib/prisma";
-import { Prisma } from "@/lib/generated/prisma";
+import TransactionList from "@/components/transactions/TransactionList";
 import Searchbar from "@/components/transactions/Searchbar";
-import { startOfMonth, endOfMonth, parseISO, format } from "date-fns";
+import { parseISO, format } from "date-fns";
 import MonthPicker from "@/components/MonthPicker";
 import TransactionFilters from "@/components/transactions/TransactionFilters";
-import TransactionPagination from "@/components/transactions/TransactionPagination";
 import { createClient } from "@/lib/supabase";
-
-const PAGE_SIZE = 10;
+import { Suspense } from "react";
+import { Skeleton } from "@/components/ui/skeleton";
+import { getCachedCategories, getCachedWallets } from "@/lib/data-fetching";
+import AddTransactionModal from "@/components/transactions/AddTransactionModal";
 
 const TransactionsPage = async ({
   searchParams,
@@ -30,73 +28,18 @@ const TransactionsPage = async ({
   } = await supabase.auth.getUser();
 
   if (!user) {
-    // ログインしていなければリダイレクトなど
     return <div>Please log in.</div>;
   }
 
-  const { q, month, type, categoryId, walletId, page } = await searchParams;
+  const resolvedParams = await searchParams;
+  const { month } = resolvedParams;
 
-  const currentPage = Number(page) || 1;
-  const skip = (currentPage - 1) * PAGE_SIZE;
-
-  const where: Prisma.TransactionWhereInput = {
-    userId: user.id,
-  };
-
-  // 検索クエリフィルタ
-  if (q && q.trim()) {
-    where.title = {
-      contains: q.trim(),
-      mode: "insensitive",
-    };
-  }
-
-  // 月フィルタ
-  if (month) {
-    const referenceDate = parseISO(`${month}-01`);
-    where.date = {
-      gte: startOfMonth(referenceDate),
-      lte: endOfMonth(referenceDate),
-    };
-  }
-
-  // Type (Income/Expense) フィルタ
-  if (type) {
-    where.category = {
-      type: type,
-    };
-  }
-
-  // Category フィルタ
-  if (categoryId) {
-    where.categoryId = categoryId;
-  }
-
-  // Wallet フィルタ
-  if (walletId) {
-    where.walletId = walletId;
-  }
-
-  const [transactions, totalCount, categories, wallets] = await Promise.all([
-    prisma.transaction.findMany({
-      where,
-      orderBy: { date: "desc" },
-      include: { category: true, wallet: true, toWallet: true },
-      skip: skip,
-      take: PAGE_SIZE,
-    }),
-    prisma.transaction.count({ where }),
-    prisma.category.findMany({
-      where: { userId: user.id },
-      orderBy: { name: "asc" },
-    }),
-    prisma.wallet.findMany({
-      where: { userId: user.id },
-      orderBy: { name: "asc" },
-    }),
+  // Fetch filters data in parallel to show filters immediately
+  const [categories, wallets] = await Promise.all([
+    getCachedCategories(user.id),
+    getCachedWallets(user.id),
   ]);
 
-  const totalPages = Math.ceil(totalCount / PAGE_SIZE);
   const selectedMonth = month ? parseISO(`${month}-01`) : new Date();
 
   return (
@@ -124,34 +67,44 @@ const TransactionsPage = async ({
           <Searchbar />
         </div>
         <div className="sm:w-auto">
-          <TransactionFilters categories={categories} wallets={wallets} />
+          <TransactionFilters categories={categories as any} wallets={wallets as any} />
         </div>
       </div>
 
-      {/* Transactions Table */}
-      <TransactionTable
-        data={transactions}
-        pagination={
-          totalPages > 1 ? (
-            <TransactionPagination
-              totalPages={totalPages}
-              currentPage={currentPage}
-              skip={skip}
-              pageSize={PAGE_SIZE}
-              totalCount={totalCount}
-            />
-          ) : undefined
-        }
-      />
+      {/* Transactions Table with Streaming */}
+      <Suspense
+        key={JSON.stringify(resolvedParams)}
+        fallback={<TransactionTableSkeleton />}
+      >
+        <TransactionList userId={user.id} searchParams={resolvedParams} />
+      </Suspense>
 
-      {/* Modal */}
-      <TransactionModalController
-        transactions={transactions}
-        categories={categories}
-        wallets={wallets}
-      />
+      {/* Add Modal (outside suspense so it's always ready) */}
+      <AddTransactionModal categories={categories as any} wallets={wallets as any} />
     </div>
   );
 };
 
+function TransactionTableSkeleton() {
+  return (
+    <div className="glass-card rounded-[2.5rem] border border-slate-200/70 dark:border-slate-800/70 bg-white dark:bg-slate-950 overflow-hidden">
+      <div className="p-6">
+        <div className="space-y-4">
+          {[...Array(5)].map((_, i) => (
+            <div key={i} className="flex items-center gap-4 py-3">
+              <Skeleton className="h-12 w-12 rounded-2xl" />
+              <div className="flex-1 space-y-2">
+                <Skeleton className="h-5 w-1/3 rounded-md" />
+                <Skeleton className="h-4 w-1/4 rounded-md opacity-70" />
+              </div>
+              <Skeleton className="h-6 w-20 rounded-md" />
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default TransactionsPage;
+
