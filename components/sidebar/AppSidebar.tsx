@@ -31,7 +31,7 @@ type AppSidebarProps = {
 
 const AppSidebar = ({ unreadNotificationCount = 0 }: AppSidebarProps) => {
   const pathname = usePathname();
-  const { state } = useSidebar(); // 'expanded' | 'collapsed'
+  const { state, setOpenMobile, isMobile } = useSidebar(); // 'expanded' | 'collapsed'
   const isCollapsed = state === "collapsed";
 
   const isActive = (url: string) => {
@@ -105,7 +105,7 @@ const AppSidebar = ({ unreadNotificationCount = 0 }: AppSidebarProps) => {
                     }
                   `}
                 >
-                  <Link href={item.url}>
+                  <Link href={item.url} onClick={() => isMobile && setOpenMobile(false)}>
                     <item.icon
                       className={`w-5 h-5 shrink-0 ${
                         active ? "text-white" : ""
@@ -147,7 +147,11 @@ const AppSidebar = ({ unreadNotificationCount = 0 }: AppSidebarProps) => {
                     }
                   `}
                 >
-                  <Link href={item.url} className="flex items-center w-full">
+                  <Link 
+                    href={item.url} 
+                    className="flex items-center w-full"
+                    onClick={() => isMobile && setOpenMobile(false)}
+                  >
                     <item.icon
                       className={`w-5 h-5 shrink-0 ${
                         active ? "text-white" : ""

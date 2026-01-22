@@ -9,6 +9,7 @@ import { Suspense } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getCachedCategories, getCachedWallets } from "@/lib/data-fetching";
 import AddTransactionModal from "@/components/transactions/AddTransactionModal";
+import { SidebarTrigger } from "@/components/ui/sidebar";
 
 const TransactionsPage = async ({
   searchParams,
@@ -45,28 +46,35 @@ const TransactionsPage = async ({
   return (
     <div className="space-y-6 pb-16">
       {/* Header */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
-            Transactions
-          </h1>
-          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
-            Manage and track all your financial transactions
-            {month && ` • ${format(selectedMonth, "MMMM yyyy")}`}
-          </p>
+      <div className="flex flex-row items-center justify-between gap-2">
+        <div className="flex items-center gap-2 md:gap-3">
+          <div className="md:hidden">
+            <SidebarTrigger className="size-9 rounded-xl bg-white dark:bg-slate-900 shadow-sm border border-slate-200 dark:border-slate-800 flex items-center justify-center p-0" />
+          </div>
+          <div>
+            <h1 className="text-lg md:text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
+              Transactions
+            </h1>
+            <p className="hidden sm:block text-sm text-slate-500 dark:text-slate-400 mt-1">
+              Manage and track all your financial transactions
+              {month && ` • ${format(selectedMonth, "MMMM yyyy")}`}
+            </p>
+          </div>
         </div>
-        <div className="flex gap-3">
-          <MonthPicker />
+        <div className="flex items-center gap-1.5 md:gap-3">
+          <div className="scale-[0.85] xs:scale-90 sm:scale-100 origin-right">
+            <MonthPicker />
+          </div>
           <AddTransactionButton />
         </div>
       </div>
 
       {/* Filters */}
-      <div className="flex flex-col gap-4 sm:flex-row">
-        <div className="flex-1">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+        <div className="flex-1 w-full">
           <Searchbar />
         </div>
-        <div className="sm:w-auto">
+        <div className="w-full sm:w-auto">
           <TransactionFilters categories={categories as any} wallets={wallets as any} />
         </div>
       </div>

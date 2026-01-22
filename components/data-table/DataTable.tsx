@@ -28,10 +28,10 @@ function DataTable<TData, TValue>({
   });
 
   return (
-    <div className="glass-card rounded-[2.5rem] overflow-hidden shadow-sm flex flex-col">
-      <div className="overflow-x-auto overflow-y-auto max-h-[calc(100vh-24rem)] md:max-h-[calc(100vh-20rem)]">
+    <div className="glass-card rounded-2xl md:rounded-[2.5rem] overflow-hidden shadow-sm flex flex-col">
+      <div className="overflow-x-auto">
         <table className="w-full text-left">
-          <thead className="sticky top-0 z-10 bg-white dark:bg-slate-950">
+          <thead className="bg-white dark:bg-slate-950">
             {table.getHeaderGroups().map((headerGroup) => (
               <tr
                 key={headerGroup.id}
@@ -40,7 +40,7 @@ function DataTable<TData, TValue>({
                 {headerGroup.headers.map((header) => (
                   <th
                     key={header.id}
-                    className="px-8 py-6 text-xs font-bold text-slate-400 uppercase tracking-widest"
+                    className="px-4 py-4 md:px-8 md:py-6 text-[10px] md:text-xs font-bold text-slate-400 uppercase tracking-widest"
                   >
                     {header.isPlaceholder
                       ? null
@@ -66,7 +66,7 @@ function DataTable<TData, TValue>({
                   }`}
                 >
                   {row.getVisibleCells().map((cell) => (
-                    <td key={cell.id} className="px-8 py-6">
+                    <td key={cell.id} className="px-4 py-4 md:px-8 md:py-6 whitespace-nowrap md:whitespace-normal">
                       {flexRender(
                         cell.column.columnDef.cell,
                         cell.getContext()

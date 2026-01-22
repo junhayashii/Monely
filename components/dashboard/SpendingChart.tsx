@@ -111,7 +111,7 @@ export default function SpendingChart({
 
   return (
     <Card className="col-span-4 h-full flex flex-col">
-      <CardHeader className="flex flex-row items-center justify-between">
+      <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
           <CardTitle>Spending Overview</CardTitle>
           <CardDescription className="text-sm text-muted-foreground mt-1">
@@ -120,18 +120,18 @@ export default function SpendingChart({
               : "Monthly income vs expense"}
           </CardDescription>
         </div>
-        <Tabs value={view} onValueChange={setView}>
-          <TabsList>
-            <TabsTrigger value="monthly">Monthly (Daily)</TabsTrigger>
-            <TabsTrigger value="yearly">Yearly (Monthly)</TabsTrigger>
+        <Tabs value={view} onValueChange={setView} className="w-full sm:w-auto">
+          <TabsList className="grid w-full grid-cols-2 sm:flex sm:w-auto">
+            <TabsTrigger value="monthly">Monthly</TabsTrigger>
+            <TabsTrigger value="yearly">Yearly</TabsTrigger>
           </TabsList>
         </Tabs>
       </CardHeader>
-      <CardContent className="flex-1">
-        <div className="h-full w-full min-h-[280px]">
+      <CardContent className="flex-1 pb-2 md:pb-6">
+        <div className="h-full w-full min-h-[250px] md:min-h-[300px]">
           <ResponsiveContainer width="100%" height="100%">
             {view === "monthly" ? (
-              <BarChart data={monthlyData} margin={{ left: -12, right: 8 }}>
+              <BarChart data={monthlyData} margin={{ left: -20, right: 0, top: 10, bottom: 0 }}>
                 <defs>
                   <linearGradient id="colorMonthly" x1="0" y1="0" x2="0" y2="1">
                     <stop
@@ -181,7 +181,7 @@ export default function SpendingChart({
                 />
               </BarChart>
             ) : (
-              <AreaChart data={yearlyData} margin={{ left: -6, right: 6 }}>
+              <AreaChart data={yearlyData} margin={{ left: -20, right: 0, top: 10, bottom: 0 }}>
                 <defs>
                   <linearGradient id="colorIncome" x1="0" y1="0" x2="0" y2="1">
                     <stop

@@ -157,16 +157,16 @@ const CategoryChart = ({ data }: { data: CategoryDatum[] }) => {
             </PieChart>
           </ResponsiveContainer>
         </div>
-        <div className="flex gap-3 justify-center text-sm text-slate-700 dark:text-slate-200 mt-3">
+        <div className="flex flex-wrap gap-x-4 gap-y-2 justify-center text-[10px] md:text-sm text-slate-700 dark:text-slate-200 mt-6 md:mt-3">
           {cleaned.map((item, idx) => (
-            <div key={item.name} className="flex items-center gap-2">
+            <div key={item.name} className="flex items-center gap-1.5">
               <span
-                className="h-3 w-3 rounded-full"
+                className="h-2 w-2 md:h-3 md:w-3 rounded-full shrink-0"
                 style={{
                   backgroundColor: COLORS[idx % COLORS.length] ?? COLORS[0],
                 }}
               />
-              <span className="font-medium">{item.name}</span>
+              <span className="font-medium truncate max-w-[80px] md:max-w-none">{item.name}</span>
             </div>
           ))}
         </div>

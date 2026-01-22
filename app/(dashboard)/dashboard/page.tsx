@@ -13,6 +13,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { SidebarTrigger } from "@/components/ui/sidebar";
 import { prisma } from "@/lib/prisma";
 import { createClient } from "@/lib/supabase";
 import {
@@ -177,16 +178,23 @@ async function DashboardPage({ searchParams }: Props) {
       <AuthSuccessToast authStatus={authStatus} />
 
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
-            Dashboard
-          </h1>
-          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
-            An Overview of {format(currentMonth, "MMMM yyyy")}
-          </p>
+      <div className="flex flex-row items-center justify-between gap-4">
+        <div className="flex items-center gap-5">
+          <div className="md:hidden">
+            <SidebarTrigger className="size-9 rounded-xl bg-white dark:bg-slate-900 shadow-sm border border-slate-200 dark:border-slate-800 flex items-center justify-center p-0" />
+          </div>
+          <div>
+            <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
+              Dashboard
+            </h1>
+            <p className="hidden sm:block text-sm text-slate-500 dark:text-slate-400 mt-1">
+              An Overview of {format(currentMonth, "MMMM yyyy")}
+            </p>
+          </div>
         </div>
-        <MonthPicker />
+        <div className="scale-90 sm:scale-100 origin-right">
+          <MonthPicker />
+        </div>
       </div>
 
       {/* Stats Cards */}

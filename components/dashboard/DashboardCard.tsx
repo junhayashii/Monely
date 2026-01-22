@@ -35,10 +35,10 @@ const DashboardCard = ({
   const sparkData = generateSparkData();
   
   return (
-    <Card className="glass-card relative overflow-hidden rounded-[2rem] shadow-sm transition-lumina hover:-translate-y-1 hover:shadow-lumina border border-transparent hover:border-sky-100 dark:hover:border-sky-900/30 group">
-      <CardContent className="relative p-6 flex flex-col gap-5 z-10">
+    <Card className="glass-card relative overflow-hidden rounded-2xl md:rounded-[2rem] shadow-sm transition-lumina hover:-translate-y-1 hover:shadow-lumina border border-transparent hover:border-sky-100 dark:hover:border-sky-900/30 group">
+      <CardContent className="relative p-4 md:px-6 flex flex-col gap-3 md:gap-5 z-10">
         <div className="flex items-center justify-between">
-          <div className="p-3 bg-slate-50 dark:bg-slate-800/50 rounded-2xl group-hover:scale-110 transition-transform">
+          <div className="p-2 md:p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl md:rounded-2xl group-hover:scale-110 transition-transform">
             {icon}
           </div>
           {trend && (
@@ -59,7 +59,7 @@ const DashboardCard = ({
             {title}
           </p>
           <p
-            className={`text-2xl font-bold mt-1 text-slate-900 dark:text-white ${className}`}
+            className={`text-xl md:text-2xl font-bold mt-1 text-slate-900 dark:text-white ${className}`}
           >
             {formatCurrency(amount)}
           </p>

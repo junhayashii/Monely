@@ -55,8 +55,8 @@ const TransactionPagination = ({
   const pageNumbers = getPageNumbers();
 
   return (
-    <div className="flex items-center justify-between">
-      <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">
+    <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+      <p className="hidden sm:block text-xs font-bold text-slate-400 uppercase tracking-widest">
         Showing{" "}
         <span className="text-slate-900 dark:text-white">{skip + 1}</span> -{" "}
         <span className="text-slate-900 dark:text-white">

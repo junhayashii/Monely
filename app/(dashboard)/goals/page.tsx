@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import GoalList from "@/components/goals/GoalList"; // 先ほど作ったコンポーネント
 import AddGoalButton from "@/components/goals/AddGoalButton";
 import { createClient } from "@/lib/supabase";
+import { SidebarTrigger } from "@/components/ui/sidebar";
 
 export default async function GoalsPage() {
   const supabase = await createClient();
@@ -28,14 +29,19 @@ export default async function GoalsPage() {
   return (
     <div className="space-y-8 pb-16">
       {/* Header */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
-            Saving Goals
-          </h1>
-          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
-            Track your savings progress for something special
-          </p>
+      <div className="flex flex-row items-center justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <div className="md:hidden">
+            <SidebarTrigger className="size-9 rounded-xl bg-white dark:bg-slate-900 shadow-sm border border-slate-200 dark:border-slate-800 flex items-center justify-center p-0" />
+          </div>
+          <div>
+            <h1 className="text-xl md:text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
+              Saving Goals
+            </h1>
+            <p className="hidden sm:block text-sm text-slate-500 dark:text-slate-400 mt-1">
+              Track your savings progress for something special
+            </p>
+          </div>
         </div>
         <AddGoalButton />
       </div>

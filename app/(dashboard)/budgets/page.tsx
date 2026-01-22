@@ -4,6 +4,7 @@ import AddBudgetButton from "@/components/budgets/AddBudgetButton";
 import CategoryChart from "@/components/dashboard/CategoryChart";
 import BudgetStats from "@/components/budgets/BudgetStats";
 import MonthPicker from "@/components/MonthPicker";
+import { SidebarTrigger } from "@/components/ui/sidebar";
 import { prisma } from "@/lib/prisma";
 import { createClient } from "@/lib/supabase";
 import {
@@ -144,16 +145,23 @@ async function BudgetsPage({
   return (
     <div className="space-y-8 pb-12 p-2">
       {/* Header with Month Picker */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Budgets</h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            Manage your monthly budget and income goals
-            {month && ` • ${format(selectedMonth, "MMMM yyyy")}`}
-          </p>
+      <div className="flex flex-row items-center justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <div className="md:hidden">
+            <SidebarTrigger className="size-9 rounded-xl bg-white dark:bg-slate-900 shadow-sm border border-slate-200 dark:border-slate-800 flex items-center justify-center p-0" />
+          </div>
+          <div>
+            <h1 className="text-xl md:text-3xl font-bold tracking-tight">Budgets</h1>
+            <p className="hidden sm:block text-sm text-muted-foreground mt-1">
+              Manage your monthly budget and income goals
+              {month && ` • ${format(selectedMonth, "MMMM yyyy")}`}
+            </p>
+          </div>
         </div>
         <div className="flex items-center gap-2">
-          <MonthPicker />
+          <div className="scale-90 sm:scale-100 origin-right">
+            <MonthPicker />
+          </div>
           <AddBudgetButton />
         </div>
       </div>

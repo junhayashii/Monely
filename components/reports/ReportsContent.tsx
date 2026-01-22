@@ -30,6 +30,7 @@ import {
   Zap,
 } from "lucide-react";
 import { useCurrency } from "@/contexts/CurrencyContext";
+import { SidebarTrigger } from "@/components/ui/sidebar";
 
 const PIE_COLORS = [
   "#0ea5e9", // sky-500
@@ -61,16 +62,16 @@ const InsightCard: React.FC<{
   icon: React.ReactNode;
   color: string;
 }> = ({ title, value, description, icon, color }) => (
-  <div className="glass-card p-6 rounded-3xl flex items-center gap-6 hover:-translate-y-1 transition-all">
-    <div className={`p-4 rounded-2xl ${color}`}>{icon}</div>
-    <div>
-      <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+  <div className="glass-card p-4 md:p-6 rounded-2xl md:rounded-3xl flex items-center gap-4 md:gap-6 hover:-translate-y-1 transition-all">
+    <div className={`p-3 md:p-4 rounded-xl md:rounded-2xl shrink-0 ${color}`}>{icon}</div>
+    <div className="min-w-0">
+      <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 truncate">
         {title}
       </p>
-      <p className="text-2xl font-bold text-slate-900 dark:text-white">
+      <p className="text-xl md:text-2xl font-bold text-slate-900 dark:text-white truncate">
         {value}
       </p>
-      <p className="text-[10px] font-medium text-slate-500 dark:text-slate-400 mt-1">
+      <p className="text-[10px] font-medium text-slate-500 dark:text-slate-400 mt-0.5 line-clamp-1">
         {description}
       </p>
     </div>
@@ -103,14 +104,19 @@ export default function ReportsContent({
   return (
     <div className="space-y-8 pb-16">
       {/* Header */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
-            Reports
-          </h1>
-          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
-            Analyze your financial patterns and trends
-          </p>
+      <div className="flex flex-row items-center justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <div className="md:hidden">
+            <SidebarTrigger className="size-9 rounded-xl bg-white dark:bg-slate-900 shadow-sm border border-slate-200 dark:border-slate-800 flex items-center justify-center p-0" />
+          </div>
+          <div>
+            <h1 className="text-xl md:text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
+              Reports
+            </h1>
+            <p className="hidden sm:block text-sm text-slate-500 dark:text-slate-400 mt-1">
+              Analyze your financial patterns and trends
+            </p>
+          </div>
         </div>
       </div>
 
@@ -183,22 +189,22 @@ export default function ReportsContent({
             />
           </div>
 
-          <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 md:gap-8">
             {/* Performance Chart */}
-            <div className="glass-card p-8 rounded-[2.5rem]">
-              <div className="flex items-center justify-between mb-8">
+            <div className="glass-card p-4 md:p-8 rounded-2xl md:rounded-[2.5rem]">
+              <div className="flex items-center justify-between mb-6 md:mb-8">
                 <div>
-                  <h3 className="text-xl font-bold flex items-center gap-2 dark:text-white">
+                  <h3 className="text-lg md:text-xl font-bold flex items-center gap-2 dark:text-white">
                     <BarChart2 className="w-5 h-5 text-sky-500" /> Performance
                   </h3>
-                  <p className="text-sm text-slate-500 dark:text-slate-400">
+                  <p className="text-xs md:text-sm text-slate-500 dark:text-slate-400">
                     Income vs. Expenses
                   </p>
                 </div>
               </div>
-              <div className="h-[350px] w-full">
+              <div className="h-[280px] md:h-[350px] w-full">
                 <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={monthlyData.slice(-4)}>
+                  <BarChart data={monthlyData.slice(-4)} margin={{ left: -20, right: 0, top: 0, bottom: 0 }}>
                     <CartesianGrid
                       strokeDasharray="3 3"
                       vertical={false}
@@ -249,28 +255,28 @@ export default function ReportsContent({
             </div>
 
             {/* Distribution Chart */}
-            <div className="glass-card p-8 rounded-[2.5rem]">
-              <div className="flex items-center justify-between mb-8">
+            <div className="glass-card p-4 md:p-8 rounded-2xl md:rounded-[2.5rem]">
+              <div className="flex items-center justify-between mb-6 md:mb-8">
                 <div>
-                  <h3 className="text-xl font-bold flex items-center gap-2 dark:text-white">
+                  <h3 className="text-lg md:text-xl font-bold flex items-center gap-2 dark:text-white">
                     <PieChartIcon className="w-5 h-5 text-pink-500" />{" "}
                     Distribution
                   </h3>
-                  <p className="text-sm text-slate-500 dark:text-slate-400">
+                  <p className="text-xs md:text-sm text-slate-500 dark:text-slate-400">
                     Spending by category
                   </p>
                 </div>
               </div>
-              <div className="h-[350px] w-full">
+              <div className="h-[280px] md:h-[350px] w-full">
                 <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
+                  <PieChart margin={{ top: -20, bottom: -20, left: 0, right: 0 }}>
                     <Pie
                       data={categoryData}
                       cx="50%"
                       cy="50%"
-                      innerRadius={80}
-                      outerRadius={120}
-                      paddingAngle={8}
+                      innerRadius={60}
+                      outerRadius={90}
+                      paddingAngle={4}
                       dataKey="value"
                     >
                       {categoryData.map((entry, index) => (
@@ -302,18 +308,18 @@ export default function ReportsContent({
       ) : (
         <div className="space-y-8">
           {/* Historical Wealth Trend */}
-          <div className="glass-card p-8 rounded-[2.5rem]">
-            <div className="mb-8">
-              <h3 className="text-xl font-bold dark:text-white">
+          <div className="glass-card p-4 md:p-8 rounded-2xl md:rounded-[2.5rem]">
+            <div className="mb-6 md:mb-8">
+              <h3 className="text-lg md:text-xl font-bold dark:text-white">
                 Net Wealth Evolution
               </h3>
-              <p className="text-sm text-slate-500 dark:text-slate-400">
+              <p className="text-xs md:text-sm text-slate-500 dark:text-slate-400">
                 Cumulative balance across all assets over 6 months
               </p>
             </div>
-            <div className="h-[400px] w-full">
+            <div className="h-[300px] md:h-[400px] w-full">
               <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={monthlyData}>
+                <AreaChart data={monthlyData} margin={{ left: -20, right: 0, top: 0, bottom: 0 }}>
                   <defs>
                     <linearGradient
                       id="colorBalance"
@@ -368,18 +374,18 @@ export default function ReportsContent({
           </div>
 
           {/* Categorized Spending History */}
-          <div className="glass-card p-8 rounded-[2.5rem]">
-            <div className="mb-8">
-              <h3 className="text-xl font-bold dark:text-white">
+          <div className="glass-card p-4 md:p-8 rounded-2xl md:rounded-[2.5rem]">
+            <div className="mb-6 md:mb-8">
+              <h3 className="text-lg md:text-xl font-bold dark:text-white">
                 Spending Trends by Category
               </h3>
-              <p className="text-sm text-slate-500 dark:text-slate-400">
+              <p className="text-xs md:text-sm text-slate-500 dark:text-slate-400">
                 Monthly breakdown of major expense pillars
               </p>
             </div>
-            <div className="h-[400px] w-full">
+            <div className="h-[300px] md:h-[400px] w-full">
               <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={monthlyData}>
+                <LineChart data={monthlyData} margin={{ left: -20, right: 0, top: 0, bottom: 0 }}>
                   <CartesianGrid
                     strokeDasharray="3 3"
                     vertical={false}

@@ -12,13 +12,20 @@ const Searchbar = () => {
   const [term, setTerm] = useState(searchParams.get("q") || "");
 
   useEffect(() => {
+    // Check if the term is actually different from the current URL parameter
+    const currentQ = searchParams.get("q") || "";
+    if (term === currentQ) return;
+
     const handler = setTimeout(() => {
-      const params = new URLSearchParams(searchParams);
+      const params = new URLSearchParams(searchParams.toString());
       if (term) {
         params.set("q", term);
       } else {
         params.delete("q");
       }
+      
+      // Reset to first page on search
+      params.delete("page");
 
       startTransition(() => {
         router.push(`/transactions?${params.toString()}`);
