@@ -9,6 +9,8 @@ import { Suspense } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getCachedCategories, getCachedWallets } from "@/lib/data-fetching";
 import AddTransactionModal from "@/components/transactions/AddTransactionModal";
+import ImportOFXButton from "@/components/transactions/ImportOFXButton";
+import ImportOFXModal from "@/components/transactions/ImportOFXModal";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 
 /**
@@ -77,8 +79,9 @@ const TransactionsPage = async ({
           </div>
         </div>
         <div className="flex items-center gap-1.5 md:gap-3">
-          <div className="scale-[0.85] xs:scale-90 sm:scale-100 origin-right">
+          <div className="scale-[0.85] xs:scale-90 sm:scale-100 origin-right flex items-center gap-2">
             <MonthPicker />
+            <ImportOFXButton />
           </div>
           <AddTransactionButton />
         </div>
@@ -116,6 +119,7 @@ const TransactionsPage = async ({
           They share the same categories/wallets data.
       */}
       <AddTransactionModal categories={categories as any} wallets={wallets as any} />
+      <ImportOFXModal wallets={wallets as any} />
     </div>
   );
 };

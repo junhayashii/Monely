@@ -5,6 +5,10 @@ import { createClient } from "@/lib/supabase";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { checkBudgetAndNotify } from "@/lib/notifications";
+import { execSync } from "child_process";
+import fs from "fs";
+import path from "path";
+import os from "os";
 
 // --- 1. Zod スキーマの修正 ---
 // categoryId と toWalletId はどちらかが入っていれば良いので optional にします
@@ -246,5 +250,175 @@ export async function deleteTransaction(id: string): Promise<ActionResponse> {
   } catch (error) {
     console.error("DELETE ERROR:", error);
     return { success: false, message: "Delete failed." };
+  }
+}
+
+// --- Helper: Suggest Category ---
+// --- Helper: Suggest Category ---
+// Key: Primary category concept (used for matching with keywords)
+// Keywords: List of terms to look for in the transaction title
+const KEYWORD_MAP: Record<string, { keywords: string[], synonyms: string[] }> = {
+  Food: { 
+    keywords: ["Pao de Acucar", "Carrefour", "Extra", "Assai", "Supermercado", "Hortifruti", "Mambo", "Sukiya", "LXS PRESENTES"], 
+    synonyms: ["Alimentação", "Mercado", "Comida", "Food"] 
+  },
+  Dining: { 
+    keywords: ["Ifood", "McDonalds", "Starbucks", "Restaurante", "Cafe", "Padaria", "Burger King", "Outback", "Sukiya"], 
+    synonyms: ["Restaurantes", "Dining Out", "Eating Out", "Lanches"] 
+  },
+  Transport: { 
+    keywords: ["Uber", "99App", "Gasolina", "Posto", "Metrô", "Onibus", "Sem Parar", "Localiza", "ALLPARK"], 
+    synonyms: ["Transporte", "Combustível", "Viagem", "Transport"] 
+  },
+  Housing: { 
+    keywords: ["Condominio", "Aluguel", "Enel", "Sabesp", "Ultragaz", "Energia", "Gas", "CPFL", "EDP"], 
+    synonyms: ["Moradia", "House", "Rent", "Housing", "Living"] 
+  },
+  Utilities: {
+    keywords: ["Telefonia", "Vivo", "Claro", "Tim", "Oi", "NET", "Sky", "Telefonica", "Internet"],
+    synonyms: ["Utilities", "Public Services", "Contas", "Serviços Públicos"]
+  },
+  Entertainment: { 
+    keywords: ["Netflix", "Spotify", "Youtube", "iCloud", "Google", "Amazon Prime", "DisneyPlus", "STEAM", "PlayStation"], 
+    synonyms: ["Entertenimento", "Entertainment", "Lazer", "Serviços"] 
+  },
+  Health: { 
+    keywords: ["Farmacia", "Droga Raia", "Drogasil", "Unimed", "Hospital", "Laboratorio", "Odonto"], 
+    synonyms: ["Saúde", "Health", "Farmácia", "Médico"] 
+  },
+  Shopping: {
+    keywords: ["Renner", "C&A", "Riachuelo", "Zara", "Mercado Livre", "Shopee", "Shein", "Magalu", "Casas Bahia"],
+    synonyms: ["Shopping", "Compras", "Moda", "Vestuário"]
+  },
+  Pet: {
+    keywords: ["Vet", "Veterinario", "Petz", "Cobasi", "Ração", "VETDAKTARI"],
+    synonyms: ["Pet", "Animais", "Animal"]
+  },
+  Salary: {
+    keywords: ["Salario", "Salary", "Pagamento", "Remuneração"],
+    synonyms: ["Salary", "Salário", "Renda", "Income"]
+  }
+};
+
+async function suggestCategory(
+  userId: string,
+  title: string,
+  categories: any[]
+): Promise<string | null> {
+  const lowercaseTitle = title.toLowerCase();
+
+  // 1. Precise keyword matching
+  for (const [concept, data] of Object.entries(KEYWORD_MAP)) {
+    // Check if any keyword matches the title
+    if (data.keywords.some((kw) => lowercaseTitle.includes(kw.toLowerCase()))) {
+      // Find a category that matches either the concept name or any of its synonyms
+      const possibleNames = [concept, ...data.synonyms].map(s => s.toLowerCase());
+      const match = categories.find((c) => 
+        possibleNames.some(pn => c.name.toLowerCase().includes(pn) || pn.includes(c.name.toLowerCase()))
+      );
+      if (match) return match.id;
+    }
+  }
+
+  // 2. Direct name matching with existing categories
+  const directMatch = categories.find(
+    (c) => lowercaseTitle.includes(c.name.toLowerCase()) || c.name.toLowerCase().includes(lowercaseTitle)
+  );
+  if (directMatch) return directMatch.id;
+
+  // 3. History matching (find most frequent category for this title in the past)
+  const history = await prisma.transaction.findFirst({
+    where: { userId, title: { contains: title, mode: 'insensitive' } },
+    orderBy: { createdAt: "desc" },
+    select: { categoryId: true },
+  });
+
+  return history?.categoryId || null;
+}
+
+// --- 5. Import OFX ---
+export async function importOFX(formData: FormData): Promise<ActionResponse> {
+  let user;
+  try {
+    user = await getAuthenticatedUser();
+  } catch {
+    return { success: false, message: "ログインが必要です。" };
+  }
+
+  const file = formData.get("file") as File;
+  const walletId = formData.get("walletId") as string;
+
+  if (!file || !walletId) {
+    return { success: false, message: "ファイルとウォレットを選択してください。" };
+  }
+
+  const tempFile = path.join(os.tmpdir(), `upload-${Date.now()}-${file.name}`);
+  
+  try {
+    const buffer = Buffer.from(await file.arrayBuffer());
+    fs.writeFileSync(tempFile, buffer);
+
+    const pythonPath = "python3";
+    const scriptPath = path.join(process.cwd(), "scripts", "parse_ofx.py");
+    
+    // Execute python script
+    const result = execSync(`${pythonPath} "${scriptPath}" "${tempFile}"`).toString();
+    const transactions = JSON.parse(result);
+
+    if (transactions.error) {
+      return { success: false, message: transactions.error };
+    }
+
+    if (!Array.isArray(transactions) || transactions.length === 0) {
+      return { success: false, message: "取引データが見つかりませんでした。" };
+    }
+
+    // Fetch categories once for matching
+    const categories = await prisma.category.findMany({
+      where: { userId: user.id },
+    });
+
+    // Process transactions in a DB transaction
+    await prisma.$transaction(async (tx) => {
+      for (const t of transactions) {
+        const amount = Math.abs(t.amount);
+        const isIncome = t.amount > 0;
+        const title = t.title || t.payee || t.memo || "OFX Import";
+        
+        // Try to suggest a category
+        const suggestedCategoryId = await suggestCategory(user.id, title, categories);
+
+        // Create transaction
+        await tx.transaction.create({
+          data: {
+            title: title,
+            amount: amount,
+            date: new Date(t.date),
+            userId: user.id,
+            walletId: walletId,
+            categoryId: suggestedCategoryId,
+          },
+        });
+
+        // Update balance
+        const change = isIncome ? amount : -amount;
+        await tx.wallet.update({
+          where: { id: walletId },
+          data: { balance: { increment: change } },
+        });
+      }
+    });
+
+    revalidatePath("/transactions");
+    revalidatePath("/wallets");
+    return { success: true, message: `${transactions.length}件の取引をインポートしました。` };
+
+  } catch (error: any) {
+    console.error("IMPORT ERROR:", error);
+    return { success: false, message: `インポートに失敗しました: ${error.message}` };
+  } finally {
+    if (fs.existsSync(tempFile)) {
+      fs.unlinkSync(tempFile);
+    }
   }
 }
