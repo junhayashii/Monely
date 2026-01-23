@@ -33,6 +33,7 @@ type TransactionFormProps = {
   editId?: string;
   onCancel: () => void;
   onDelete?: () => void;
+  onOptimisticUpdate?: (tx: any) => void;
 };
 
 const TransactionForm = ({
@@ -42,6 +43,7 @@ const TransactionForm = ({
   wallets,
   onCancel,
   onDelete,
+  onOptimisticUpdate,
 }: TransactionFormProps) => {
   // useTransitionでローディング状態(isPending)を管理
   const [isPending, startTransition] = useTransition();
@@ -79,6 +81,25 @@ const TransactionForm = ({
     } else {
       // 逆に TRANSFER 以外なら toWalletId を空にする
       formData.set("toWalletId", "");
+    }
+
+    if (editId && onOptimisticUpdate) {
+      const category = categories.find(c => c.id === formData.get("categoryId"));
+      const wallet = wallets.find(w => w.id === formData.get("walletId"));
+      const toWallet = wallets.find(w => w.id === formData.get("toWalletId"));
+      
+      onOptimisticUpdate({
+        id: editId,
+        title: formData.get("title") as string,
+        amount: Number(formData.get("amount")),
+        date: new Date(formData.get("date") as string),
+        categoryId: formData.get("categoryId") as string,
+        walletId: formData.get("walletId") as string,
+        toWalletId: formData.get("toWalletId") as string,
+        category,
+        wallet,
+        toWallet,
+      });
     }
 
     startTransition(async () => {

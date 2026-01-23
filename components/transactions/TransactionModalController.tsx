@@ -10,15 +10,19 @@ import { useTransition } from "react";
 import { toast } from "sonner";
 
 type Props = {
-  transactions: Transaction[];
-  categories: Category[];
-  wallets: Wallet[];
+  transactions: any[];
+  categories: any[];
+  wallets: any[];
+  onOptimisticUpdate: (tx: any) => void;
+  onOptimisticDelete: (id: string) => void;
 };
 
 const TransactionModalController = ({
   transactions,
   categories,
   wallets,
+  onOptimisticUpdate,
+  onOptimisticDelete,
 }: Props) => {
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -88,6 +92,7 @@ const TransactionModalController = ({
             params.set("id", editId!);
             router.push(`?${params.toString()}`);
           }}
+          onOptimisticUpdate={onOptimisticUpdate}
         />
       </AddEditModal>
     );
@@ -101,6 +106,7 @@ const TransactionModalController = ({
 
       // 削除トランジションを開始
       startDeleteTransition(async () => {
+        onOptimisticDelete(editId);
         const result = await deleteTransaction(editId!);
 
         if (result.success) {

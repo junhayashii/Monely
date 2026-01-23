@@ -1,10 +1,9 @@
 import { prisma } from "@/lib/prisma";
 import { Prisma } from "@/lib/generated/prisma";
 import { startOfMonth, endOfMonth, parseISO } from "date-fns";
-import TransactionTable from "./TransactionTable";
+import TransactionManager from "./TransactionManager";
 import TransactionPagination from "./TransactionPagination";
 import { getCachedCategories, getCachedWallets } from "@/lib/data-fetching";
-import TransactionModalController from "./TransactionModalController";
 
 const PAGE_SIZE = 10;
 
@@ -109,36 +108,21 @@ export default async function TransactionList({
   const totalPages = Math.ceil(totalCount / PAGE_SIZE);
 
   return (
-    <>
-      {/* 
-          Main Table View 
-          We pass the transactions data and a pre-rendered pagination component.
-      */}
-      <TransactionTable
-        data={transactions as any}
-        pagination={
-          totalPages > 1 ? (
-            <TransactionPagination
-              totalPages={totalPages}
-              currentPage={currentPage}
-              skip={skip}
-              pageSize={PAGE_SIZE}
-              totalCount={totalCount}
-            />
-          ) : undefined
-        }
-      />
-
-      {/* 
-          Modal Logic 
-          This client component listens to URL changes (mode=edit/delete) 
-          and handles showing the correct UI overlay.
-      */}
-      <TransactionModalController
-        transactions={transactions as any}
-        categories={categories as any}
-        wallets={wallets as any}
-      />
-    </>
+    <TransactionManager
+      transactions={transactions as any}
+      categories={categories as any}
+      wallets={wallets as any}
+      pagination={
+        totalPages > 1 ? (
+          <TransactionPagination
+            totalPages={totalPages}
+            currentPage={currentPage}
+            skip={skip}
+            pageSize={PAGE_SIZE}
+            totalCount={totalCount}
+          />
+        ) : undefined
+      }
+    />
   );
 }

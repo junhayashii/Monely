@@ -103,14 +103,31 @@ const TransactionsPage = async ({
       {/* 
           3. Streaming Transaction List
           The table body is streamed to the browser as a separate chunk.
-          Using the searchParams as a key ensures that the Suspense fallback 
-          triggers on every filter change.
+          We strip 'mode' and 'id' from the Suspense key so that opening/closing 
+          modals doesn't trigger a full re-fetch or show the loading skeleton.
       */}
       <Suspense
-        key={JSON.stringify(resolvedParams)}
+        key={JSON.stringify({
+          q: resolvedParams.q,
+          month: resolvedParams.month,
+          type: resolvedParams.type,
+          categoryId: resolvedParams.categoryId,
+          walletId: resolvedParams.walletId,
+          page: resolvedParams.page,
+        })}
         fallback={<TransactionTableSkeleton />}
       >
-        <TransactionList userId={user.id} searchParams={resolvedParams} />
+        <TransactionList 
+          userId={user.id} 
+          searchParams={{
+            q: resolvedParams.q,
+            month: resolvedParams.month,
+            type: resolvedParams.type,
+            categoryId: resolvedParams.categoryId,
+            walletId: resolvedParams.walletId,
+            page: resolvedParams.page,
+          }} 
+        />
       </Suspense>
 
       {/* 
