@@ -3,7 +3,7 @@
 import { CategoryType } from "@/lib/generated/prisma";
 import { prisma } from "@/lib/prisma";
 import { createClient } from "@/lib/supabase"; // ★追加
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { z } from "zod";
 
 const CategorySchema = z.object({
@@ -57,6 +57,8 @@ export async function createCategory(
     });
     revalidatePath("/budgets");
     revalidatePath("/dashboard"); // パスを明示的に指定
+    revalidateTag(`categories-${user.id}`);
+    revalidateTag(`dashboard-${user.id}`);
     return { success: true, message: "カテゴリを作成しました！" };
   } catch (error) {
     console.error(error);
@@ -91,6 +93,8 @@ export async function updateCategory(
     });
     revalidatePath("/budgets");
     revalidatePath("/dashboard");
+    revalidateTag(`categories-${user.id}`);
+    revalidateTag(`dashboard-${user.id}`);
     return { success: true, message: "予算を更新しました！" };
   } catch (error) {
     console.error(error);
@@ -110,6 +114,8 @@ export async function deleteCategory(id: string): Promise<ActionResponse> {
 
     revalidatePath("/budgets");
     revalidatePath("/dashboard");
+    revalidateTag(`categories-${user.id}`);
+    revalidateTag(`dashboard-${user.id}`);
 
     return { success: true, message: "カテゴリを削除しました。" };
   } catch (error) {

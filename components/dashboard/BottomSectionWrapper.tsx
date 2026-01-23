@@ -1,4 +1,3 @@
-import { prisma } from "@/lib/prisma";
 import { startOfMonth, endOfMonth, format } from "date-fns";
 import { Wallet, ArrowRightLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -11,6 +10,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import BudgetProgress from "./BudgetProgress";
+import { getCachedBottomSectionData } from "@/lib/dashboard-fetching";
 
 interface BottomSectionWrapperProps {
   userId: string;
@@ -21,35 +21,8 @@ export default async function BottomSectionWrapper({
   userId,
   currentMonth,
 }: BottomSectionWrapperProps) {
-  const monthStart = startOfMonth(currentMonth);
-  const monthEnd = endOfMonth(currentMonth);
+  const { recentTransactions, categories, categoryGrouped } = await getCachedBottomSectionData(userId, currentMonth);
 
-  // Optimized parallel queries
-  const [recentTransactions, categories, categoryGrouped] = await Promise.all([
-    prisma.transaction.findMany({
-      where: { userId, date: { gte: monthStart, lte: monthEnd } },
-      include: {
-        category: { select: { name: true, type: true } },
-        wallet: { select: { name: true } },
-        toWallet: { select: { name: true } },
-      },
-      orderBy: { date: "desc" },
-      take: 4,
-    }),
-    prisma.category.findMany({
-      where: { userId, type: "EXPENSE", budget: { gt: 0 } },
-      select: { id: true, name: true, budget: true },
-    }),
-    prisma.transaction.groupBy({
-      by: ["categoryId"],
-      where: {
-        userId,
-        date: { gte: monthStart, lte: monthEnd },
-        toWalletId: null,
-      },
-      _sum: { amount: true },
-    }),
-  ]);
 
   const spentMap = categoryGrouped.reduce((acc, curr) => {
     if (curr.categoryId) acc[curr.categoryId] = curr._sum.amount || 0;

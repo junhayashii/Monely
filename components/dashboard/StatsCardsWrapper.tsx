@@ -1,5 +1,4 @@
-import { prisma } from "@/lib/prisma";
-import { startOfMonth, endOfMonth } from "date-fns";
+import { getCachedStats } from "@/lib/dashboard-fetching";
 import { TrendingDown, TrendingUp, Wallet } from "lucide-react";
 import DashboardCard from "./DashboardCard";
 
@@ -12,39 +11,8 @@ export default async function StatsCardsWrapper({
   userId,
   currentMonth,
 }: StatsCardsWrapperProps) {
-  const monthStart = startOfMonth(currentMonth);
-  const monthEnd = endOfMonth(currentMonth);
+  const { income, expense, balance, totalSaved } = await getCachedStats(userId, currentMonth);
 
-  // Optimized parallel aggregations
-  const [incomeTotal, expenseTotal, goals] = await Promise.all([
-    prisma.transaction.aggregate({
-      where: {
-        userId,
-        date: { gte: monthStart, lte: monthEnd },
-        toWalletId: null,
-        category: { type: "INCOME" },
-      },
-      _sum: { amount: true },
-    }),
-    prisma.transaction.aggregate({
-      where: {
-        userId,
-        date: { gte: monthStart, lte: monthEnd },
-        toWalletId: null,
-        category: { type: "EXPENSE" },
-      },
-      _sum: { amount: true },
-    }),
-    prisma.goal.findMany({
-      where: { userId },
-      select: { currentAmount: true },
-    }),
-  ]);
-
-  const income = incomeTotal._sum.amount || 0;
-  const expense = expenseTotal._sum.amount || 0;
-  const balance = income - expense;
-  const totalSaved = goals.reduce((sum, g) => sum + g.currentAmount, 0);
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">

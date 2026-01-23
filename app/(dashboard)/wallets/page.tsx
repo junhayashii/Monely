@@ -1,8 +1,8 @@
 import WalletList from "@/components/wallets/WalletList";
 import AddWalletButton from "@/components/wallets/AddWalletButton";
-import { prisma } from "@/lib/prisma";
 import { createClient } from "@/lib/supabase";
 import { SidebarTrigger } from "@/components/ui/sidebar";
+import { getCachedWallets } from "@/lib/data-fetching";
 
 async function WalletsPage() {
   const supabase = await createClient();
@@ -15,12 +15,8 @@ async function WalletsPage() {
     return <div>Please log in.</div>;
   }
 
-  const wallets = await prisma.wallet.findMany({
-    where: { userId: user.id },
-    orderBy: {
-      createdAt: "asc",
-    },
-  });
+  const wallets = await getCachedWallets(user.id);
+
 
   return (
     <div className="space-y-6 p-2">

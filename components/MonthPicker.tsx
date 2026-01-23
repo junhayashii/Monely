@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { addMonths, format, parse, startOfMonth, subMonths } from "date-fns";
 import { Calendar, ChevronLeft, ChevronRight } from "lucide-react";
@@ -13,15 +13,21 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const MonthPicker = () => {
+  const [mounted, setMounted] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
   const pathname = usePathname();
 
-  const now = startOfMonth(new Date());
-  const minMonth = subMonths(now, 12); // 1 year back
-  const maxMonth = addMonths(now, 1); // up to next month
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const now = useMemo(() => startOfMonth(new Date()), []);
+  const minMonth = useMemo(() => subMonths(now, 12), [now]); // 1 year back
+  const maxMonth = useMemo(() => addMonths(now, 1), [now]); // up to next month
 
   const selectedMonth = useMemo(() => {
     const monthParam = searchParams.get("month");
@@ -64,7 +70,17 @@ const MonthPicker = () => {
     return options;
   }, [maxMonth, minMonth]);
 
-  const prettyLabel = format(
+  if (!mounted) {
+    return (
+      <div className="flex items-center gap-1 rounded-lg border border-slate-200/70 bg-white px-1 py-0.5 shadow-sm dark:border-slate-800/70 dark:bg-slate-900/60 h-[42px] w-[180px]">
+        <Skeleton className="h-8 w-8 rounded-md" />
+        <Skeleton className="h-8 flex-1 rounded-md" />
+        <Skeleton className="h-8 w-8 rounded-md" />
+      </div>
+    );
+  }
+
+  const prettyLabels = format(
     parse(selectedMonth, "yyyy-MM", new Date()),
     "MMM yyyy"
   );
@@ -95,7 +111,7 @@ const MonthPicker = () => {
           className="px-3 py-2 border-0 bg-transparent shadow-none ring-0 focus-visible:ring-0 focus-visible:ring-offset-0 hover:bg-slate-100 dark:hover:bg-slate-800 [&>*:last-child]:hidden h-8"
         >
           <Calendar className="h-4 w-4 text-muted-foreground" />
-          <SelectValue placeholder={prettyLabel} aria-label={prettyLabel} />
+          <SelectValue placeholder={prettyLabels} aria-label={prettyLabels} />
         </SelectTrigger>
         <SelectContent className="w-[180px] max-h-56 overflow-y-auto">
           {monthOptions.map((m) => (
@@ -118,5 +134,6 @@ const MonthPicker = () => {
     </div>
   );
 };
+
 
 export default MonthPicker;

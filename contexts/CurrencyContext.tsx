@@ -43,11 +43,13 @@ export function CurrencyProvider({ children }: { children: ReactNode }) {
 
   const formatCurrency = (value: number): string => {
     const config = CURRENCY_CONFIG[currency];
+    const safeValue = typeof value === "number" ? value : 0;
+
     if (currency === "JPY") {
       // Japanese Yen typically doesn't use decimals
-      return `${config.symbol}${Math.round(value).toLocaleString()}`;
+      return `${config.symbol}${Math.round(safeValue).toLocaleString()}`;
     }
-    return `${config.symbol} ${value.toLocaleString("en-US", {
+    return `${config.symbol} ${safeValue.toLocaleString("en-US", {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
     })}`;

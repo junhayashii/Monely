@@ -2,7 +2,7 @@
 
 import { prisma } from "@/lib/prisma";
 import { createClient } from "@/lib/supabase";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { z } from "zod";
 import { checkBudgetAndNotify } from "@/lib/notifications";
 import { execSync } from "child_process";
@@ -111,6 +111,8 @@ export async function createTransaction(
 
     revalidatePath("/transactions");
     revalidatePath("/wallets");
+    revalidateTag(`wallets-${user.id}`);
+    revalidateTag(`dashboard-${user.id}`);
     return { success: true, message: "Transaction created!" };
   } catch (error) {
     console.error("CREATE ERROR:", error);
@@ -203,6 +205,8 @@ export async function updateTransaction(
 
     revalidatePath("/transactions");
     revalidatePath("/wallets");
+    revalidateTag(`wallets-${user.id}`);
+    revalidateTag(`dashboard-${user.id}`);
     return { success: true, message: "Transaction updated!" };
   } catch (error) {
     console.error("UPDATE ERROR:", error);
@@ -246,6 +250,8 @@ export async function deleteTransaction(id: string): Promise<ActionResponse> {
 
     revalidatePath("/transactions");
     revalidatePath("/wallets");
+    revalidateTag(`wallets-${user.id}`);
+    revalidateTag(`dashboard-${user.id}`);
     return { success: true, message: "Deleted!" };
   } catch (error) {
     console.error("DELETE ERROR:", error);
@@ -411,6 +417,8 @@ export async function importOFX(formData: FormData): Promise<ActionResponse> {
 
     revalidatePath("/transactions");
     revalidatePath("/wallets");
+    revalidateTag(`wallets-${user.id}`);
+    revalidateTag(`dashboard-${user.id}`);
     return { success: true, message: `${transactions.length}件の取引をインポートしました。` };
 
   } catch (error: any) {

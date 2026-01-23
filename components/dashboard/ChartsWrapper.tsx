@@ -1,4 +1,3 @@
-import { prisma } from "@/lib/prisma";
 import {
   eachDayOfInterval,
   eachMonthOfInterval,
@@ -11,6 +10,7 @@ import {
 } from "date-fns";
 import SpendingChart from "./SpendingChart";
 import CategoryChart from "./CategoryChart";
+import { getCachedChartsData } from "@/lib/dashboard-fetching";
 
 interface ChartsWrapperProps {
   userId: string;
@@ -25,19 +25,8 @@ export default async function ChartsWrapper({
   const monthEnd = endOfMonth(currentMonth);
   const sixMonthsAgo = startOfMonth(subMonths(currentMonth, 5));
 
-  // Optimized query with specific selection
-  const transactions = await prisma.transaction.findMany({
-    where: {
-      userId,
-      date: { gte: sixMonthsAgo, lte: monthEnd },
-      toWalletId: null,
-    },
-    select: {
-      date: true,
-      amount: true,
-      category: { select: { type: true, name: true } },
-    },
-  });
+  const transactions = await getCachedChartsData(userId, currentMonth);
+
 
   const currentMonthTransactions = transactions.filter(
     (t) => t.date >= monthStart && t.date <= monthEnd
