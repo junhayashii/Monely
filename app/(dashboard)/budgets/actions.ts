@@ -57,8 +57,8 @@ export async function createCategory(
     });
     revalidatePath("/budgets");
     revalidatePath("/dashboard"); // パスを明示的に指定
-    revalidateTag(`categories-${user.id}`);
-    revalidateTag(`dashboard-${user.id}`);
+    revalidateTag(`categories-${user.id}`, "default");
+    revalidateTag(`dashboard-${user.id}`, "default");
     return { success: true, message: "カテゴリを作成しました！" };
   } catch (error) {
     console.error(error);
@@ -93,8 +93,8 @@ export async function updateCategory(
     });
     revalidatePath("/budgets");
     revalidatePath("/dashboard");
-    revalidateTag(`categories-${user.id}`);
-    revalidateTag(`dashboard-${user.id}`);
+    revalidateTag(`categories-${user.id}`, "default");
+    revalidateTag(`dashboard-${user.id}`, "default");
     return { success: true, message: "予算を更新しました！" };
   } catch (error) {
     console.error(error);
@@ -114,8 +114,8 @@ export async function deleteCategory(id: string): Promise<ActionResponse> {
 
     revalidatePath("/budgets");
     revalidatePath("/dashboard");
-    revalidateTag(`categories-${user.id}`);
-    revalidateTag(`dashboard-${user.id}`);
+    revalidateTag(`categories-${user.id}`, "default");
+    revalidateTag(`dashboard-${user.id}`, "default");
 
     return { success: true, message: "カテゴリを削除しました。" };
   } catch (error) {
