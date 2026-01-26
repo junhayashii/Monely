@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import { format, parse, startOfMonth } from "date-fns";
+import { format, parse } from "date-fns";
 import { redirect } from "next/navigation";
 
 import { createClient } from "@/lib/supabase";

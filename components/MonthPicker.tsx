@@ -93,7 +93,7 @@ const MonthPicker = () => {
     format(maxMonth, "yyyy-MM");
 
   return (
-    <div className="flex items-center gap-1 rounded-lg border border-slate-200/70 bg-white px-1 py-0.5 shadow-sm dark:border-slate-800/70 dark:bg-slate-900/60">
+    <div className="flex items-center rounded-lg border border-slate-200/70 bg-white px-1 py-0.5 shadow-sm dark:border-slate-800/70 dark:bg-slate-900/60">
       <Button
         variant="ghost"
         size="icon"
@@ -108,7 +108,7 @@ const MonthPicker = () => {
         <SelectTrigger
           size="sm"
           aria-label="Select month"
-          className="px-3 py-2 border-0 bg-transparent shadow-none ring-0 focus-visible:ring-0 focus-visible:ring-offset-0 hover:bg-slate-100 dark:hover:bg-slate-800 [&>*:last-child]:hidden h-8"
+          className="px-1 py-2 border-0 bg-transparent shadow-none ring-0 focus-visible:ring-0 focus-visible:ring-offset-0 hover:bg-slate-100 dark:hover:bg-slate-800 [&>*:last-child]:hidden h-8"
         >
           <Calendar className="h-4 w-4 text-muted-foreground" />
           <SelectValue placeholder={prettyLabels} aria-label={prettyLabels} />
