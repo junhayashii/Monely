@@ -13,8 +13,12 @@ import { Badge } from "../ui/badge";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import { Filter, X } from "lucide-react";
 import { useState } from "react";
+import { TransactionFilterProps } from "./types";
 
-const TransactionFilters = ({ categories, wallets }: any) => {
+const TransactionFilters = ({
+  categories,
+  wallets,
+}: TransactionFilterProps) => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [open, setOpen] = useState(false);
@@ -31,18 +35,13 @@ const TransactionFilters = ({ categories, wallets }: any) => {
 
   const clearAllFilters = () => {
     const params = new URLSearchParams(searchParams.toString());
-    params.delete("type");
-    params.delete("categoryId");
-    params.delete("walletId");
+    ["type", "categoryId", "walletId"].forEach((key) => params.delete(key));
     router.push(`?${params.toString()}`);
   };
 
-  // アクティブなフィルタの数を計算
-  const activeFiltersCount = [
-    searchParams.get("type"),
-    searchParams.get("categoryId"),
-    searchParams.get("walletId"),
-  ].filter(Boolean).length;
+  const activeFiltersCount = ["type", "categoryId", "walletId"]
+    .map((k) => searchParams.get(k))
+    .filter(Boolean).length;
 
   const selectedType = searchParams.get("type") || "all";
   const selectedCategoryId = searchParams.get("categoryId") || "all";
@@ -70,6 +69,7 @@ const TransactionFilters = ({ categories, wallets }: any) => {
             )}
           </Button>
         </PopoverTrigger>
+
         <PopoverContent
           className="w-80 rounded-2xl border-slate-200/70 dark:border-slate-800/70"
           align="start"
@@ -127,7 +127,7 @@ const TransactionFilters = ({ categories, wallets }: any) => {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">All Categories</SelectItem>
-                    {categories.map((c: any) => (
+                    {categories.map((c) => (
                       <SelectItem key={c.id} value={c.id}>
                         {c.name}
                       </SelectItem>
@@ -150,7 +150,7 @@ const TransactionFilters = ({ categories, wallets }: any) => {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">All Wallets</SelectItem>
-                    {wallets.map((w: any) => (
+                    {wallets.map((w) => (
                       <SelectItem key={w.id} value={w.id}>
                         {w.name}
                       </SelectItem>

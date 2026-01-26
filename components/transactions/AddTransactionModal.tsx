@@ -4,10 +4,25 @@ import AddEditModal from "@/components/AddEditModal";
 import TransactionForm from "./TransactionForm";
 import { useSearchParams, useRouter } from "next/navigation";
 import { Category, Wallet } from "@/lib/generated/prisma";
+import { CategoryType, WalletType } from "@/lib/generated/prisma";
+
+export type UISelectableCategory = {
+  id: string;
+  name: string;
+  type: CategoryType;
+  color: string | null;
+};
+
+export type UISelectableWallet = {
+  id: string;
+  name: string;
+  type: WalletType;
+  color: string | null;
+};
 
 type Props = {
-  categories: Category[];
-  wallets: Wallet[];
+  categories: UISelectableCategory[];
+  wallets: UISelectableWallet[];
 };
 
 const AddTransactionModal = ({ categories, wallets }: Props) => {

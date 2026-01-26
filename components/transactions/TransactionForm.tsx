@@ -18,6 +18,10 @@ import {
   SelectValue,
 } from "../ui/select";
 // import { useRouter } from "next/navigation"; // ページ遷移が必要なら使う
+import {
+  UISelectableCategory,
+  UISelectableWallet,
+} from "./AddTransactionModal";
 
 type TransactionFormProps = {
   initialData?: {
@@ -28,8 +32,8 @@ type TransactionFormProps = {
     walletId?: string | null;
     toWalletId?: string | null;
   };
-  categories: { id: string; name: string; type: string }[];
-  wallets: { id: string; name: string; balance: number }[];
+  categories: UISelectableCategory[];
+  wallets: UISelectableWallet[];
   editId?: string;
   onCancel: () => void;
   onDelete?: () => void;
@@ -84,10 +88,12 @@ const TransactionForm = ({
     }
 
     if (editId && onOptimisticUpdate) {
-      const category = categories.find(c => c.id === formData.get("categoryId"));
-      const wallet = wallets.find(w => w.id === formData.get("walletId"));
-      const toWallet = wallets.find(w => w.id === formData.get("toWalletId"));
-      
+      const category = categories.find(
+        (c) => c.id === formData.get("categoryId")
+      );
+      const wallet = wallets.find((w) => w.id === formData.get("walletId"));
+      const toWallet = wallets.find((w) => w.id === formData.get("toWalletId"));
+
       onOptimisticUpdate({
         id: editId,
         title: formData.get("title") as string,

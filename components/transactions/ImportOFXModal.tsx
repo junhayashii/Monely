@@ -6,13 +6,24 @@ import { toast } from "sonner";
 import AddEditModal from "@/components/AddEditModal";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Wallet } from "@/lib/generated/prisma";
 import { importOFX } from "@/app/(dashboard)/transactions/actions";
 
+type UISelectableWallet = {
+  id: string;
+  name: string;
+};
+
 type Props = {
-  wallets: Wallet[];
+  wallets: UISelectableWallet[];
 };
 
 const ImportOFXModal = ({ wallets }: Props) => {
@@ -72,10 +83,10 @@ const ImportOFXModal = ({ wallets }: Props) => {
       <form onSubmit={handleSubmit} className="space-y-4 pt-4">
         <div className="space-y-2">
           <Label htmlFor="ofx-file">File (OFX or CSV)</Label>
-          <Input 
+          <Input
             id="ofx-file"
-            type="file" 
-            accept=".ofx,.qfx,.csv" 
+            type="file"
+            accept=".ofx,.qfx,.csv"
             onChange={(e) => setFile(e.target.files?.[0] || null)}
             required
             className="cursor-pointer"
@@ -97,15 +108,25 @@ const ImportOFXModal = ({ wallets }: Props) => {
             </SelectContent>
           </Select>
           <p className="text-xs text-slate-500">
-            Transactions will be imported into this wallet. Be careful of duplicates.
+            Transactions will be imported into this wallet. Be careful of
+            duplicates.
           </p>
         </div>
 
         <div className="flex justify-end gap-3 pt-4">
-          <Button type="button" variant="outline" onClick={close} disabled={loading}>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={close}
+            disabled={loading}
+          >
             Cancel
           </Button>
-          <Button type="submit" disabled={loading || !file || !walletId} className="bg-sky-600 hover:bg-sky-700 text-white">
+          <Button
+            type="submit"
+            disabled={loading || !file || !walletId}
+            className="bg-sky-600 hover:bg-sky-700 text-white"
+          >
             {loading ? "Importing..." : "Import Transactions"}
           </Button>
         </div>
