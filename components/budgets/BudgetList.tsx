@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition, useEffect } from "react";
+import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { useSearchParams, useRouter } from "next/navigation";
 import BudgetCard from "@/components/budgets/BudgetCard";
@@ -28,12 +29,25 @@ interface Category {
   name: string;
   budget: number | null;
   type: "EXPENSE" | "INCOME";
+  color?: string;
 }
 
 interface BudgetListProps {
   categories: Category[];
   spentMap: Record<string, number>;
 }
+
+// プリセットカラーの定義
+const PRESET_COLORS = [
+  "#ef4444",
+  "#f59e0b",
+  "#10b981",
+  "#3b82f6",
+  "#6366f1",
+  "#8b5cf6",
+  "#ec4899",
+  "#64748b",
+];
 
 function BudgetList({ categories, spentMap }: BudgetListProps) {
   const searchParams = useSearchParams();
@@ -51,6 +65,7 @@ function BudgetList({ categories, spentMap }: BudgetListProps) {
   const [name, setName] = useState("");
   const [budget, setBudget] = useState(0);
   const [type, setType] = useState("EXPENSE");
+  const [color, setColor] = useState("#3b82f6");
 
   // クエリパラメータからmodeとidを監視
   const mode = searchParams.get("mode");
@@ -82,11 +97,13 @@ function BudgetList({ categories, spentMap }: BudgetListProps) {
       setName("");
       setBudget(0);
       setType(typeParam === "INCOME" ? "INCOME" : "EXPENSE");
+      setColor("#3b82f6");
     } else if (isEdit && categoryToEdit) {
       setSelectedCategory(categoryToEdit);
       setName(categoryToEdit.name);
       setBudget(categoryToEdit.budget || 0);
       setType(categoryToEdit.type);
+      setColor(categoryToEdit.color || "#3b82f6");
     }
   }, [isAdd, isEdit, categoryToEdit, typeParam]);
 
@@ -119,6 +136,7 @@ function BudgetList({ categories, spentMap }: BudgetListProps) {
     formData.append("type", type);
     // Incomeの場合はbudgetを0またはnullにする
     formData.append("budget", type === "INCOME" ? "0" : budget.toString());
+    formData.append("color", color);
 
     startTransition(async () => {
       let result;
@@ -189,6 +207,7 @@ function BudgetList({ categories, spentMap }: BudgetListProps) {
                   name={cat.name}
                   spent={spentMap[cat.id] || 0}
                   budget={cat.budget || 0}
+                  color={cat.color}
                   onClick={() => router.push(`/budgets?categoryId=${cat.id}`)}
                   onEdit={() => router.push(`/budgets?mode=edit&id=${cat.id}`)}
                 />
@@ -273,6 +292,34 @@ function BudgetList({ categories, spentMap }: BudgetListProps) {
               />
             </div>
           )}
+          <div className="space-y-3">
+            <Label className="text-xs font-bold text-muted-foreground uppercase">
+              Category Color
+            </Label>
+            <div className="flex flex-wrap gap-2">
+              {PRESET_COLORS.map((c) => (
+                <button
+                  key={c}
+                  type="button"
+                  onClick={() => setColor(c)}
+                  className={cn(
+                    "h-8 w-8 rounded-full border-2 transition-all hover:scale-110",
+                    color === c
+                      ? "border-slate-900 ring-2 ring-slate-200 dark:border-white dark:ring-slate-700"
+                      : "border-transparent"
+                  )}
+                  style={{ backgroundColor: c }}
+                />
+              ))}
+              {/* カスタム色入力（任意） */}
+              <input
+                type="color"
+                value={color}
+                onChange={(e) => setColor(e.target.value)}
+                className="h-8 w-8 p-0 border-none bg-transparent cursor-pointer rounded-full overflow-hidden"
+              />
+            </div>
+          </div>
 
           <div className="flex justify-between pt-4">
             {selectedCategory && (

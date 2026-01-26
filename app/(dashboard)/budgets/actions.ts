@@ -15,6 +15,9 @@ const CategorySchema = z.object({
   budget: z.coerce
     .number({ message: "予算は数値で入力してください。" })
     .min(0, "予算は0以上の値を入力してください。"),
+  color: z
+    .string()
+    .regex(/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/, "無効なカラー形式です。"),
 });
 
 export type ActionResponse = {
@@ -42,18 +45,19 @@ export async function createCategory(
     name: formData.get("name"),
     type: formData.get("type"),
     budget: formData.get("budget"),
+    color: formData.get("color") || "#3b82f6",
   });
 
   if (!validatedFields.success) {
     return { success: false, message: validatedFields.error.issues[0].message };
   }
 
-  const { name, type, budget } = validatedFields.data;
+  const { name, type, budget, color } = validatedFields.data;
 
   try {
     await prisma.category.create({
       // ★userId を追加
-      data: { name, type, budget, userId: user.id },
+      data: { name, type, budget, color, userId: user.id },
     });
     revalidatePath("/budgets");
     revalidatePath("/dashboard"); // パスを明示的に指定

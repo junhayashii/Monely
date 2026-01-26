@@ -1,5 +1,7 @@
 "use client";
 
+import { cn } from "@/lib/utils";
+
 import { ColumnDef } from "@tanstack/react-table";
 import { Transaction } from "@/lib/generated/prisma";
 import { format, parseISO } from "date-fns";
@@ -7,7 +9,7 @@ import { ArrowUpRight, ArrowDownRight, Calendar } from "lucide-react";
 import { useCurrency } from "@/contexts/CurrencyContext";
 
 type TransactionWithRelations = Transaction & {
-  category?: { name: string; type: string } | null;
+  category?: { name: string; type: string; color?: string } | null;
   wallet?: { name: string } | null;
   toWallet?: { name: string } | null;
   toWalletId?: string | null;
@@ -15,7 +17,7 @@ type TransactionWithRelations = Transaction & {
 
 /**
  * useColumns - TanStack Table Column Definitions
- * 
+ *
  * This hook defines how each column of the transaction table is rendered.
  * It includes custom logic for:
  * - Dynamic icons based on transaction type.
@@ -35,19 +37,26 @@ export function useColumns(): ColumnDef<Transaction>[] {
         const tx = row.original as TransactionWithRelations;
         const isTransfer = !!tx.toWalletId;
         const isIncome = tx.category?.type === "INCOME";
+        const categoryColor =
+          tx.category?.color || (isIncome ? "#10b981" : "#64748b");
 
         return (
           <div className="flex items-center gap-3 md:gap-4 min-w-[140px] md:min-w-0">
             {/* 1. Transaction Type Icon */}
             <div
-              className={`p-2 md:p-3 rounded-xl md:rounded-2xl shrink-0 ${
-                isTransfer
-                  ? "bg-sky-50 text-sky-600 dark:bg-sky-900/20 dark:text-sky-400"
-                  : isIncome
-                  ? "bg-emerald-50 text-emerald-600 dark:bg-emerald-900/20 dark:text-emerald-400"
-                  : "bg-rose-50 text-rose-600 dark:bg-rose-900/20 dark:text-rose-400"
-              }`}
+              // className は1つにまとめ、動的なクラスは cn() の中に入れます
+              className={cn(
+                "p-2 md:p-3 rounded-xl md:rounded-2xl shrink-0",
+                isTransfer &&
+                  "bg-sky-50 text-sky-600 dark:bg-sky-900/20 dark:text-sky-400"
+              )}
+              style={{
+                // 振替（Transfer）でない時だけ、カテゴリの色を適用する
+                backgroundColor: !isTransfer ? `${categoryColor}15` : undefined,
+                color: !isTransfer ? categoryColor : undefined,
+              }}
             >
+              {/* アイコン部分 */}
               {isTransfer ? (
                 <ArrowUpRight className="w-3.5 h-3.5 md:w-4 md:h-4" />
               ) : isIncome ? (
@@ -61,7 +70,10 @@ export function useColumns(): ColumnDef<Transaction>[] {
               <span className="font-bold text-xs md:text-sm text-slate-800 dark:text-slate-200 truncate">
                 {name}
               </span>
-              <span className="text-[10px] text-slate-500 md:hidden font-medium">
+              <span
+                className="text-[10px] md:hidden font-bold uppercase tracking-tighter"
+                style={{ color: isTransfer ? "#0ea5e9" : categoryColor }}
+              >
                 {tx.category?.name || (isTransfer ? "Transfer" : "None")}
               </span>
             </div>
@@ -76,6 +88,7 @@ export function useColumns(): ColumnDef<Transaction>[] {
         const tx = row.original as TransactionWithRelations;
         const isTransfer = !!tx.toWalletId;
         const categoryName = tx.category?.name || "None";
+        const categoryColor = tx.category?.color || "#64748b";
 
         if (isTransfer) {
           return (
@@ -89,7 +102,15 @@ export function useColumns(): ColumnDef<Transaction>[] {
 
         return (
           <div className="hidden md:block">
-            <span className="text-[10px] font-bold uppercase tracking-widest px-3 py-1 bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 rounded-xl">
+            {/* ★ カテゴリバッジに色を適用 */}
+            <span
+              className="text-[10px] font-bold uppercase tracking-widest px-3 py-1 rounded-xl border"
+              style={{
+                backgroundColor: `${categoryColor}10`,
+                color: categoryColor,
+                borderColor: `${categoryColor}30`,
+              }}
+            >
               {categoryName}
             </span>
           </div>

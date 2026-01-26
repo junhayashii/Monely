@@ -8,7 +8,7 @@ import { ReactNode } from "react";
 
 /**
  * TransactionTable - A client component that wraps the generic DataTable.
- * 
+ *
  * It manages:
  * 1. Column definitions (via useColumns hook).
  * 2. Row individual interactions (e.g., clicking a row to edit).
@@ -27,7 +27,7 @@ const TransactionTable = ({
 
   /**
    * handleRowClick
-   * Navigates to the edit mode for a specific transaction by 
+   * Navigates to the edit mode for a specific transaction by
    * appending ?mode=edit&id=... to the current URL.
    * This approach preserves existing filters (month, search, etc.) in the URL.
    */

@@ -15,6 +15,7 @@ interface BudgetCardProps {
   name: string;
   spent: number;
   budget: number;
+  color?: string;
   type?: "EXPENSE" | "INCOME";
   onClick: () => void;
   onEdit?: () => void;
@@ -24,6 +25,7 @@ const BudgetCard = ({
   name,
   spent,
   budget,
+  color = "#3b82f6",
   type = "EXPENSE",
   onClick,
   onEdit,
@@ -33,6 +35,9 @@ const BudgetCard = ({
     e.stopPropagation();
     onEdit?.();
   };
+
+  const bgStyle = { backgroundColor: `${color}15`, color: color };
+  const barStyle = { backgroundColor: color };
 
   // Incomeの場合はシンプルな表示
   if (type === "INCOME") {
@@ -44,7 +49,7 @@ const BudgetCard = ({
         <CardContent className="space-y-5">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="p-3 rounded-2xl bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400">
+              <div className="p-3 rounded-2xl" style={bgStyle}>
                 <PieChartIcon className="w-5 h-5" />
               </div>
               <div>
@@ -91,9 +96,7 @@ const BudgetCard = ({
       <CardContent className="space-y-5">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div
-              className={`p-3 rounded-2xl bg-sky-100 dark:bg-sky-900/30 text-sky-600 dark:text-sky-400`}
-            >
+            <div className="p-3 rounded-2xl" style={bgStyle}>
               <PieChartIcon className="w-5 h-5" />
             </div>
             <div>
@@ -141,7 +144,10 @@ const BudgetCard = ({
                   ? "bg-amber-400"
                   : "bg-sky-500"
               }`}
-              style={{ width: `${Math.min(percent, 100)}%` }}
+              style={{
+                width: `${Math.min(percent, 100)}%`,
+                backgroundColor: !isOver && !isWarning ? color : undefined,
+              }}
             />
           </div>
         </div>

@@ -14,7 +14,7 @@ const COLORS = [
   "#a78bfa", // violet-400
 ];
 
-type CategoryDatum = { name: string; value: number };
+type CategoryDatum = { name: string; value: number; color?: string };
 
 const CustomTooltip = ({
   active,
@@ -113,7 +113,9 @@ const CategoryChart = ({ data }: { data: CategoryDatum[] }) => {
                 {cleaned.map((entry, index) => (
                   <Cell
                     key={`cell-${index}`}
-                    fill={COLORS[index % COLORS.length] ?? COLORS[0]}
+                    // ★ データの color があれば使い、なければ COLORS 配列から選ぶ
+                    fill={entry.color || COLORS[index % COLORS.length]}
+                    className="outline-none transition-all duration-300 hover:opacity-80"
                   />
                 ))}
               </Pie>
@@ -161,12 +163,14 @@ const CategoryChart = ({ data }: { data: CategoryDatum[] }) => {
           {cleaned.map((item, idx) => (
             <div key={item.name} className="flex items-center gap-1.5">
               <span
-                className="h-2 w-2 md:h-3 md:w-3 rounded-full shrink-0"
+                className="h-2 w-2 rounded-full shrink-0 shadow-sm"
                 style={{
-                  backgroundColor: COLORS[idx % COLORS.length] ?? COLORS[0],
+                  backgroundColor: item.color || COLORS[idx % COLORS.length],
                 }}
               />
-              <span className="font-medium truncate max-w-[80px] md:max-w-none">{item.name}</span>
+              <span className="font-medium truncate max-w-[80px] md:max-w-none">
+                {item.name}
+              </span>
             </div>
           ))}
         </div>

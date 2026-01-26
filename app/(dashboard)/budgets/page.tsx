@@ -84,7 +84,9 @@ async function BudgetsPage({
     }
 
     // すでに取得済みの allTransactions からフィルタリング
-    const categoryTransactions = allTransactions.filter(t => t.categoryId === categoryId);
+    const categoryTransactions = allTransactions.filter(
+      (t) => t.categoryId === categoryId
+    );
 
     // 月別データを準備
     const lastSixMonths = eachMonthOfInterval({
@@ -117,16 +119,21 @@ async function BudgetsPage({
   // チャート用データの準備
   const categoryTotals = currentTransactions
     .filter((t) => t.category?.type === "EXPENSE" && !t.toWalletId)
-    .reduce((acc: { [key: string]: number }, t) => {
+    .reduce((acc: { [key: string]: { value: number; color: string } }, t) => {
       const categoryName = t.category?.name || "その他";
-      if (!acc[categoryName]) acc[categoryName] = 0;
-      acc[categoryName] += t.amount;
+      const categoryColor = t.category?.color || "#cbd5e1"; // デフォルト色
+
+      if (!acc[categoryName]) {
+        acc[categoryName] = { value: 0, color: categoryColor };
+      }
+      acc[categoryName].value += t.amount;
       return acc;
     }, {});
 
   const chartData = Object.entries(categoryTotals).map(([name, value]) => ({
     name,
-    value,
+    value: value.value,
+    color: value.color,
   }));
 
   // 合計の計算
@@ -151,7 +158,9 @@ async function BudgetsPage({
             <SidebarTrigger className="size-9 rounded-xl bg-white dark:bg-slate-900 shadow-sm border border-slate-200 dark:border-slate-800 flex items-center justify-center p-0" />
           </div>
           <div>
-            <h1 className="text-xl md:text-3xl font-bold tracking-tight">Budgets</h1>
+            <h1 className="text-xl md:text-3xl font-bold tracking-tight">
+              Budgets
+            </h1>
             <p className="hidden sm:block text-sm text-muted-foreground mt-1">
               Manage your monthly budget and income goals
               {month && ` • ${format(selectedMonth, "MMMM yyyy")}`}
