@@ -100,12 +100,15 @@ const AppSidebar = ({ unreadNotificationCount = 0 }: AppSidebarProps) => {
                     flex items-center gap-3 p-3 h-11 rounded-2xl transition-lumina
                     ${
                       active
-                        ? "bg-sky-500 text-white shadow-md shadow-sky-200 dark:shadow-none font-semibold"
+                        ? "bg-sky-500 text-white shadow-md shadow-sky-200 dark:shadow-none font-semibold hover:bg-sky-500"
                         : "text-slate-500 dark:text-slate-400 hover:bg-sky-50 dark:hover:bg-sky-900/20 hover:text-sky-600 dark:hover:text-sky-400"
                     }
                   `}
                 >
-                  <Link href={item.url} onClick={() => isMobile && setOpenMobile(false)}>
+                  <Link
+                    href={item.url}
+                    onClick={() => isMobile && setOpenMobile(false)}
+                  >
                     <item.icon
                       className={`w-5 h-5 shrink-0 ${
                         active ? "text-white" : ""
@@ -147,8 +150,8 @@ const AppSidebar = ({ unreadNotificationCount = 0 }: AppSidebarProps) => {
                     }
                   `}
                 >
-                  <Link 
-                    href={item.url} 
+                  <Link
+                    href={item.url}
                     className="flex items-center w-full"
                     onClick={() => isMobile && setOpenMobile(false)}
                   >

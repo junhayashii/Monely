@@ -29,7 +29,7 @@ interface Category {
   name: string;
   budget: number | null;
   type: "EXPENSE" | "INCOME";
-  color?: string;
+  color: string | null;
 }
 
 interface BudgetListProps {

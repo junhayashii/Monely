@@ -36,7 +36,8 @@ const BudgetCard = ({
     onEdit?.();
   };
 
-  const bgStyle = { backgroundColor: `${color}15`, color: color };
+  const displayColor = color || "#3b82f6";
+  const bgStyle = { backgroundColor: `${displayColor}15`, color: displayColor };
   const barStyle = { backgroundColor: color };
 
   // Incomeの場合はシンプルな表示
