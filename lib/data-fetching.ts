@@ -36,6 +36,7 @@ export const getCachedWallets = async (userId: string) => {
           name: true,
           type: true,
           color: true,
+          balance: true,
         }
       });
     },
