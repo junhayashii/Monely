@@ -33,9 +33,9 @@ const DashboardCard = ({
 }: DashboardCardProps) => {
   const { formatCurrency } = useCurrency();
   const sparkData = generateSparkData();
-  
+
   return (
-    <Card className="glass-card relative overflow-hidden rounded-2xl md:rounded-[2rem] shadow-sm transition-lumina hover:-translate-y-1 hover:shadow-lumina border border-transparent hover:border-sky-100 dark:hover:border-sky-900/30 group">
+    <Card className="glass-card relative overflow-hidden rounded-2xl md:rounded-4xl shadow-sm transition-lumina hover:-translate-y-1 hover:shadow-lumina border border-transparent hover:border-sky-100 dark:hover:border-sky-900/30 group">
       <CardContent className="relative p-4 md:px-6 flex flex-col gap-3 md:gap-5 z-10">
         <div className="flex items-center justify-between">
           <div className="p-2 md:p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl md:rounded-2xl group-hover:scale-110 transition-transform">
@@ -65,7 +65,7 @@ const DashboardCard = ({
           </p>
         </div>
       </CardContent>
-      
+
       {/* Sparkline Chart */}
       <div className="absolute inset-x-0 bottom-0 h-16 opacity-30 pointer-events-none">
         <ResponsiveContainer width="100%" height="100%">
