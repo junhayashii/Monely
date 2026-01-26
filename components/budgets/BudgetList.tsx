@@ -207,7 +207,7 @@ function BudgetList({ categories, spentMap }: BudgetListProps) {
                   name={cat.name}
                   spent={spentMap[cat.id] || 0}
                   budget={cat.budget || 0}
-                  color={cat.color}
+                  color={cat.color ?? null}
                   onClick={() => router.push(`/budgets?categoryId=${cat.id}`)}
                   onEdit={() => router.push(`/budgets?mode=edit&id=${cat.id}`)}
                 />
@@ -231,6 +231,7 @@ function BudgetList({ categories, spentMap }: BudgetListProps) {
                   name={cat.name}
                   spent={spentMap[cat.id] || 0}
                   budget={cat.budget || 0}
+                  color={cat.color}
                   type="INCOME"
                   onClick={() => router.push(`/budgets?categoryId=${cat.id}`)}
                   onEdit={() => router.push(`/budgets?mode=edit&id=${cat.id}`)}

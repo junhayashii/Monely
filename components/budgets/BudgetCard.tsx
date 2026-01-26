@@ -15,7 +15,7 @@ interface BudgetCardProps {
   name: string;
   spent: number;
   budget: number;
-  color?: string;
+  color: string | null;
   type?: "EXPENSE" | "INCOME";
   onClick: () => void;
   onEdit?: () => void;
@@ -38,7 +38,6 @@ const BudgetCard = ({
 
   const displayColor = color || "#3b82f6";
   const bgStyle = { backgroundColor: `${displayColor}15`, color: displayColor };
-  const barStyle = { backgroundColor: color };
 
   // Incomeの場合はシンプルな表示
   if (type === "INCOME") {
@@ -139,15 +138,12 @@ const BudgetCard = ({
           <div className="h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
             <div
               className={`h-full rounded-full transition-all ${
-                isOver
-                  ? "bg-rose-500"
-                  : isWarning
-                  ? "bg-amber-400"
-                  : "bg-sky-500"
+                isOver ? "bg-rose-500" : isWarning ? "bg-amber-400" : ""
               }`}
               style={{
                 width: `${Math.min(percent, 100)}%`,
-                backgroundColor: !isOver && !isWarning ? color : undefined,
+                backgroundColor:
+                  !isOver && !isWarning ? displayColor : undefined,
               }}
             />
           </div>
