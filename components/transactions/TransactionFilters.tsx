@@ -12,7 +12,7 @@ import { Button } from "../ui/button";
 import { Badge } from "../ui/badge";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import { Filter, X } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { TransactionFilterProps } from "./types";
 
 const TransactionFilters = ({
@@ -47,28 +47,44 @@ const TransactionFilters = ({
   const selectedCategoryId = searchParams.get("categoryId") || "all";
   const selectedWalletId = searchParams.get("walletId") || "all";
 
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  const triggerButton = (
+    <Button
+      variant="ghost"
+      className="w-full sm:w-auto h-full px-6 py-4 border-0 hover:bg-transparent"
+    >
+      <Filter className="h-4 w-4 mr-2 text-slate-600 dark:text-slate-400" />
+      <span className="text-sm font-semibold text-slate-800 dark:text-slate-200">
+        Filters
+      </span>
+      {activeFiltersCount > 0 && (
+        <Badge
+          variant="secondary"
+          className="ml-2 h-5 min-w-5 px-1.5 text-xs bg-sky-100 dark:bg-sky-900/30 text-sky-600 dark:text-sky-400"
+        >
+          {activeFiltersCount}
+        </Badge>
+      )}
+    </Button>
+  );
+
+  if (!isMounted) {
+    return (
+      <div className="glass-card rounded-[2.5rem] overflow-hidden shadow-sm bg-white dark:bg-slate-950 border border-slate-200/70 dark:border-slate-800/70">
+        {triggerButton}
+      </div>
+    );
+  }
+
   return (
     <div className="glass-card rounded-[2.5rem] overflow-hidden shadow-sm bg-white dark:bg-slate-950 border border-slate-200/70 dark:border-slate-800/70">
       <Popover open={open} onOpenChange={setOpen}>
-        <PopoverTrigger asChild>
-          <Button
-            variant="ghost"
-            className="w-full sm:w-auto h-full px-6 py-4 border-0 hover:bg-transparent"
-          >
-            <Filter className="h-4 w-4 mr-2 text-slate-600 dark:text-slate-400" />
-            <span className="text-sm font-semibold text-slate-800 dark:text-slate-200">
-              Filters
-            </span>
-            {activeFiltersCount > 0 && (
-              <Badge
-                variant="secondary"
-                className="ml-2 h-5 min-w-5 px-1.5 text-xs bg-sky-100 dark:bg-sky-900/30 text-sky-600 dark:text-sky-400"
-              >
-                {activeFiltersCount}
-              </Badge>
-            )}
-          </Button>
-        </PopoverTrigger>
+        <PopoverTrigger asChild>{triggerButton}</PopoverTrigger>
 
         <PopoverContent
           className="w-80 rounded-2xl border-slate-200/70 dark:border-slate-800/70"

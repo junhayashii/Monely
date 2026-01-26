@@ -87,6 +87,8 @@ const TransactionForm = ({
       formData.set("toWalletId", "");
     }
 
+    let optimisticTransaction: any = null;
+
     if (editId && onOptimisticUpdate) {
       const category = categories.find(
         (c) => c.id === formData.get("categoryId")
@@ -94,7 +96,7 @@ const TransactionForm = ({
       const wallet = wallets.find((w) => w.id === formData.get("walletId"));
       const toWallet = wallets.find((w) => w.id === formData.get("toWalletId"));
 
-      onOptimisticUpdate({
+      optimisticTransaction = {
         id: editId,
         title: formData.get("title") as string,
         amount: Number(formData.get("amount")),
@@ -105,10 +107,14 @@ const TransactionForm = ({
         category,
         wallet,
         toWallet,
-      });
+      };
     }
 
     startTransition(async () => {
+      if (optimisticTransaction && onOptimisticUpdate) {
+        onOptimisticUpdate(optimisticTransaction);
+      }
+
       const result = editId
         ? await updateTransaction(editId, formData)
         : await createTransaction(formData);
