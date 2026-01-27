@@ -8,6 +8,8 @@ import {
   TransactionWithRelations,
 } from "@/lib/transactions/types";
 
+import AddTransactionModal from "./AddTransactionModal";
+
 export default function TransactionManager({
   initialTransactions,
   categories,
@@ -23,6 +25,9 @@ export default function TransactionManager({
   const handleOptimisticDelete = (id: string) =>
     dispatch({ type: "delete", id });
 
+  const handleOptimisticCreate = (tx: TransactionWithRelations) =>
+    dispatch({ type: "create", transaction: tx });
+
   return (
     <>
       <TransactionTable data={transactions} pagination={pagination} />
@@ -32,6 +37,11 @@ export default function TransactionManager({
         wallets={wallets}
         onOptimisticUpdate={handleOptimisticUpdate}
         onOptimisticDelete={handleOptimisticDelete}
+      />
+      <AddTransactionModal
+        categories={categories}
+        wallets={wallets}
+        onOptimisticCreate={handleOptimisticCreate}
       />
     </>
   );

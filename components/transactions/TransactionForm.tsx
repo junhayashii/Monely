@@ -89,7 +89,7 @@ const TransactionForm = ({
 
     let optimisticTransaction: any = null;
 
-    if (editId && onOptimisticUpdate) {
+    if (onOptimisticUpdate) {
       const category = categories.find(
         (c) => c.id === formData.get("categoryId")
       );
@@ -97,7 +97,7 @@ const TransactionForm = ({
       const toWallet = wallets.find((w) => w.id === formData.get("toWalletId"));
 
       optimisticTransaction = {
-        id: editId,
+        id: editId || `temp-${Date.now()}`, // Temporary ID for new items
         title: formData.get("title") as string,
         amount: Number(formData.get("amount")),
         date: new Date(formData.get("date") as string),

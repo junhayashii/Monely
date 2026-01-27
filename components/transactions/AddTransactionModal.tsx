@@ -23,9 +23,14 @@ export type UISelectableWallet = {
 type Props = {
   categories: UISelectableCategory[];
   wallets: UISelectableWallet[];
+  onOptimisticCreate: (tx: any) => void;
 };
 
-const AddTransactionModal = ({ categories, wallets }: Props) => {
+const AddTransactionModal = ({
+  categories,
+  wallets,
+  onOptimisticCreate,
+}: Props) => {
   const searchParams = useSearchParams();
   const router = useRouter();
 
@@ -52,6 +57,7 @@ const AddTransactionModal = ({ categories, wallets }: Props) => {
         categories={categories}
         wallets={wallets}
         onCancel={close}
+        onOptimisticUpdate={onOptimisticCreate}
       />
     </AddEditModal>
   );
