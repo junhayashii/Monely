@@ -21,7 +21,7 @@ import {
 import {
   UISelectableCategory,
   UISelectableWallet,
-} from "./AddTransactionModal";
+} from "@/lib/transactions/types";
 
 type TransactionFormProps = {
   initialData?: {
