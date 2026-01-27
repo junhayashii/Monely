@@ -75,7 +75,7 @@ export default async function TransactionsPage(props: TransactionsPageProps) {
         <TransactionList userId={user.id} searchParams={listParams} />
       </Suspense>
 
-      <AddTransactionModal categories={categories} wallets={wallets} />
+      <AddTransactionModal categories={categories} wallets={wallets} onOptimisticCreate={() => {}}/>
       <ImportOFXModal wallets={wallets} />
     </div>
   );
