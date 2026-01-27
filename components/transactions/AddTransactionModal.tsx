@@ -6,19 +6,7 @@ import { useSearchParams, useRouter } from "next/navigation";
 import { Category, Wallet } from "@/lib/generated/prisma";
 import { CategoryType, WalletType } from "@/lib/generated/prisma";
 
-export type UISelectableCategory = {
-  id: string;
-  name: string;
-  type: CategoryType;
-  color: string | null;
-};
-
-export type UISelectableWallet = {
-  id: string;
-  name: string;
-  type: WalletType;
-  color: string | null;
-};
+import { UISelectableCategory, UISelectableWallet } from "@/lib/transactions/types";
 
 type Props = {
   categories: UISelectableCategory[];

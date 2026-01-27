@@ -8,12 +8,12 @@ import { useSearchParams, useRouter } from "next/navigation";
 import { Category, Wallet } from "@/lib/generated/prisma";
 import { useTransition } from "react";
 import { toast } from "sonner";
-import { TransactionWithRelations } from "@/lib/transactions/types";
+import { TransactionWithRelations, UISelectableCategory, UISelectableWallet } from "@/lib/transactions/types";
 
 type Props = {
   transactions: TransactionWithRelations[];
-  categories: Category[];
-  wallets: Wallet[];
+  categories: UISelectableCategory[];
+  wallets: UISelectableWallet[];
   onOptimisticUpdate: (tx: TransactionWithRelations) => void;
   onOptimisticDelete: (id: string) => void;
 };

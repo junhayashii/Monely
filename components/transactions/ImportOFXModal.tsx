@@ -17,10 +17,7 @@ import { Input } from "@/components/ui/input";
 import { Wallet } from "@/lib/generated/prisma";
 import { importOFX } from "@/app/(dashboard)/transactions/actions";
 
-type UISelectableWallet = {
-  id: string;
-  name: string;
-};
+import { UISelectableWallet } from "@/lib/transactions/types";
 
 type Props = {
   wallets: UISelectableWallet[];

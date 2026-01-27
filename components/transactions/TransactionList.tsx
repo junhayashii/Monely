@@ -2,11 +2,14 @@ import TransactionManager from "./TransactionManager";
 import TransactionPagination from "./TransactionPagination";
 import { parseTransactionSearchParams } from "@/lib/transactions/parseSearchParams";
 import { getTransactions } from "@/lib/transactions/data";
+import { UISelectableCategory, UISelectableWallet } from "@/lib/transactions/types";
 
 const PAGE_SIZE = 10;
 
 interface TransactionListProps {
   userId: string;
+  categories: UISelectableCategory[];
+  wallets: UISelectableWallet[];
   searchParams: {
     q?: string;
     month?: string;
@@ -19,6 +22,8 @@ interface TransactionListProps {
 
 export default async function TransactionList({
   userId,
+  categories,
+  wallets,
   searchParams,
 }: TransactionListProps) {
   const { q, month, type, categoryId, walletId, page } =
@@ -40,8 +45,8 @@ export default async function TransactionList({
   return (
     <TransactionManager
       initialTransactions={transactions}
-      categories={[]}
-      wallets={[]}
+      categories={categories}
+      wallets={wallets}
       pagination={
         totalPages > 1 ? (
           <TransactionPagination

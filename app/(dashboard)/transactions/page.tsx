@@ -13,9 +13,6 @@ import { TransactionsHeader } from "./_components/TransactionsHeader";
 import { TransactionTableSkeleton } from "./_components/TransactionTableSkeleton";
 
 // Dynamic Imports
-const AddTransactionModal = dynamic(() =>
-  import("@/components/transactions/AddTransactionModal")
-);
 const ImportOFXModal = dynamic(() =>
   import("@/components/transactions/ImportOFXModal")
 );
@@ -72,10 +69,14 @@ export default async function TransactionsPage(props: TransactionsPageProps) {
         key={JSON.stringify(listParams)}
         fallback={<TransactionTableSkeleton />}
       >
-        <TransactionList userId={user.id} searchParams={listParams} />
+        <TransactionList 
+          userId={user.id} 
+          searchParams={listParams} 
+          categories={categories}
+          wallets={wallets}
+        />
       </Suspense>
 
-      <AddTransactionModal categories={categories} wallets={wallets} onOptimisticCreate={() => {}}/>
       <ImportOFXModal wallets={wallets} />
     </div>
   );

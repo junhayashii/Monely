@@ -1,4 +1,4 @@
-import { Transaction, Category, Wallet } from "@/lib/generated/prisma";
+import { Transaction, Category, Wallet, CategoryType, WalletType } from "@/lib/generated/prisma";
 
 export type TransactionWithRelations = Transaction & {
   category?: Pick<Category, "name" | "type" | "color"> | null;
@@ -6,9 +6,24 @@ export type TransactionWithRelations = Transaction & {
   toWallet?: Pick<Wallet, "name"> | null;
 };
 
+export type UISelectableCategory = {
+  id: string;
+  name: string;
+  type: CategoryType;
+  color: string | null;
+};
+
+export type UISelectableWallet = {
+  id: string;
+  name: string;
+  type: WalletType;
+  color: string | null;
+  balance?: number;
+};
+
 export interface TransactionManagerProps {
   initialTransactions: TransactionWithRelations[];
-  categories: Category[];
-  wallets: Wallet[];
+  categories: UISelectableCategory[];
+  wallets: UISelectableWallet[];
   pagination?: React.ReactNode;
 }
