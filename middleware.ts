@@ -37,12 +37,13 @@ export async function middleware(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  // ログインしていない、かつログインページ以外にいる場合はリダイレクト
-  if (
-    !user &&
-    !request.nextUrl.pathname.startsWith("/login") &&
-    !request.nextUrl.pathname.startsWith("/auth")
-  ) {
+  // ログインしていない場合: トップ(ランディング)、ログイン、auth は許可し、それ以外はリダイレクト
+  const pathname = request.nextUrl.pathname;
+  const isPublic =
+    pathname === "/" ||
+    pathname.startsWith("/login") ||
+    pathname.startsWith("/auth");
+  if (!user && !isPublic) {
     return NextResponse.redirect(new URL("/login", request.url));
   }
 

@@ -16,9 +16,9 @@ import Image from "next/image";
 import Link from "next/link";
 
 interface LandingPageProps {
-  onGetStarted: () => void;
-  onLogin: () => void;
-  isDarkMode: boolean;
+  onGetStarted?: () => void;
+  onLogin?: () => void;
+  isDarkMode?: boolean;
 }
 
 const Feature: React.FC<{
@@ -78,72 +78,69 @@ const PricingCard: React.FC<{
   features: string[];
   cta: string;
   featured?: boolean;
-  onCta: () => void;
-}> = ({ tier, price, desc, features, cta, featured, onCta }) => (
-  <div
-    className={`relative glass-card p-10 rounded-[3rem] border transition-all duration-500 flex flex-col hover:-translate-y-2 ${
-      featured
-        ? "border-sky-500 shadow-2xl shadow-sky-100 dark:shadow-none ring-1 ring-sky-500"
-        : "border-white/50 dark:border-slate-800"
-    }`}
-  >
-    {featured && (
-      <div className="absolute top-0 right-10 -translate-y-1/2 bg-sky-500 text-white px-4 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest shadow-lg shadow-sky-200 dark:shadow-none">
-        Most Popular
-      </div>
-    )}
-    <div className="space-y-6 mb-10">
-      <div>
-        <h4 className="text-lg font-bold text-slate-900 dark:text-white">
-          {tier}
-        </h4>
-        <p className="text-sm text-slate-500 mt-1">{desc}</p>
-      </div>
-      <div className="flex items-baseline gap-1">
-        <span className="text-4xl font-bold dark:text-white">${price}</span>
-        <span className="text-slate-400 text-xs font-bold uppercase tracking-widest">
-          / Month
-        </span>
-      </div>
-    </div>
-
-    <div className="space-y-4 mb-10 flex-1">
-      {features.map((f, i) => (
-        <div
-          key={i}
-          className="flex items-center gap-3 text-sm text-slate-600 dark:text-slate-400"
-        >
-          <div
-            className={`p-1 rounded-full ${
-              featured
-                ? "bg-sky-100 text-sky-500"
-                : "bg-slate-100 text-slate-400"
-            }`}
-          >
-            <Check className="w-3 h-3" />
-          </div>
-          <span className="font-medium">{f}</span>
-        </div>
-      ))}
-    </div>
-
-    <button
-      onClick={onCta}
-      className={`w-full py-4 rounded-2xl font-bold text-sm transition-all shadow-lg ${
+  ctaHref?: string;
+}> = ({ tier, price, desc, features, cta, featured, ctaHref = "/login" }) => {
+  const buttonClass = `w-full py-4 rounded-2xl font-bold text-sm transition-all shadow-lg ${
+    featured
+      ? "bg-sky-500 text-white shadow-sky-200 dark:shadow-none hover:bg-sky-600"
+      : "bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white hover:bg-slate-100 dark:hover:bg-slate-700"
+  }`;
+  return (
+    <div
+      className={`relative glass-card p-10 rounded-[3rem] border transition-all duration-500 flex flex-col hover:-translate-y-2 ${
         featured
-          ? "bg-sky-500 text-white shadow-sky-200 dark:shadow-none hover:bg-sky-600"
-          : "bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white hover:bg-slate-100 dark:hover:bg-slate-700"
+          ? "border-sky-500 shadow-2xl shadow-sky-100 dark:shadow-none ring-1 ring-sky-500"
+          : "border-white/50 dark:border-slate-800"
       }`}
     >
-      {cta}
-    </button>
-  </div>
-);
+      {featured && (
+        <div className="absolute top-0 right-10 -translate-y-1/2 bg-sky-500 text-white px-4 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest shadow-lg shadow-sky-200 dark:shadow-none">
+          Most Popular
+        </div>
+      )}
+      <div className="space-y-6 mb-10">
+        <div>
+          <h4 className="text-lg font-bold text-slate-900 dark:text-white">
+            {tier}
+          </h4>
+          <p className="text-sm text-slate-500 mt-1">{desc}</p>
+        </div>
+        <div className="flex items-baseline gap-1">
+          <span className="text-4xl font-bold dark:text-white">${price}</span>
+          <span className="text-slate-400 text-xs font-bold uppercase tracking-widest">
+            / Month
+          </span>
+        </div>
+      </div>
 
-export const LandingPage: React.FC<LandingPageProps> = ({
-  onGetStarted,
-  onLogin,
-}) => {
+      <div className="space-y-4 mb-10 flex-1">
+        {features.map((f, i) => (
+          <div
+            key={i}
+            className="flex items-center gap-3 text-sm text-slate-600 dark:text-slate-400"
+          >
+            <div
+              className={`p-1 rounded-full ${
+                featured
+                  ? "bg-sky-100 text-sky-500"
+                  : "bg-slate-100 text-slate-400"
+              }`}
+            >
+              <Check className="w-3 h-3" />
+            </div>
+            <span className="font-medium">{f}</span>
+          </div>
+        ))}
+      </div>
+
+      <Link href={ctaHref} className={buttonClass}>
+        <span className="block w-full text-center">{cta}</span>
+      </Link>
+    </div>
+  );
+};
+
+export const LandingPage: React.FC<LandingPageProps> = () => {
   return (
     <div className="relative overflow-hidden min-h-screen selection:bg-sky-100 selection:text-sky-900">
       {/* Dynamic Background Elements */}
@@ -158,17 +155,18 @@ export const LandingPage: React.FC<LandingPageProps> = ({
       <nav className="fixed top-0 left-0 w-full z-50 backdrop-blur-md bg-white/30 dark:bg-slate-950/30 border-b border-white/20 dark:border-slate-800/20">
         <div className="max-w-7xl mx-auto px-8 py-5 flex items-center justify-between">
           <div className="flex items-center gap-3 transition-opacity duration-500">
-            <div className="cursor-pointer">
-              <div className="hover:rotate-[360deg] transition-transform duration-700">
+            <Link href="/" className="cursor-pointer">
+              <div className="hover:rotate-360 transition-transform duration-700">
                 <Image
                   src={logo}
                   width={32}
                   height={32}
-                  alt="Logo"
+                  alt="Monely"
                   className="shrink-0"
+                  priority
                 />
               </div>
-            </div>
+            </Link>
             <span className="text-xl font-bold tracking-tight bg-linear-to-r from-sky-600 to-sky-400 bg-clip-text text-transparent">
               Monely
             </span>
@@ -187,21 +185,17 @@ export const LandingPage: React.FC<LandingPageProps> = ({
           </div>
 
           <div className="flex items-center gap-4">
-            <Link href="/login">
-              <button
-                onClick={onLogin}
-                className="text-sm font-bold text-slate-500 hover:text-sky-500 transition-colors hidden sm:block"
-              >
-                Login
-              </button>
+            <Link
+              href="/login"
+              className="text-sm font-bold text-slate-500 hover:text-sky-500 transition-colors hidden sm:block"
+            >
+              Login
             </Link>
-            <Link href="/login">
-              <button
-                onClick={onGetStarted}
-                className="px-6 py-2.5 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-2xl text-xs font-bold shadow-lg hover:scale-105 active:scale-95 transition-all"
-              >
-                Sign Up
-              </button>
+            <Link
+              href="/login"
+              className="px-6 py-2.5 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-2xl text-xs font-bold shadow-lg hover:scale-105 active:scale-95 transition-all inline-block"
+            >
+              Sign Up
             </Link>
           </div>
         </div>
@@ -228,14 +222,12 @@ export const LandingPage: React.FC<LandingPageProps> = ({
           </p>
 
           <div className="flex flex-wrap items-center gap-6">
-            <Link href="/login">
-              <button
-                onClick={onGetStarted}
-                className="px-10 py-5 bg-sky-500 text-white rounded-4xl font-bold shadow-2xl shadow-sky-200 dark:shadow-none hover:bg-sky-600 hover:scale-105 active:scale-95 transition-all flex items-center gap-3 group"
-              >
-                Start Your Journey{" "}
-                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-              </button>
+            <Link
+              href="/login"
+              className="px-10 py-5 bg-sky-500 text-white rounded-4xl font-bold shadow-2xl shadow-sky-200 dark:shadow-none hover:bg-sky-600 hover:scale-105 active:scale-95 transition-all inline-flex items-center gap-3 group"
+            >
+              Start Your Journey{" "}
+              <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
             </Link>
 
             <div className="flex -space-x-4">
@@ -489,7 +481,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
               "Access from mobile & desktop",
             ]}
             cta="Start Free"
-            onCta={onGetStarted}
+            ctaHref="/login"
           />
           <PricingCard
             tier="Plus"
@@ -505,7 +497,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
             ]}
             cta="Coming Soon"
             featured={true}
-            onCta={onGetStarted}
+            ctaHref="/login"
           />
           <PricingCard
             tier="Pro (Invitation Only)"
@@ -519,7 +511,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
               "Full customization",
             ]}
             cta="Request Invitation"
-            onCta={onGetStarted}
+            ctaHref="/login"
           />
         </div>
       </section>
@@ -539,13 +531,11 @@ export const LandingPage: React.FC<LandingPageProps> = ({
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-6 pt-6">
-            <Link href="/login">
-              <button
-                onClick={onGetStarted}
-                className="px-12 py-5 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-4xl font-bold shadow-2xl hover:scale-105 active:scale-95 transition-all w-full sm:w-auto"
-              >
-                Get Started for Free
-              </button>
+            <Link
+              href="/login"
+              className="px-12 py-5 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-4xl font-bold shadow-2xl hover:scale-105 active:scale-95 transition-all w-full sm:w-auto inline-flex justify-center"
+            >
+              Get Started for Free
             </Link>
 
             <button className="flex items-center gap-2 text-sm font-bold text-slate-500 hover:text-sky-500 transition-colors">

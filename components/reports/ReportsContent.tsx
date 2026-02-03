@@ -30,7 +30,6 @@ import {
   Zap,
 } from "lucide-react";
 import { useCurrency } from "@/contexts/CurrencyContext";
-import { SidebarTrigger } from "@/components/ui/sidebar";
 
 const PIE_COLORS = [
   "#0ea5e9", // sky-500
@@ -102,24 +101,7 @@ export default function ReportsContent({
   const savingsRateChange = savingsRate > 0 ? "+12%" : "-5%";
 
   return (
-    <div className="space-y-8 pb-16">
-      {/* Header */}
-      <div className="flex flex-row items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <div className="md:hidden">
-            <SidebarTrigger className="size-9 rounded-xl bg-white dark:bg-slate-900 shadow-sm border border-slate-200 dark:border-slate-800 flex items-center justify-center p-0" />
-          </div>
-          <div>
-            <h1 className="text-xl md:text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
-              Reports
-            </h1>
-            <p className="hidden sm:block text-sm text-slate-500 dark:text-slate-400 mt-1">
-              Analyze your financial patterns and trends
-            </p>
-          </div>
-        </div>
-      </div>
-
+    <div className="space-y-8">
       {/* View Toggle & Export */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div className="flex p-1 bg-slate-100 dark:bg-slate-900/50 rounded-2xl border border-slate-200/50 dark:border-slate-800/50 w-full sm:w-auto">

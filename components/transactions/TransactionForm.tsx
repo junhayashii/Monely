@@ -8,6 +8,7 @@ import {
 } from "@/app/(dashboard)/transactions/actions";
 
 import { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner"; // Sonnerをインポート
 import { Label } from "../ui/label";
 import {
@@ -17,7 +18,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../ui/select";
-// import { useRouter } from "next/navigation"; // ページ遷移が必要なら使う
 import {
   UISelectableCategory,
   UISelectableWallet,
@@ -38,6 +38,7 @@ type TransactionFormProps = {
   onCancel: () => void;
   onDelete?: () => void;
   onOptimisticUpdate?: (tx: any) => void;
+  onSuccessCreate?: (tempId: string, serverTx: any) => void;
 };
 
 const TransactionForm = ({
@@ -48,8 +49,9 @@ const TransactionForm = ({
   onCancel,
   onDelete,
   onOptimisticUpdate,
+  onSuccessCreate,
 }: TransactionFormProps) => {
-  // useTransitionでローディング状態(isPending)を管理
+  const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [walletId, setWalletId] = useState<string | null>(
     initialData?.walletId || null
@@ -73,8 +75,6 @@ const TransactionForm = ({
   // 削除ボタンのローディング用（もし必要なら分ける）
   const [isDeleting, setIsDeleting] = useState(false);
 
-  // const router = useRouter(); // ページ遷移する場合
-
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const formData = new FormData(event.currentTarget);
@@ -97,33 +97,42 @@ const TransactionForm = ({
       const toWallet = wallets.find((w) => w.id === formData.get("toWalletId"));
 
       optimisticTransaction = {
-        id: editId || `temp-${Date.now()}`, // Temporary ID for new items
+        id: editId || `temp-${Date.now()}`,
         title: formData.get("title") as string,
         amount: Number(formData.get("amount")),
         date: new Date(formData.get("date") as string),
-        categoryId: formData.get("categoryId") as string,
+        categoryId: (formData.get("categoryId") as string) || null,
         walletId: formData.get("walletId") as string,
-        toWalletId: formData.get("toWalletId") as string,
-        category,
-        wallet,
-        toWallet,
+        toWalletId: (formData.get("toWalletId") as string) || null,
+        category: category
+          ? { name: category.name, type: category.type, color: category.color }
+          : null,
+        wallet: wallet ? { name: wallet.name } : null,
+        toWallet: toWallet ? { name: toWallet.name } : null,
       };
     }
 
-    startTransition(async () => {
+    // 楽観的更新は transition 内で行う（React の useOptimistic 要件）
+    startTransition(() => {
       if (optimisticTransaction && onOptimisticUpdate) {
         onOptimisticUpdate(optimisticTransaction);
+        onCancel();
       }
+    });
 
+    startTransition(async () => {
       const result = editId
         ? await updateTransaction(editId, formData)
         : await createTransaction(formData);
 
       if (result.success) {
         toast.success(result.message);
-        onCancel();
+        if (!editId && result.transaction && optimisticTransaction && onSuccessCreate) {
+          onSuccessCreate(optimisticTransaction.id, result.transaction);
+        }
       } else {
         toast.error(result.message);
+        router.refresh();
       }
     });
   };

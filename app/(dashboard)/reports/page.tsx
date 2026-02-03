@@ -10,19 +10,35 @@ import {
   startOfMonth,
   subMonths,
 } from "date-fns";
+import { redirect } from "next/navigation";
+import MonthPicker from "@/components/MonthPicker";
+import { SidebarTrigger } from "@/components/ui/sidebar";
 
-export default async function ReportsPage() {
+interface ReportsPageProps {
+  searchParams: Promise<{ month?: string }>;
+}
+
+export default async function ReportsPage({ searchParams }: ReportsPageProps) {
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
   if (!user) {
-    return <div>Please log in.</div>;
+    redirect("/login");
   }
 
-  // Get data for the last 6 months
-  const currentMonth = new Date();
+  const resolved = await searchParams;
+  const monthParam = resolved.month || format(new Date(), "yyyy-MM");
+  let currentMonth: Date;
+  try {
+    const parsed = parse(monthParam, "yyyy-MM", new Date());
+    currentMonth = isNaN(parsed.getTime())
+      ? startOfMonth(new Date())
+      : startOfMonth(parsed);
+  } catch {
+    currentMonth = startOfMonth(new Date());
+  }
   const sixMonthsAgo = startOfMonth(subMonths(currentMonth, 5));
   const monthEnd = endOfMonth(currentMonth);
 
@@ -113,12 +129,32 @@ export default async function ReportsPage() {
                        (previousMonthIncome - previousMonthExpense);
 
   return (
-    <ReportsContent
-      monthlyData={monthlyData}
-      categoryData={categoryData}
-      savingsRate={savingsRate}
-      topCategory={topCategory}
-      monthlyDelta={monthlyDelta}
-    />
+    <div className="space-y-8 pb-16">
+      <div className="flex flex-row items-center justify-between gap-4">
+        <div className="flex items-center gap-5">
+          <div className="md:hidden">
+            <SidebarTrigger className="size-9 rounded-xl bg-white dark:bg-slate-900 shadow-sm border border-slate-200 dark:border-slate-800 flex items-center justify-center p-0" />
+          </div>
+          <div>
+            <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
+              Reports
+            </h1>
+            <p className="hidden sm:block text-sm text-slate-500 dark:text-slate-400 mt-1">
+              {format(currentMonth, "MMMM yyyy")} · Analyze your financial patterns and trends
+            </p>
+          </div>
+        </div>
+        <div className="scale-90 sm:scale-100 origin-right">
+          <MonthPicker />
+        </div>
+      </div>
+      <ReportsContent
+        monthlyData={monthlyData}
+        categoryData={categoryData}
+        savingsRate={savingsRate}
+        topCategory={topCategory}
+        monthlyDelta={monthlyDelta}
+      />
+    </div>
   );
 }

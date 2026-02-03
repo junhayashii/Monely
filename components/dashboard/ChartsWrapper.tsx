@@ -27,10 +27,12 @@ export default async function ChartsWrapper({
 
   const transactions = await getCachedChartsData(userId, currentMonth);
 
+  const toDate = (d: Date | string) => (d instanceof Date ? d : new Date(d));
 
-  const currentMonthTransactions = transactions.filter(
-    (t) => t.date >= monthStart && t.date <= monthEnd
-  );
+  const currentMonthTransactions = transactions.filter((t) => {
+    const date = toDate(t.date);
+    return date >= monthStart && date <= monthEnd;
+  });
 
   // --- Category Distribution ---
   const categoryTotals = currentMonthTransactions
@@ -50,8 +52,12 @@ export default async function ChartsWrapper({
   const daysInMonth = eachDayOfInterval({ start: monthStart, end: monthEnd });
   const monthlyData = daysInMonth.map((day) => {
     const amount = currentMonthTransactions
-      .filter((t) => t.category?.type === "EXPENSE" && isSameDay(t.date, day))
-      .reduce((sum, t) => sum + t.amount, 0);
+      .filter(
+        (t) =>
+          t.category?.type === "EXPENSE" &&
+          isSameDay(toDate(t.date), day)
+      )
+      .reduce((sum, t) => sum + Number(t.amount), 0);
     return { day: format(day, "d"), amount };
   });
 
@@ -61,7 +67,9 @@ export default async function ChartsWrapper({
     end: currentMonth,
   });
   const yearlyData = lastSixMonths.map((m) => {
-    const mTransactions = transactions.filter((t) => isSameMonth(t.date, m));
+    const mTransactions = transactions.filter((t) =>
+      isSameMonth(toDate(t.date), m)
+    );
     const income = mTransactions
       .filter((t) => t.category?.type === "INCOME")
       .reduce((sum, t) => sum + t.amount, 0);

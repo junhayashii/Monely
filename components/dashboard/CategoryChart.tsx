@@ -97,7 +97,7 @@ const CategoryChart = ({ data }: { data: CategoryDatum[] }) => {
         <CardTitle>Expenses by Category</CardTitle>
       </CardHeader>
       <CardContent className="flex-1 flex flex-col">
-        <div className="h-full w-full min-h-[200px] max-h-[250px] -mt-4">
+        <div className="w-full h-[220px] -mt-4">
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
               <Pie

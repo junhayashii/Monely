@@ -32,7 +32,13 @@ async function getAuthenticatedUser() {
   return user;
 }
 
-export type ActionResponse = { success: boolean; message: string };
+import type { TransactionWithRelations } from "@/lib/transactions/types";
+
+export type ActionResponse = {
+  success: boolean;
+  message: string;
+  transaction?: TransactionWithRelations;
+};
 
 // --- 2. Create Transaction ---
 export async function createTransaction(
@@ -66,9 +72,8 @@ export async function createTransaction(
     validatedFields.data;
 
   try {
-    await prisma.$transaction(async (tx) => {
-      // 取引作成
-      await tx.transaction.create({
+    const created = await prisma.$transaction(async (tx) => {
+      const t = await tx.transaction.create({
         data: {
           title,
           amount,
@@ -102,18 +107,32 @@ export async function createTransaction(
           data: { balance: { increment: change } },
         });
       }
+      return t.id;
     });
-
-    // 予算超過チェックと通知作成（EXPENSEカテゴリの場合のみ）
-    if (categoryId) {
-      await checkBudgetAndNotify(user.id, categoryId, date);
-    }
 
     revalidatePath("/transactions");
     revalidatePath("/wallets");
     revalidateTag(`wallets-${user.id}`, "default");
     revalidateTag(`dashboard-${user.id}`, "default");
-    return { success: true, message: "Transaction created!" };
+
+    if (categoryId) {
+      void checkBudgetAndNotify(user.id, categoryId, date);
+    }
+
+    const withRelations = await prisma.transaction.findUnique({
+      where: { id: created },
+      include: {
+        category: { select: { name: true, type: true, color: true } },
+        wallet: { select: { name: true } },
+        toWallet: { select: { name: true } },
+      },
+    });
+
+    return {
+      success: true,
+      message: "Transaction created!",
+      transaction: withRelations as TransactionWithRelations,
+    };
   } catch (error) {
     console.error("CREATE ERROR:", error);
     return { success: false, message: "Failed to create." };
@@ -198,15 +217,14 @@ export async function updateTransaction(
       });
     });
 
-    // 予算超過チェックと通知作成（EXPENSEカテゴリの場合のみ）
-    if (categoryId) {
-      await checkBudgetAndNotify(user.id, categoryId, date);
-    }
-
     revalidatePath("/transactions");
     revalidatePath("/wallets");
     revalidateTag(`wallets-${user.id}`, "default");
     revalidateTag(`dashboard-${user.id}`, "default");
+
+    if (categoryId) {
+      void checkBudgetAndNotify(user.id, categoryId, date);
+    }
     return { success: true, message: "Transaction updated!" };
   } catch (error) {
     console.error("UPDATE ERROR:", error);

@@ -12,12 +12,14 @@ type Props = {
   categories: UISelectableCategory[];
   wallets: UISelectableWallet[];
   onOptimisticCreate: (tx: any) => void;
+  onSuccessCreate?: (tempId: string, serverTx: any) => void;
 };
 
 const AddTransactionModal = ({
   categories,
   wallets,
   onOptimisticCreate,
+  onSuccessCreate,
 }: Props) => {
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -46,6 +48,7 @@ const AddTransactionModal = ({
         wallets={wallets}
         onCancel={close}
         onOptimisticUpdate={onOptimisticCreate}
+        onSuccessCreate={onSuccessCreate}
       />
     </AddEditModal>
   );

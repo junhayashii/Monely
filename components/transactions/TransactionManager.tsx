@@ -28,6 +28,11 @@ export default function TransactionManager({
   const handleOptimisticCreate = (tx: TransactionWithRelations) =>
     dispatch({ type: "create", transaction: tx });
 
+  const handleSuccessCreate = (tempId: string, serverTx: TransactionWithRelations) => {
+    dispatch({ type: "delete", id: tempId });
+    dispatch({ type: "create", transaction: serverTx });
+  };
+
   return (
     <>
       <TransactionTable data={transactions} pagination={pagination} />
@@ -42,6 +47,7 @@ export default function TransactionManager({
         categories={categories}
         wallets={wallets}
         onOptimisticCreate={handleOptimisticCreate}
+        onSuccessCreate={handleSuccessCreate}
       />
     </>
   );

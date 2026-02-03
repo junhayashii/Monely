@@ -109,6 +109,11 @@ export default function SpendingChart({
   const { formatCurrency } = useCurrency();
   const [view, setView] = useState("monthly");
 
+  const safeMonthlyData = monthlyData.map((d) => ({
+    day: String(d.day),
+    amount: Number(d.amount) || 0,
+  }));
+
   return (
     <Card className="col-span-4 h-full flex flex-col">
       <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
@@ -128,10 +133,13 @@ export default function SpendingChart({
         </Tabs>
       </CardHeader>
       <CardContent className="flex-1 pb-2 md:pb-6">
-        <div className="h-full w-full min-h-[250px] md:min-h-[300px]">
+        <div className="w-full h-[280px] md:h-[320px]">
           <ResponsiveContainer width="100%" height="100%">
             {view === "monthly" ? (
-              <BarChart data={monthlyData} margin={{ left: -20, right: 0, top: 10, bottom: 0 }}>
+              <BarChart
+                data={safeMonthlyData}
+                margin={{ left: -20, right: 0, top: 10, bottom: 0 }}
+              >
                 <defs>
                   <linearGradient id="colorMonthly" x1="0" y1="0" x2="0" y2="1">
                     <stop
@@ -161,13 +169,14 @@ export default function SpendingChart({
                 />
                 <YAxis
                   width={62}
+                  domain={[0, "auto"]}
                   tick={{ fill: "#94a3b8", fontSize: 12 }}
                   tickLine={false}
                   axisLine={false}
-                  tickFormatter={(value) => formatCurrency(value)}
+                  tickFormatter={(value) => formatCurrency(Number(value))}
                 />
                 <Tooltip
-                  cursor={{ fill: "transparent" }}
+                  cursor={{ fill: "rgba(148,163,184,0.1)" }}
                   content={<CustomTooltip />}
                 />
                 <Bar
@@ -178,6 +187,7 @@ export default function SpendingChart({
                   radius={[10, 10, 8, 8]}
                   maxBarSize={30}
                   animationDuration={700}
+                  isAnimationActive={true}
                 />
               </BarChart>
             ) : (
